@@ -1,14 +1,15 @@
-import mongoose from "mongoose";
-import config from "./env.js";
+import pg from 'pg';
+import config from './env.js';
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(config.dbUrl);
-    console.log("✨-----MongoDB connected successfully-----✨");
-  } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
-    process.exit(1);
-  }
-};
+const { Pool } = pg;
 
-export default connectDB;
+const pool = new Pool({
+  user: config.DB_user,
+  host: config.DB_host,
+  database: config.DB_database,
+  password: config.DB_password,
+  port: config.DB_port,
+  ssl: { rejectUnauthorized: false },
+});
+
+export default pool;
