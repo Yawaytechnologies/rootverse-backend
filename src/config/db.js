@@ -1,15 +1,8 @@
-import pg from 'pg';
-import config from './env.js';
+// db.js
+import knex from 'knex';
+import knexConfig from '../../knexfile.js';
 
-const { Pool } = pg;
+const env = process.env.NODE_ENV || 'development';
+const db = knex(knexConfig[env]);
 
-const pool = new Pool({
-  user: config.DB_user,
-  host: config.DB_host,
-  database: config.DB_database,
-  password: config.DB_password,
-  port: config.DB_port,
-  ssl: { rejectUnauthorized: false },
-});
-
-export default pool;
+export default db;
