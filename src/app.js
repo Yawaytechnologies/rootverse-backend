@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import db from './config/db.js';
-import ownerRouter from './modules/owner/router/router.js';
+import ownerRouter from './modules/owner/owner.router.js';
 
 
 const app = express();
