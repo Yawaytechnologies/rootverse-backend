@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: rootverse-backend
+    env: node
+    plan: free # change to starter/standard for production
+
+    branch: main
+
+    buildCommand: |
+      npm install
+    startCommand: |
+      npm run dev
+
+    # OPTIONAL but recommended: run knex migrations on every deploy
+    preDeployCommand: |
+      npx knex migrate:latest --env production
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 5000
+
+      # ✅ Supabase DB (DO NOT hardcode values in yaml)
+      - key: PG_HOST
+        sync: false
+      - key: PG_PORT
+        sync: false
+      - key: PG_USER
+        sync: false
+      - key: PG_PASSWORD
+        sync: false
+      - key: PG_DATABASE
+        sync: false
+
+      # ✅ Supabase Storage
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        sync: false
