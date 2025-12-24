@@ -1,4 +1,4 @@
-import { registerOwner } from "./owner.service.js";
+import { registerOwner, verifyOwnerService } from "./owner.service.js";
 
 export async function createOwner(req, res) {
     try {
@@ -11,6 +11,17 @@ export async function createOwner(req, res) {
         res.status(201).json(owner);
     }
     catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function verifyOwnerController(req, res) {
+    try {
+        const { id } = req.params;
+        const { verification_status } = req.body;
+        const owner = await verifyOwnerService(id, verification_status);
+        res.status(200).json(owner);
+    } catch (error) {
         res.status(400).json({ error: error.message });
     }
 }
