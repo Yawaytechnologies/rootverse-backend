@@ -1,8 +1,10 @@
-import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner } from "./owner.model.js";
+import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner } from "./owner.model.js";
 import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
 import { buildProfileKey } from "../../utils/storageKey.js";
 import db from "../../config/db.js";
 import { phone } from "../owner/owner.verification.js";
+
+const ALLOWED = new Set(["PENDING", "VERIFIED"])
 
 export async function registerOwner(payload, profileImage) {
     const username = payload.username || payload.userName || payload.usserName;
@@ -68,6 +70,14 @@ export async function registerOwner(payload, profileImage) {
         }
         throw err;
     }
+}
+
+export async function verifyOwnerService(id, verification_status) {
+    if (!ALLOWED.has(verification_status)) {
+        throw new Error("Invalid verification status.");
+    }
+    const owner = await verifyOwner(id);
+    return owner;
 }
 
 
