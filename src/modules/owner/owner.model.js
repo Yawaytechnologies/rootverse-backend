@@ -7,15 +7,39 @@ export function createOwner(payload) {
 }
 
 export function getOwnerById(id) {
-    return db(TABLE).where({ id }).first();
+    return db(`${TABLE} as ru`)
+        .leftJoin("states as s", "ru.state_id", "s.id")
+        .leftJoin("districts as d", "ru.district_id", "d.id")
+        .select(
+            "ru.*",
+            "s.name as state_name",
+            "d.name as district_name"
+        )
+        .where("ru.id", id)
+        .first();
 }
 
 export function getAllOwners() {
-    return db(TABLE).select("*");
+    return db(`${TABLE} as ru`)
+        .leftJoin("states as s", "ru.state_id", "s.id")
+        .leftJoin("districts as d", "ru.district_id", "d.id")
+        .select(
+            "ru.*",
+            "s.name as state_name",
+            "d.name as district_name"
+        );
 }
 
 export function getByRootverseType(rootverse_type) {
-    return db(TABLE).where({ rootverse_type });
+    return db(`${TABLE} as ru`)
+        .leftJoin("states as s", "ru.state_id", "s.id")
+        .leftJoin("districts as d", "ru.district_id", "d.id")
+        .select(
+            "ru.*",
+            "s.name as state_name",
+            "d.name as district_name"
+        )
+        .where("ru.rootverse_type", rootverse_type);
 }
 
 export function updateOwner(id, updates) {
