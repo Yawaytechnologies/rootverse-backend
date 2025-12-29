@@ -1,11 +1,16 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
-import db from './config/db.js';
-import ownerRouter from './modules/owner/owner.router.js';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import db from "./config/db.js";
 
+import ownerRouter from "./modules/owner/owner.router.js";
+import "./modules/wildcapture/vesselregistration/vesselreg.router.js";
+
+// ✅ Swagger imports
+import swaggerUi from "swagger-ui-express";
+import { buildSwaggerSpec } from "./config/swagger.js";
 
 const app = express();
 
@@ -13,15 +18,25 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 app.use(cookieParser());
 
-app.use('/api', ownerRouter);
+// ✅ Swagger route
+const swaggerSpec = buildSwaggerSpec();
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// ✅ Your API routes
+app.use("/api", ownerRouter);
+app.use("/api/vessels", await import("./modules/wildcapture/vesselregistration/vesselreg.router.js").then(mod => mod.default));
 
 app.get("/db-test", async (req, res) => {
   try {
-    const client = (db.client && db.client.config && db.client.config.client) || '';
-    const sql = client.includes('sqlite') ? "SELECT datetime('now') as now" : "SELECT NOW() as now";
+    const client =
+      (db.client && db.client.config && db.client.config.client) || "";
+    const sql = client.includes("sqlite")
+      ? "SELECT datetime('now') as now"
+      : "SELECT NOW() as now";
+
     const result = await db.raw(sql);
 
     // Normalize result across drivers (Postgres returns { rows }, sqlite returns array)
@@ -30,14 +45,15 @@ app.get("/db-test", async (req, res) => {
 
     res.json({ success: true, time });
   } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({ success: false, message: 'Database connection error' });
+    console.error("Database connection error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Database connection error" });
   }
 });
 
-
-app.get('/', (req, res) => {
-  res.send('Rootverse Backend is running');
+app.get("/", (req, res) => {
+  res.send("Rootverse Backend is running");
 });
 
 export default app;
