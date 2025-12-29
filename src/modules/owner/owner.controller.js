@@ -1,4 +1,4 @@
-import { registerOwner, verifyOwnerService } from "./owner.service.js";
+import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService } from "./owner.service.js";
 
 export async function createOwner(req, res) {
     try {
@@ -25,3 +25,36 @@ export async function verifyOwnerController(req, res) {
         res.status(400).json({ error: error.message });
     }
 }
+
+export async function listOwners(req, res) {
+    try {
+        const owners = await listAllOwners();
+        res.status(200).json(owners);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function getOwnerController(req, res) {
+    try {
+        const { id } = req.params;
+        const owner = await getOwnerService(id);
+        if (!owner) return res.status(404).json({ error: "Owner not found" });
+        res.status(200).json(owner);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function updateOwnerController(req, res) {
+    try {
+        const { id } = req.params;
+        let payload = req.body;
+        if (typeof req.body.data === 'string') payload = JSON.parse(req.body.data);
+        const owner = await updateOwnerService(id, payload);
+        res.status(200).json(owner);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
