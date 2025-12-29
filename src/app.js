@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import db from './config/db.js';
 import ownerRouter from './modules/owner/owner.router.js';
+import stateRouter from './modules/state/state.router.js';
+import districtRouter from './modules/district/district.router.js';
 
 
 const app = express();
@@ -17,6 +19,8 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 
 app.use('/api', ownerRouter);
+app.use('/api', stateRouter);
+app.use('/api', districtRouter);
 
 app.get("/db-test", async (req, res) => {
   try {
