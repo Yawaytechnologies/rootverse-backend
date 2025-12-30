@@ -4,6 +4,7 @@ import {
   getVessel,
   getVesselList,
   updateVessel,
+  removeVessel,
 } from "./vesselreg.service.js";
 
 function sendError(res, err) {
@@ -27,8 +28,11 @@ export async function getVesselById(req, res) {
   try {
     const { vesselId } = req.params;
     const row = await getVessel(vesselId);
-    if (!row)
+
+    if (!row) {
       return res.status(404).json({ success: false, message: "Vessel not found" });
+    }
+
     return res.json({ success: true, data: row });
   } catch (err) {
     return sendError(res, err);
@@ -48,9 +52,27 @@ export async function patchVessel(req, res) {
   try {
     const { vesselId } = req.params;
     const row = await updateVessel(vesselId, req.body);
-    if (!row)
+
+    if (!row) {
       return res.status(404).json({ success: false, message: "Vessel not found" });
+    }
+
     return res.json({ success: true, data: row });
+  } catch (err) {
+    return sendError(res, err);
+  }
+}
+
+export async function deleteVessel(req, res) {
+  try {
+    const { vesselId } = req.params;
+    const ok = await removeVessel(vesselId);
+
+    if (!ok) {
+      return res.status(404).json({ success: false, message: "Vessel not found" });
+    }
+
+    return res.json({ success: true, message: "Vessel deleted" });
   } catch (err) {
     return sendError(res, err);
   }

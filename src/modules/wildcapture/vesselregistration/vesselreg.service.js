@@ -12,9 +12,7 @@ const ALLOWED_METHODS = new Set(["Trawl", "Gillnet", "Longline", "Purse seine"])
 function normalizeMethods(v) {
   if (v == null) return [];
   const arr = Array.isArray(v) ? v : [v];
-  return arr
-    .map((x) => String(x).trim())
-    .filter(Boolean);
+  return arr.map((x) => String(x).trim()).filter(Boolean);
 }
 
 function validateCreate(payload) {
@@ -34,10 +32,8 @@ function validateCreate(payload) {
 
   const methods = normalizeMethods(payload.allowed_fishing_methods);
 
-  // optional strict check
   const invalid = methods.filter((m) => !ALLOWED_METHODS.has(m));
-  if (invalid.length)
-    badRequest(`Invalid fishing methods: ${invalid.join(", ")}`);
+  if (invalid.length) badRequest(`Invalid fishing methods: ${invalid.join(", ")}`);
 
   return {
     ...payload,
@@ -67,14 +63,17 @@ export async function updateVessel(vesselId, patch) {
   if (!vesselId) badRequest("vesselId is required");
   if (!patch || typeof patch !== "object") badRequest("Patch payload required");
 
-  // normalize methods if present
   if (patch.allowed_fishing_methods !== undefined) {
     const methods = normalizeMethods(patch.allowed_fishing_methods);
     const invalid = methods.filter((m) => !ALLOWED_METHODS.has(m));
-    if (invalid.length)
-      badRequest(`Invalid fishing methods: ${invalid.join(", ")}`);
+    if (invalid.length) badRequest(`Invalid fishing methods: ${invalid.join(", ")}`);
     patch.allowed_fishing_methods = methods;
   }
 
   return VesselModel.patchVessel(String(vesselId).trim(), patch);
+}
+
+export async function removeVessel(vesselId) {
+  if (!vesselId) badRequest("vesselId is required");
+  return VesselModel.deleteVessel(String(vesselId).trim());
 }
