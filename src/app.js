@@ -1,16 +1,14 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import cookieParser from "cookie-parser";
-import db from "./config/db.js";
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import db from './config/db.js';
+import ownerRouter from './modules/owner/owner.router.js';
+import stateRouter from './modules/state/state.router.js';
+import districtRouter from './modules/district/district.router.js';
+import qrsRouter from './modules/qrs/qrs.router.js'
 
-import ownerRouter from "./modules/owner/owner.router.js";
-import "./modules/wildcapture/vesselregistration/vesselreg.router.js";
-
-// ✅ Swagger imports
-import swaggerUi from "swagger-ui-express";
-import { buildSwaggerSpec } from "./config/swagger.js";
 
 const app = express();
 
@@ -21,13 +19,10 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
-// ✅ Swagger route
-const swaggerSpec = buildSwaggerSpec();
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// ✅ Your API routes
-app.use("/api", ownerRouter);
-app.use("/api/vessels", await import("./modules/wildcapture/vesselregistration/vesselreg.router.js").then(mod => mod.default));
+app.use('/api', ownerRouter);
+app.use('/api', stateRouter);
+app.use('/api', districtRouter);
+app.use('/api', qrsRouter);
 
 app.get("/db-test", async (req, res) => {
   try {
