@@ -9,6 +9,7 @@ import stateRouter from './modules/state/state.router.js';
 import districtRouter from './modules/district/district.router.js';
 import qrsRouter from './modules/qrs/qrs.router.js'
 import vesselRegRouter from './modules/wildcapture/vesselregistration/vesselreg.router.js';
+import tripPlanRouter from './modules/trip-planning/trip_plan_router.js'
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api', stateRouter);
 app.use('/api', districtRouter);
 app.use('/api', qrsRouter);
 app.use('/api/vessels', vesselRegRouter);
+app.use('/api', tripPlanRouter);
 
 app.get("/db-test", async (req, res) => {
   try {
