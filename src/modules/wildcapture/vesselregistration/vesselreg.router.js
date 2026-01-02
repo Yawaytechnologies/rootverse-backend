@@ -11,6 +11,7 @@ import {
 const router = express.Router();
 
 router.post("/", createVessel);
+router.post("vessel", createVessel); // support both / and /vessel for creation
 router.get("/", getAllVessels);
 router.get("/:vesselId", getVesselById);
 router.patch("/:vesselId", patchVessel);

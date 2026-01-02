@@ -24,7 +24,7 @@ app.use('/api', ownerRouter);
 app.use('/api', stateRouter);
 app.use('/api', districtRouter);
 app.use('/api', qrsRouter);
-app.use('/api', vesselRegRouter);
+app.use('/api/vessels', vesselRegRouter);
 
 app.get("/db-test", async (req, res) => {
   try {
