@@ -11,4 +11,5 @@ router.get("/owner", listOwners);
 router.get("/owner/:id", getOwnerController);
 router.put("/owner/:id", upload.any(), updateOwnerController);
 
+
 export default router;
