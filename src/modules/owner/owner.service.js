@@ -116,6 +116,34 @@ export async function updateOwnerService(id, updates) {
     await updateOwner(id, updates);
     const owner = await getOwnerById(id);
     return formatOwner(owner);
+
+
+
 }
+
+
+export async function fetchUsersByRootverseType(rootverse_type) {
+  // Call the model
+  const users = await getByRootverseType(rootverse_type);
+
+  // Add progress calculation (verified vs pending)
+  const verifiedCount = users.filter(u => u.verification_status === "VERIFIED").length;
+  const pendingCount = users.filter(u => u.verification_status === "PENDING").length;
+  const total = users.length;
+
+  return {
+    rootverse_type,
+    total,
+    progress: {
+      verified: verifiedCount,
+      pending: pendingCount,
+      percentage_verified: total > 0 ? ((verifiedCount / total) * 100).toFixed(2) : "0.00"
+    },
+    users
+  };
+}
+
+
+
 
 
