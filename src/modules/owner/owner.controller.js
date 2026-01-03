@@ -1,4 +1,4 @@
-import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService } from "./owner.service.js";
+import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType } from "./owner.service.js";
 
 export async function createOwner(req, res) {
     try {
@@ -57,4 +57,23 @@ export async function updateOwnerController(req, res) {
         res.status(400).json({ error: error.message });
     }
 }
+
+
+export async function getUsersByRootverseTypeController(req, res) {
+  try {
+    const { rootverse_type } = req.params;
+
+    const validTypes = ["WILD_CAPTURE", "AQUACULTURE", "MARICULTURE"];
+    if (!validTypes.includes(rootverse_type)) {
+      return res.status(400).json({ error: "Invalid rootverse_type" });
+    }
+
+    const data = await fetchUsersByRootverseType(rootverse_type);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 
