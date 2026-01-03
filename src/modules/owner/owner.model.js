@@ -50,10 +50,15 @@ export function deleteOwner(id) {
     return db(TABLE).where({ id }).del();
 }
 
+
+
 export function verifyOwner(id) {
     return db(TABLE)
         .where({ id })
         .update({ verification_status: "VERIFIED", updated_at: db.fn.now() })
         .returning("*");
 }
+
+
+
 
