@@ -1,31 +1,26 @@
-// src/modules/wildcapture/vesselreg/vesselreg.model.js
 import db from "../../../config/db.js";
 
 const VESSEL_TABLE = "vessel_registration";
-const SEQ_TABLE = "id_sequences"; // make sure you have this migration too
+const SEQ_TABLE = "id_sequences";
 
-// ---- RV ID config (matches your rv_vessel_id length 15) ----
+// ---- RV ID config ----
 const ID_PREFIX = "RV-VES";
 const DEFAULT_REGION = "TN";
-const PAD_LEN = 4; // RV-VES-TN-0001 => 14 chars (fits in varchar(15))
+const PAD_LEN = 4; // RV-VES-TN-0001 fits in varchar(15)
 
 /** ---------------------- JSON helpers ---------------------- **/
 function toJsonString(v) {
-  if (v == null) return null; // your migration allows nullable
+  if (v == null) return null;
   if (Array.isArray(v)) return JSON.stringify(v);
 
   if (typeof v === "string") {
-    // if user sends already-json string, keep it
     try {
-      const parsed = JSON.parse(v);
-      return JSON.stringify(parsed);
+      return JSON.stringify(JSON.parse(v));
     } catch {
-      // if it's plain string, wrap as array (optional)
       return JSON.stringify([v]);
     }
   }
 
-  // fallback
   return JSON.stringify([String(v)]);
 }
 
@@ -35,10 +30,9 @@ function fromJsonString(v) {
   if (typeof v !== "string") return null;
 
   try {
-    const parsed = JSON.parse(v);
-    return parsed;
+    return JSON.parse(v);
   } catch {
-    return v; // return raw string if not JSON
+    return v;
   }
 }
 
@@ -52,7 +46,6 @@ async function ensureSequenceRow(trx, key) {
   const row = await trx(SEQ_TABLE).where({ key }).forUpdate().first();
   if (row) return row;
 
-  // row doesn't exist -> create with next_value = 2, return "1" for current
   await trx(SEQ_TABLE).insert({
     key,
     next_value: 2,
@@ -63,35 +56,24 @@ async function ensureSequenceRow(trx, key) {
 }
 
 async function nextSequenceValue(trx, key) {
-  try {
-    const row = await ensureSequenceRow(trx, key);
+  const row = await ensureSequenceRow(trx, key);
 
-    // pg may return bigint as string
-    const current = typeof row.next_value === "string"
+  const current =
+    typeof row.next_value === "string"
       ? BigInt(row.next_value)
       : BigInt(row.next_value ?? 1);
 
-    const next = current + 1n;
+  const next = current + 1n;
 
-    await trx(SEQ_TABLE).where({ key }).update({
-      next_value: next.toString(),
-      updated_at: trx.fn.now(),
-    });
+  await trx(SEQ_TABLE).where({ key }).update({
+    next_value: next.toString(),
+    updated_at: trx.fn.now(),
+  });
 
-    return current;
-  } catch (err) {
-    // common issue: id_sequences table missing
-    if (String(err?.message || "").includes(`relation "${SEQ_TABLE}" does not exist`)) {
-      throw new Error(
-        `Missing table "${SEQ_TABLE}". Run the id_sequences migration first (knex migrate:latest).`
-      );
-    }
-    throw err;
-  }
+  return current;
 }
 
 function buildRvVesselId({ region = DEFAULT_REGION, seq }) {
-  // Example: RV-VES-TN-0001
   return `${ID_PREFIX}-${region}-${padN(seq, PAD_LEN)}`;
 }
 
@@ -145,9 +127,8 @@ function mapRow(row) {
 
 /** ---------------------- CRUD ---------------------- **/
 
-// Create vessel (auto-generates rv_vessel_id if not provided)
 export async function createVessel(payload, opts = {}) {
-  const region = opts.region || DEFAULT_REGION;
+  const region = (opts.region || DEFAULT_REGION).toUpperCase();
   const seqKey = `${ID_PREFIX}-${region}`;
 
   return db.transaction(async (trx) => {
@@ -171,38 +152,40 @@ export async function createVessel(payload, opts = {}) {
   });
 }
 
-// List all
-export async function getAllVessels() {
-  const rows = await db(VESSEL_TABLE)
-    .select("*")
-    .orderBy("id", "desc");
+export async function listVessels({ limit = 20, offset = 0, q = "" } = {}) {
+  const query = db(VESSEL_TABLE).select("*");
+
+  if (q && q.trim()) {
+    const like = `%${q.trim()}%`;
+    query.where((b) => {
+      b.whereILike("rv_vessel_id", like)
+        .orWhereILike("govt_registration_number", like)
+        .orWhereILike("vessel_name", like)
+        .orWhereILike("home_port", like);
+    });
+  }
+
+  const rows = await query.orderBy("id", "desc").limit(limit).offset(offset);
   return rows.map(mapRow);
 }
 
-// Get by numeric id
 export async function getVesselById(id) {
   const row = await db(VESSEL_TABLE).where({ id }).first();
   return mapRow(row);
 }
 
-// Get by RV vessel id
 export async function getVesselByRvId(rv_vessel_id) {
   const row = await db(VESSEL_TABLE).where({ rv_vessel_id }).first();
   return mapRow(row);
 }
 
-// Update (PATCH style)
-export async function updateVessel(id, updates) {
+export async function patchVessel(id, updates) {
   const patch = normalizeForUpdate(updates);
-
-  const [row] = await db(VESSEL_TABLE)
-    .where({ id })
-    .update(patch, "*");
-
+  const [row] = await db(VESSEL_TABLE).where({ id }).update(patch, "*");
   return mapRow(row);
 }
 
-// Delete
 export async function deleteVessel(id) {
-  return db(VESSEL_TABLE).where({ id }).del();
+  const deleted = await db(VESSEL_TABLE).where({ id }).del();
+  return deleted > 0;
 }

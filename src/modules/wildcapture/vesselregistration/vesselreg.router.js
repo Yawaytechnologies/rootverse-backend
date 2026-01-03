@@ -1,4 +1,3 @@
-// src/modules/wildcapture/vesselreg/vesselreg.router.js
 import express from "express";
 import {
   createVessel,
@@ -10,9 +9,11 @@ import {
 
 const router = express.Router();
 
+// ✅ clean routes
 router.post("/", createVessel);
-router.post("vessel", createVessel); // support both / and /vessel for creation
 router.get("/", getAllVessels);
+
+// vesselId can be numeric id OR RV-VES-...
 router.get("/:vesselId", getVesselById);
 router.patch("/:vesselId", patchVessel);
 router.delete("/:vesselId", deleteVessel);

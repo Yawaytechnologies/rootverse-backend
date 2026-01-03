@@ -1,4 +1,3 @@
-// src/modules/wildcapture/vesselreg/vesselreg.controller.js
 import {
   registerVessel,
   getVessel,
