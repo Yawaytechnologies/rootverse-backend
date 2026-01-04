@@ -1,12 +1,15 @@
-import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType } from "./owner.service.js";
+import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType, verifyOwnerDocs, formatOwner } from "./owner.service.js";
 
 export async function createOwner(req, res) {
     try {
+         console.log("req.files:", req.files);
+         console.log("req.file:", req.file);
+
         let payload = req.body;
         if (typeof req.body.data === 'string') {
             payload = JSON.parse(req.body.data);
         }
-        const profileImage = req.files ? req.files.find(file => file.fieldname === 'profile_image') : null;
+        const profileImage = req.file; 
         const owner = await registerOwner(payload, profileImage);
         res.status(201).json(owner);
     }
@@ -76,4 +79,17 @@ export async function getUsersByRootverseTypeController(req, res) {
   }
 }
 
+
+export async function updateVerification(req, res) {
+  try {
+    const ownerId = req.params.id;
+    const files = req.files;
+    const payload = req.body;
+
+    const owner = await verifyOwnerDocs(ownerId, files, payload);
+    res.json(formatOwner(owner));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 
