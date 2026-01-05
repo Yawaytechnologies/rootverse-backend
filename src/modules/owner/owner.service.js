@@ -1,10 +1,24 @@
-import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner } from "./owner.model.js";
+import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner, generateOwnerId,  } from "./owner.model.js";
 import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
 import { buildProfileKey } from "../../utils/storageKey.js";
 import db from "../../config/db.js";
 import { phone } from "../owner/owner.verification.js";
 
 const ALLOWED = new Set(["PENDING", "VERIFIED"])
+
+async function uploadDoc(userId, file, type) {
+  const key = buildProfileKey({ userId, originalName: file.originalname });
+  const contentType = file.mimetype === 'application/pdf' ? 'application/pdf' : file.mimetype;
+  const { error } = await supabase.storage
+    .from(SUPABASE_BUCKET)
+    .upload(key, file.buffer, { contentType, upsert: true });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(key);
+  return { key, url: data.publicUrl };
+}
+
 
 export function formatOwner(row) {
     if (!row) return null;
@@ -33,9 +47,13 @@ export async function registerOwner(payload, profileImage) {
         throw new Error("Missing required fields.");
     }
 
+    // Generate owner_id
+    const owner_id = await generateOwnerId();
+
     let created = null;
     try {
         const rows = await createOwner({
+            owner_id,
             username,
             phone_no,
             address,
@@ -116,6 +134,70 @@ export async function updateOwnerService(id, updates) {
     await updateOwner(id, updates);
     const owner = await getOwnerById(id);
     return formatOwner(owner);
+
+
+
+}
+
+
+export async function fetchUsersByRootverseType(rootverse_type) {
+  // Call the model
+  const users = await getByRootverseType(rootverse_type);
+
+  // Add progress calculation (verified vs pending)
+  const verifiedCount = users.filter(u => u.verification_status === "VERIFIED").length;
+  const pendingCount = users.filter(u => u.verification_status === "PENDING").length;
+  const total = users.length;
+
+  return {
+    rootverse_type,
+    total,
+    progress: {
+      verified: verifiedCount,
+      pending: pendingCount,
+      percentage_verified: total > 0 ? ((verifiedCount / total) * 100).toFixed(2) : "0.00"
+    },
+    users
+  };
+}
+
+
+export async function verifyOwnerDocs(id, files, payload ={}){
+    const updates ={};
+      if (payload?.aadhar_number) updates.aadhar_number = payload.aadhar_number;
+      if (payload?.pan_number) updates.pan_number = payload.pan_number;
+      if (payload?.govt_id) updates.govt_id = payload.govt_id;
+
+      if (files?.aadhar?.[0]) {
+      const { key, url } = await uploadDoc(id, files.aadhar[0], "aadhar");
+      updates.aadhar_pdf_key = key;
+      updates.aadhar_pdf_url = url;
+    }
+
+     // PAN file
+     if (files?.pan?.[0]) {
+     const { key, url } = await uploadDoc(id, files.pan[0], "pan");
+     updates.pan_pdf_key = key;
+     updates.pan_pdf_url = url;
+     }
+
+    // Govt ID file
+    if (files?.govt?.[0]) {
+    const { key, url } = await uploadDoc(id, files.govt[0], "govt");
+    updates.govt_pdf_key = key;
+    updates.govt_pdf_url = url;
+   }
+     updates.verification_status = "VERIFIED";
+  updates.updated_at = db.fn.now();
+
+  await updateOwner(id, updates);
+  const owner = await getOwnerById(id);
+  return owner;
+
+
+
+
+
 }
 
 

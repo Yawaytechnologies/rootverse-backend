@@ -2,6 +2,13 @@ import db from '../../config/db.js';
 
 const TABLE = "rootverse_users";
 
+
+export async function generateOwnerId() {
+  const result = await db(TABLE).max("id as maxId").first();
+  const nextId = (result?.maxId || 0) + 1;
+  return `OWN-${String(nextId).padStart(4, "0")}`;
+}
+
 export function createOwner(payload) {
     return db(TABLE).insert(payload).returning("*");
 }
@@ -50,10 +57,15 @@ export function deleteOwner(id) {
     return db(TABLE).where({ id }).del();
 }
 
+
+
 export function verifyOwner(id) {
     return db(TABLE)
         .where({ id })
         .update({ verification_status: "VERIFIED", updated_at: db.fn.now() })
         .returning("*");
 }
+
+
+
 

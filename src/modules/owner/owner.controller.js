@@ -1,12 +1,15 @@
-import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService } from "./owner.service.js";
+import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType, verifyOwnerDocs, formatOwner } from "./owner.service.js";
 
 export async function createOwner(req, res) {
     try {
+         console.log("req.files:", req.files);
+         console.log("req.file:", req.file);
+
         let payload = req.body;
         if (typeof req.body.data === 'string') {
             payload = JSON.parse(req.body.data);
         }
-        const profileImage = req.files ? req.files.find(file => file.fieldname === 'profile_image') : null;
+        const profileImage = req.file; 
         const owner = await registerOwner(payload, profileImage);
         res.status(201).json(owner);
     }
@@ -56,5 +59,37 @@ export async function updateOwnerController(req, res) {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
+}
+
+
+export async function getUsersByRootverseTypeController(req, res) {
+  try {
+    const { rootverse_type } = req.params;
+
+    const validTypes = ["WILD_CAPTURE", "AQUACULTURE", "MARICULTURE"];
+    if (!validTypes.includes(rootverse_type)) {
+      return res.status(400).json({ error: "Invalid rootverse_type" });
+    }
+
+    const data = await fetchUsersByRootverseType(rootverse_type);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+
+export async function updateVerification(req, res) {
+  try {
+    const ownerId = req.params.id;
+    const files = req.files;
+    const payload = req.body;
+
+    const owner = await verifyOwnerDocs(ownerId, files, payload);
+    res.json(formatOwner(owner));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 }
 
