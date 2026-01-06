@@ -1,4 +1,4 @@
-import { createTrips, getAllTrip, getTriPlanById, updateTrip, deleteTrip, approveTripPlan } from "./trip_plan_model.js";
+import { createTrips, getAllTrip, getTriPlanById, updateTrip, deleteTrip, approveTripPlan, getbyownerCode } from "./trip_plan_model.js";
 import { nanoid } from "nanoid";
 
 export async function createTripPlanService(payload){
@@ -33,6 +33,12 @@ export async function deleteTripPlanService(id){
 export async function approveTripPlanService(id) {
   return approveTripPlan(id);
 }
+
+export async function getByOwnerCodeService(owner_code){
+    return getbyownerCode(owner_code)
+}
+
+
 
 
 
