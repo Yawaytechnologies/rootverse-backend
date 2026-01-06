@@ -33,4 +33,9 @@ export async function approveTripPlan(id) {
 }
 
 
+export async function getbyownerCode(owner_code){
+    return db('trip_plans')
+    .where("owner_code", owner_code)
+}
+
 
