@@ -1,12 +1,11 @@
 import db from "../../../config/db.js";
 
 const VESSEL_TABLE = "vessel_registration";
-const SEQ_TABLE = "id_sequences";
 
 // ---- RV ID config ----
 const ID_PREFIX = "RV-VES";
 const DEFAULT_REGION = "TN";
-const PAD_LEN = 4; // RV-VES-TN-0001 fits in varchar(15)
+const PAD_LEN = 6; // RV-VES-TN-000001 (safe long-term)
 
 /** ---------------------- JSON helpers ---------------------- **/
 function toJsonString(v) {
@@ -41,46 +40,13 @@ function padN(n, len) {
   return s.length >= len ? s : "0".repeat(len - s.length) + s;
 }
 
-/** ---------------------- Sequence helpers ---------------------- **/
-async function ensureSequenceRow(trx, key) {
-  const row = await trx(SEQ_TABLE).where({ key }).forUpdate().first();
-  if (row) return row;
-
-  await trx(SEQ_TABLE).insert({
-    key,
-    next_value: 2,
-    updated_at: trx.fn.now(),
-  });
-
-  return { key, next_value: 1 };
-}
-
-async function nextSequenceValue(trx, key) {
-  const row = await ensureSequenceRow(trx, key);
-
-  const current =
-    typeof row.next_value === "string"
-      ? BigInt(row.next_value)
-      : BigInt(row.next_value ?? 1);
-
-  const next = current + 1n;
-
-  await trx(SEQ_TABLE).where({ key }).update({
-    next_value: next.toString(),
-    updated_at: trx.fn.now(),
-  });
-
-  return current;
-}
-
-function buildRvVesselId({ region = DEFAULT_REGION, seq }) {
-  return `${ID_PREFIX}-${region}-${padN(seq, PAD_LEN)}`;
+function buildRvVesselId({ region = DEFAULT_REGION, id }) {
+  return `${ID_PREFIX}-${region}-${padN(id, PAD_LEN)}`;
 }
 
 /** ---------------------- Normalizers ---------------------- **/
 function normalizeForInsert(payload = {}) {
   return {
-    rv_vessel_id: payload.rv_vessel_id?.trim() || null,
     govt_registration_number: payload.govt_registration_number?.trim(),
     local_identifier: payload.local_identifier?.trim() ?? null,
     vessel_name: payload.vessel_name?.trim(),
@@ -128,25 +94,37 @@ function mapRow(row) {
 /** ---------------------- CRUD ---------------------- **/
 
 export async function createVessel(payload, opts = {}) {
-  const region = (opts.region || DEFAULT_REGION).toUpperCase();
-  const seqKey = `${ID_PREFIX}-${region}`;
+  const region = (opts.region || DEFAULT_REGION).toUpperCase().trim();
 
   return db.transaction(async (trx) => {
     const data = normalizeForInsert(payload);
 
-    if (!data.rv_vessel_id) {
-      const seq = await nextSequenceValue(trx, seqKey);
-      data.rv_vessel_id = buildRvVesselId({ region, seq: seq.toString() });
-    }
-
-    const [created] = await trx(VESSEL_TABLE).insert(
+    // 1) Insert first WITHOUT rv_vessel_id
+    const [inserted] = await trx(VESSEL_TABLE).insert(
       {
         ...data,
+        rv_vessel_id: null, // must be nullable in DB
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
-      "*"
+      ["id"]
     );
+
+    const id = inserted.id;
+
+    // 2) Build rv_vessel_id based on DB id
+    const rv_vessel_id = buildRvVesselId({ region, id });
+
+    // 3) Update same row with final rv_vessel_id
+    const [created] = await trx(VESSEL_TABLE)
+      .where({ id })
+      .update(
+        {
+          rv_vessel_id,
+          updated_at: trx.fn.now(),
+        },
+        "*"
+      );
 
     return mapRow(created);
   });
