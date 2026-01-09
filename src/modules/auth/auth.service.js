@@ -1,27 +1,22 @@
-export async function loginOrCreateUser(mobileNumber) {
-  let user = await knex("users")
-    .where({ mobile_number: mobileNumber })
+import db from "../../config/db.js";
+import { signToken } from "../auth/utils/token.js";
+
+export const loginService = async (req) => {
+  const cleanPhone = String(req.body?.phone_no || "").trim();
+  if (!cleanPhone) throw new Error("phone_no is required");
+
+  const user = await db("rootverse_users")
+    .select("id", "rootverse_type", "verification_status", "phone_no")
+    .where({ phone_no: cleanPhone })
     .first();
 
-  if (!user) {
-    [user] = await knex("users")
-      .insert({ mobile_number: mobileNumber })
-      .returning("*");
-  }
+  if (!user) throw new Error("User not found");
+  if (user.verification_status !== "VERIFIED") throw new Error("User not verified");
 
-  const accessToken = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET,
-    { expiresIn: "15m" }
-  );
-
-  const refreshToken = generateRefreshToken();
-
-  await knex("refresh_tokens").insert({
+  const token = signToken({
     user_id: user.id,
-    token: refreshToken,
-    expires_at: knex.raw("NOW() + INTERVAL '30 days'"),
+    role: user.rootverse_type,
   });
 
-  return { accessToken, refreshToken, user };
-}
+  return token;
+};
