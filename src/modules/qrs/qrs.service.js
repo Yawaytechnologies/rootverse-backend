@@ -1,4 +1,7 @@
-import { reserveQr, reserveBulkQrs, listQrs } from "./qrs.model.js";
+import { reserveQr, reserveBulkQrs, listQrs, getQrByCodePopulate, updateQr, deleteQr } from "./qrs.model.js";
+import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
+import { buildProfileKey } from "../../utils/storageKey.js";
+import db from "../../config/db.js";
 
 
 const ALLOWED_TYPES = new Set(["CRATE", "TRIP", "VESSEL"]);
@@ -9,7 +12,7 @@ function normType(type) {
 }
 
 export async function reserveQrservice(type="CRATE"){
-    if(!type) throw new error("type is required");
+    if(!type) throw new Error("type is required");
     return reserveQr({type});
 
 }
@@ -26,12 +29,216 @@ export async function reserveBulkService(type = "CRATE", count = 10) {
   return reserveBulkQrs({ type: t, count: c });
 }
 
-export async function listQrsService({ type, status, page, limit }) {
+export async function listQrsService({ type, status, page, limit, populate }) {
   const t = type ? normType(type) : undefined;
   const s = status ? String(status).trim().toUpperCase() : undefined;
+  const p = populate === 'true' || populate === true || populate === '1';
 
   if (t && !ALLOWED_TYPES.has(t)) throw new Error(`Invalid type: ${t}`);
   if (s && !["NEW", "FILLED"].includes(s)) throw new Error(`Invalid status: ${s}`);
 
-  return listQrs({ type: t, status: s, page, limit });
+  return listQrs({ type: t, status: s, page, limit, populate: p });
 }
+
+export async function getFilledQrByCode(code) {
+  if (!code) throw new Error('code is required');
+  const qr = await getQrByCodePopulate(code);
+  if (!qr) throw new Error('QR not found');
+  if (String(qr.status || '').trim().toUpperCase() !== 'FILLED') throw new Error('QR is not FILLED');
+  return qr;
+}
+
+export async function uploadImagesToSupabase(files, qrId) {
+  if (!files || files.length === 0) {
+    throw new Error("No files provided");
+  }
+
+  if (files.length > 3) {
+    throw new Error("Maximum 3 images allowed");
+  }
+
+  const uploadedImages = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+
+    // Validate file type
+    if (!file.mimetype.startsWith("image/")) {
+      throw new Error(`File ${i + 1} is not an image`);
+    }
+
+    // Generate unique key for the image
+    const key = buildProfileKey({
+      userId: qrId,
+      originalName: file.originalname,
+      suffix: `_${i + 1}`
+    });
+
+    // Upload to Supabase
+    const { error } = await supabase.storage
+      .from(SUPABASE_BUCKET)
+      .upload(key, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload image ${i + 1}: ${error.message}`);
+    }
+
+    // Get public URL
+    const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(key);
+
+    uploadedImages.push({
+      key,
+      url: data.publicUrl
+    });
+  }
+
+  return uploadedImages;
+}
+
+export async function updateQrWithImages(code, images, updatesFromBody = {}) {
+  // Get QR by code first
+  const qr = await getQrByCodePopulate(code);
+  if (!qr) {
+    throw new Error("QR not found");
+  }
+
+  // Prepare update data
+  const updates = {};
+
+  // Store first image into existing image fields
+  if (images.length > 0) {
+    updates.image_key = images[0].key;
+    updates.image_url = images[0].url;
+  }
+
+  // Status: prefer provided status, otherwise default to FILLED
+  updates.status = updatesFromBody.status ? String(updatesFromBody.status).trim().toUpperCase() : "FILLED";
+
+  // Helper to check and normalize foreign ids
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'rv_vessel_id')) {
+    const raw = updatesFromBody.rv_vessel_id;
+
+    // null / empty
+    if (raw === null || raw === 'null' || raw === '') {
+      updates.rv_vessel_id = null;
+    } else {
+      // try numeric id first
+      const asNum = Number(raw);
+      if (Number.isInteger(asNum) && asNum > 0) {
+        const vessel = await db('vessel_registration').where({ id: asNum }).first();
+        if (!vessel) throw new Error(`Vessel id ${asNum} not found`);
+        updates.rv_vessel_id = asNum;
+      } else {
+        // treat raw as code or name -> lookup by rv_vessel_id or vessel_name
+        const vessel = await db('vessel_registration')
+          .where('rv_vessel_id', String(raw))
+          .orWhere('vessel_name', String(raw))
+          .first();
+        if (!vessel) throw new Error(`Vessel not found for identifier: ${raw}`);
+        updates.rv_vessel_id = vessel.id;
+      }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'fish_id')) {
+    const raw = updatesFromBody.fish_id;
+
+    if (raw === null || raw === 'null' || raw === '') {
+      updates.fish_id = null;
+    } else {
+      const asNum = Number(raw);
+      if (Number.isInteger(asNum) && asNum > 0) {
+        const fish = await db('fish-types').where({ id: asNum }).first();
+        if (!fish) throw new Error(`Fish id ${asNum} not found`);
+        updates.fish_id = asNum;
+      } else {
+        // lookup by code or fish_name
+        const fish = await db('fish-types')
+          .where('code', String(raw))
+          .orWhere('fish_name', String(raw))
+          .first();
+        if (!fish) throw new Error(`Fish not found for identifier: ${raw}`);
+        updates.fish_id = fish.id;
+      }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'owner_id')) {
+    const raw = updatesFromBody.owner_id;
+
+    if (raw === null || raw === 'null' || raw === '') {
+      updates.owner_id = null;
+    } else {
+      const asNum = Number(raw);
+      if (Number.isInteger(asNum) && asNum > 0) {
+        const owner = await db('rootverse_users').where({ id: asNum }).first();
+        if (!owner) throw new Error(`Owner id ${asNum} not found`);
+        updates.owner_id = asNum;
+      } else {
+        const rawStr = String(raw).trim();
+        const rawLower = rawStr.toLowerCase();
+        const digits = rawStr.replace(/\D/g, "");
+
+        // try several lookups: username (case-insensitive), phone_no (exact or digits-only), username exact fallback
+        let owner = await db('rootverse_users').whereRaw('lower(username) = ?', [rawLower]).first();
+        if (!owner && digits) owner = await db('rootverse_users').where('phone_no', digits).first();
+        if (!owner) owner = await db('rootverse_users').where('phone_no', rawStr).first();
+        if (!owner) owner = await db('rootverse_users').where('username', rawStr).first();
+        // try owner code (owner_id column) case-insensitively
+        if (!owner) owner = await db('rootverse_users').whereRaw('lower(owner_id) = ?', [rawLower]).first();
+        if (!owner) owner = await db('rootverse_users').where('owner_id', rawStr).first();
+
+        if (!owner) throw new Error(`Owner not found for identifier: ${raw}`);
+        updates.owner_id = owner.id;
+      }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'trip_id')) {
+    const raw = updatesFromBody.trip_id;
+
+    if (raw === null || raw === 'null' || raw === '') {
+      updates.trip_id = null;
+    } else {
+      const asNum = Number(raw);
+      if (Number.isInteger(asNum) && asNum > 0) {
+        const trip = await db('trip_plans').where({ id: asNum }).first();
+        if (!trip) throw new Error(`Trip id ${asNum} not found`);
+        updates.trip_id = asNum;
+      } else {
+        // lookup by trip_id (string identifier)
+        const trip = await db('trip_plans').where('trip_id', String(raw)).first();
+        if (!trip) throw new Error(`Trip not found for identifier: ${raw}`);
+        updates.trip_id = trip.id;
+      }
+    }
+  }
+
+  // Optional simple fields
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'weight')) {
+    const w = updatesFromBody.weight === '' ? null : updatesFromBody.weight;
+    updates.weight = w;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'date')) {
+    updates.date = updatesFromBody.date === '' ? null : updatesFromBody.date;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'time')) {
+    updates.time = updatesFromBody.time === '' ? null : updatesFromBody.time;
+  }
+
+  // Update the QR record
+  const updatedQr = await updateQr(qr.id, updates);
+
+  // If QR status changed to FILLED and has trip_id, increment trip count
+  if (updates.status === 'FILLED' && updatedQr.trip_id) {
+    await db('trip_plans')
+      .where({ id: updatedQr.trip_id })
+      .increment('count', 1);
+  }
+
+  return updatedQr;
+}
+

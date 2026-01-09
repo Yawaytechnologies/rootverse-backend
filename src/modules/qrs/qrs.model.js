@@ -1,6 +1,10 @@
 import db from "../../config/db.js";
 
 const TABLE = "qrs";
+const FISH_TABLE = "fish-types";
+const VESSEL_TABLE = "vessel_registration";
+const USER_TABLE = "rootverse_users";
+const TRIP_TABLE = "trip_plans";
 
 function pad6n(n) {
     const s = String(n)
@@ -14,6 +18,46 @@ function normalizeType(type) {
 function buildCode(type, id){
     return `RV-${type}-${pad6n(id)}`;
 
+}
+
+
+export async function getQrByIdPopulated(id) {
+  const qr = await db(TABLE).where({ id }).first();
+  if (!qr) return null;
+
+  const [vessel, fish, owner, trip] = await Promise.all([
+    qr.rv_vessel_id ? db(VESSEL_TABLE).where({ id: qr.rv_vessel_id }).first() : null,
+    qr.fish_id ? db(FISH_TABLE).where({ id: qr.fish_id }).first() : null,
+    qr.owner_id ? db(USER_TABLE).where({ id: qr.owner_id }).first() : null,
+    qr.trip_id ? db(TRIP_TABLE).where({ id: qr.trip_id }).first() : null,
+  ]);
+
+  // if trip not found but owner exists, try to infer trip by owner_code only
+  let resolvedTrip = trip || null;
+  if (!resolvedTrip && owner) {
+    try {
+      // Find the most recent trip for this owner
+      const found = await db(TRIP_TABLE)
+        .where('owner_code', owner.owner_id)
+        .orderBy('planned_at', 'desc')
+        .first();
+      if (found) resolvedTrip = found;
+    } catch (e) {
+      // ignore lookup errors
+    }
+  }
+
+  return {
+    ...qr,
+    vessel_name: vessel ? vessel.vessel_name : null,
+    fish_name: fish ? (fish.fish_name || fish.name) : null,
+    owner_name: owner ? owner.username : null,
+    vessel: vessel || null,
+    fish: fish || null,
+    owner: owner || null,
+    trip: resolvedTrip || null,
+    trip_value: resolvedTrip ? `${resolvedTrip.count}/${resolvedTrip.qr_count}` : null,
+  };
 }
 
 export async function reserveQr({ type }) {
@@ -71,7 +115,66 @@ export async function reserveBulkQrs({ type, count }) {
 }
 
 /** Milestone 2: list QRs */
-export async function listQrs({ type, status, page = 1, limit = 50 }) {
+// helper: batch populate vessel/fish/owner objects into QR items
+async function populateQrItems(items) {
+  if (!items || items.length === 0) return items;
+
+  const vesselIds = Array.from(new Set(items.map((i) => i.rv_vessel_id).filter((v) => v != null)));
+  const fishIds = Array.from(new Set(items.map((i) => i.fish_id).filter((v) => v != null)));
+  const ownerIds = Array.from(new Set(items.map((i) => i.owner_id).filter((v) => v != null)));
+  const tripIds = Array.from(new Set(items.map((i) => i.trip_id).filter((v) => v != null)));
+
+  const [vessels, fishes, owners, trips] = await Promise.all([
+    vesselIds.length ? db(VESSEL_TABLE).whereIn('id', vesselIds) : [],
+    fishIds.length ? db(FISH_TABLE).whereIn('id', fishIds) : [],
+    ownerIds.length ? db(USER_TABLE).whereIn('id', ownerIds) : [],
+    tripIds.length ? db(TRIP_TABLE).whereIn('id', tripIds) : [],
+  ]);
+
+  const vesselById = Object.fromEntries((vessels || []).map((v) => [v.id, v]));
+  const fishById = Object.fromEntries((fishes || []).map((f) => [f.id, f]));
+  const ownerById = Object.fromEntries((owners || []).map((o) => [o.id, o]));
+  const tripById = Object.fromEntries((trips || []).map((t) => [t.id, t]));
+
+  const results = [];
+  for (const it of items) {
+    const vessel = it.rv_vessel_id ? (vesselById[it.rv_vessel_id] || null) : null;
+    const fish = it.fish_id ? (fishById[it.fish_id] || null) : null;
+    const owner = it.owner_id ? (ownerById[it.owner_id] || null) : null;
+
+    // prefer explicit trip_id if present
+    let tripObj = it.trip_id ? (tripById[it.trip_id] || null) : null;
+
+    // if no trip and owner present, try to find the most recent trip by owner_code
+    if (!tripObj && owner) {
+      try {
+        const found = await db(TRIP_TABLE)
+          .where('owner_code', owner.owner_id)
+          .orderBy('planned_at', 'desc')
+          .first();
+        if (found) tripObj = found;
+      } catch (e) {
+        // ignore lookup failures and continue
+      }
+    }
+
+    results.push({
+      ...it,
+      vessel,
+      fish,
+      owner,
+      vessel_name: (vessel && vessel.vessel_name) || it.vessel_name || null,
+      fish_name: (fish && (fish.fish_name || fish.name)) || it.fish_name || null,
+      owner_name: (owner && owner.username) || it.owner_name || null,
+      trip: tripObj || null,
+      trip_value: tripObj ? `${tripObj.count}/${tripObj.qr_count}` : null,
+    });
+  }
+
+  return results;
+}
+
+export async function listQrs({ type, status, page = 1, limit = 50, populate = false }) {
   const t = type ? normalizeType(type) : null;
   const s = status ? String(status).trim().toUpperCase() : null;
 
@@ -84,19 +187,168 @@ export async function listQrs({ type, status, page = 1, limit = 50 }) {
     if (s) qb.where({ status: s });
   });
 
+  // select additional id fields to allow population without extra queries per item
   const items = await base
     .clone()
-    .select("id", "type", "code", "status", "created_at", "updated_at")
+    .select(
+      "id",
+      "type",
+      "code",
+      "status",
+      "rv_vessel_id",
+      "fish_id",
+      "owner_id",
+      "trip_id",
+      "weight",
+      "date",
+      "time",
+      "image_url",
+      "image_key",
+      "created_at",
+      "updated_at"
+    )
     .orderBy("id", "desc")
     .limit(l)
     .offset(offset);
 
   const [{ count }] = await base.clone().count("* as count");
 
+  const resultItems = populate ? await populateQrItems(items) : items;
+
   return {
     page: p,
     limit: l,
     total: Number(count),
-    items,
+    items: resultItems,
   };
 }
+
+
+export async function updateQrStatus(id, status) {
+  const s = String(status).trim().toUpperCase();
+  const [updated] = await db(TABLE)
+    .where({ id })
+    .update({ status: s, updated_at: db.fn.now() })
+    .returning("*");
+  return updated;
+}
+
+
+
+
+
+
+
+export async function getlistQrs({ type, status, page = 1, limit = 50, populate = false }) {
+  const t = type ? normalizeType(type) : null;
+  const s = status ? String(status).trim().toUpperCase() : null;
+
+  const p = Math.max(1, Number(page || 1));
+  const l = Math.max(1, Math.min(Number(limit || 50), 200));
+  const offset = (p - 1) * l;
+
+  const base = db(`${TABLE} as q`)
+    .leftJoin(`${VESSEL_TABLE} as v`, "q.rv_vessel_id", "v.id")
+    .leftJoin(`${FISH_TABLE} as f`, "q.fish_id", "f.id")
+    .leftJoin(`${USER_TABLE} as u`, "q.owner_id", "u.id")
+    .modify((qb) => {
+      if (t) qb.where("q.type", t);
+      if (s) qb.where("q.status", s);
+    });
+
+  const items = await base
+    .clone()
+    .select(
+      "q.id",
+      "q.type",
+      "q.code",
+      "q.status",
+      "q.rv_vessel_id",
+      "v.vessel_name as vessel_name",
+      "q.fish_id",
+       "f.fish_name as fish_name",
+      "q.owner_id",
+      "u.username as owner_name",
+      "q.weight",
+      "q.date",
+      "q.time",
+      "q.image_url",
+      "q.image_key",
+      "q.created_at",
+      "q.updated_at"
+    )
+    .orderBy("q.id", "desc")
+    .limit(l)
+    .offset(offset);
+
+  const [{ count }] = await base.clone().count("* as count");
+
+  const resultItems = populate ? await populateQrItems(items) : items;
+
+  return {
+    page: p,
+    limit: l,
+    total: Number(count),
+    items: resultItems,
+  };
+}
+
+
+/** ✅ Update full record (including vessel/fish/owner) */
+export async function updateQr(id, updates) {
+  await db(TABLE)
+    .where({ id })
+    .update({ ...updates, updated_at: db.fn.now() });
+  return getQrByIdPopulated(id);
+}
+
+export async function getQrByCodePopulate(code) {
+  const qr = await db(TABLE).where({ code }).first();
+  if (!qr) return null;
+
+  const [vessel, fish, owner, trip] = await Promise.all([
+    qr.rv_vessel_id ? db(VESSEL_TABLE).where({ id: qr.rv_vessel_id }).first() : null,
+    qr.fish_id ? db(FISH_TABLE).where({ id: qr.fish_id }).first() : null,
+    qr.owner_id ? db(USER_TABLE).where({ id: qr.owner_id }).first() : null,
+    qr.trip_id ? db(TRIP_TABLE).where({ id: qr.trip_id }).first() : null,
+  ]);
+
+  // attempt to resolve trip when missing using owner_code only
+  let resolvedTrip = trip || null;
+  if (!resolvedTrip && owner) {
+    try {
+      // Find the most recent trip for this owner
+      const found = await db(TRIP_TABLE)
+        .where('owner_code', owner.owner_id)
+        .orderBy('planned_at', 'desc')
+        .first();
+      if (found) resolvedTrip = found;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  return {
+    ...qr,
+    vessel_name: vessel ? vessel.vessel_name : null,
+    fish_name: fish ? (fish.fish_name || fish.name) : null,
+    owner_name: owner ? owner.username : null,
+    vessel: vessel || null,
+    fish: fish || null,
+    owner: owner || null,
+    trip: resolvedTrip || null,
+    trip_value: resolvedTrip ? `${resolvedTrip.count}/${resolvedTrip.qr_count}` : null,
+  };
+}
+
+
+export function deleteQr(id) {
+  return db(TABLE).where({ id }).del();
+}
+
+
+
+
+
+
+
