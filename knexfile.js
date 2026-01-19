@@ -63,13 +63,18 @@ const knexfile = {
       password: config.DB_password,
       ssl: { rejectUnauthorized: false }
     },
-    pool: { min: 2, max: 10 ,
-       acquireTimeoutMillis: 10000,
-      idleTimeoutMillis: 30000,
+    pool: {
+      min: 2,
+      max: 15,
+      acquireTimeoutMillis: 30000,
+      idleTimeoutMillis: 60000,
       createRetryIntervalMillis: 200,
-
+      destroyTimeoutMillis: 5000,
+      reapIntervalMillis: 1000,
+      createTimeoutMillis: 30000,
+      propagateCreateError: false
     },
-    acquireConnectionTimeout: 10000,
+    acquireConnectionTimeout: 30000,
     migrations: {
       directory: "./migrations",
       tableName: "rootverse_knex_migrations"
