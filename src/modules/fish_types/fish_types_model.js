@@ -13,13 +13,13 @@ export function getallfishTypes(){
 }
 
 export function getbyfishTypesId(id){
-    return db(TABLE).where(id).first();
+    return db(TABLE).where({ id }).first();
 }
 
 export function updateFishTypesById(id, updates){
-    return db(TABLE).where(id).update(updates).returning('*')
+    return db(TABLE).where({ id }).update(updates).returning('*')
 }
 
 export function deleteFishTypesById(id){
-    return db(TABLE).where(id).del()
+    return db(TABLE).where("id", id).del()
 }
