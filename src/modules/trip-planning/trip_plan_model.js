@@ -13,8 +13,9 @@ export function getAllTrip(){
 }
 
 export function getTriPlanById(id){
-   return db(TABLE).where({id}).first();
-   t
+   return db.transaction(async (trx) => {
+       return trx(TABLE).where({id}).first();
+   });
 }
 export function updateTrip(id, updates){
     return db(TABLE).where({id}).update(updates).returning('*')
