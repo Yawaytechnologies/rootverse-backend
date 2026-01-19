@@ -11,7 +11,9 @@ export function getStateById(id) {
 }
 
 export function getAllStates() {
-    return db(TABLE).select("*");
+    return db.transaction(async (trx) => {
+        return trx(TABLE).select("*");
+    });
 }
 
 export function updateState(id, updates) {
