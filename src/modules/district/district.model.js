@@ -5,18 +5,20 @@ const STATE = "states";
 
 /** ✅ Helper: always returns a district row with state_name */
 export function getDistrictByIdPopulated(id) {
-  return db(`${DISTRICT} as d`)
-    .join(`${STATE} as s`, "d.state_id", "s.id")
-    .select(
-      "d.id",
-      "d.name",
-      "d.state_id",
-      "s.name as state_name",
-      "d.created_at",
-      "d.updated_at"
-    )
-    .where("d.id", id)
-    .first();
+  return db.transaction(async (trx) => {
+    return trx(`${DISTRICT} as d`)
+      .join(`${STATE} as s`, "d.state_id", "s.id")
+      .select(
+        "d.id",
+        "d.name",
+        "d.state_id",
+        "s.name as state_name",
+        "d.created_at",
+        "d.updated_at"
+      )
+      .where("d.id", id)
+      .first();
+  });
 }
 
 /** ✅ Create + return populated row */
@@ -66,16 +68,18 @@ export function deleteDistrict(id) {
 
 /** ✅ Populated filter by state */
 export function getDistrictsByStateId(state_id) {
-  return db(`${DISTRICT} as d`)
-    .join(`${STATE} as s`, "d.state_id", "s.id")
-    .select(
-      "d.id",
-      "d.name",
-      "d.state_id",
-      "s.name as state_name",
-      "d.created_at",
-      "d.updated_at"
-    )
-    .where("d.state_id", state_id)
-    .orderBy("d.name", "asc");
+  return db.transaction(async (trx) => {
+    return trx(`${DISTRICT} as d`)
+      .join(`${STATE} as s`, "d.state_id", "s.id")
+      .select(
+        "d.id",
+        "d.name",
+        "d.state_id",
+        "s.name as state_name",
+        "d.created_at",
+        "d.updated_at"
+      )
+      .where("d.state_id", state_id)
+      .orderBy("d.name", "asc");
+  });
 }

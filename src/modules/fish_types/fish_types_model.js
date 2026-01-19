@@ -7,7 +7,9 @@ export function createFishTypes(payload){
 }
 
 export function getallfishTypes(){
-    return db(TABLE).select('*')
+    return db.transaction(async (trx) => {
+        return trx(TABLE).select('*')
+    });
 }
 
 export function getbyfishTypesId(id){

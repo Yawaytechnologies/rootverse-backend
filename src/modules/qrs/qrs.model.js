@@ -303,42 +303,44 @@ export async function updateQr(id, updates) {
 }
 
 export async function getQrByCodePopulate(code) {
-  const qr = await db(TABLE).where({ code }).first();
-  if (!qr) return null;
+  return db.transaction(async (trx) => {
+    const qr = await trx(TABLE).where({ code }).first();
+    if (!qr) return null;
 
-  const [vessel, fish, owner, trip] = await Promise.all([
-    qr.rv_vessel_id ? db(VESSEL_TABLE).where({ id: qr.rv_vessel_id }).first() : null,
-    qr.fish_id ? db(FISH_TABLE).where({ id: qr.fish_id }).first() : null,
-    qr.owner_id ? db(USER_TABLE).where({ id: qr.owner_id }).first() : null,
-    qr.trip_id ? db(TRIP_TABLE).where({ id: qr.trip_id }).first() : null,
-  ]);
+    const [vessel, fish, owner, trip] = await Promise.all([
+      qr.rv_vessel_id ? trx(VESSEL_TABLE).where({ id: qr.rv_vessel_id }).first() : null,
+      qr.fish_id ? trx(FISH_TABLE).where({ id: qr.fish_id }).first() : null,
+      qr.owner_id ? trx(USER_TABLE).where({ id: qr.owner_id }).first() : null,
+      qr.trip_id ? trx(TRIP_TABLE).where({ id: qr.trip_id }).first() : null,
+    ]);
 
-  // attempt to resolve trip when missing using owner_code only
-  let resolvedTrip = trip || null;
-  if (!resolvedTrip && owner) {
-    try {
-      // Find the most recent trip for this owner
-      const found = await db(TRIP_TABLE)
-        .where('owner_code', owner.owner_id)
-        .orderBy('planned_at', 'desc')
-        .first();
-      if (found) resolvedTrip = found;
-    } catch (e) {
-      // ignore
+    // attempt to resolve trip when missing using owner_code only
+    let resolvedTrip = trip || null;
+    if (!resolvedTrip && owner) {
+      try {
+        // Find the most recent trip for this owner
+        const found = await trx(TRIP_TABLE)
+          .where('owner_code', owner.owner_id)
+          .orderBy('planned_at', 'desc')
+          .first();
+        if (found) resolvedTrip = found;
+      } catch (e) {
+        // ignore
+      }
     }
-  }
 
-  return {
-    ...qr,
-    vessel_name: vessel ? vessel.vessel_name : null,
-    fish_name: fish ? (fish.fish_name || fish.name) : null,
-    owner_name: owner ? owner.username : null,
-    vessel: vessel || null,
-    fish: fish || null,
-    owner: owner || null,
-    trip: resolvedTrip || null,
-    trip_value: resolvedTrip ? `${resolvedTrip.count}/${resolvedTrip.qr_count}` : null,
-  };
+    return {
+      ...qr,
+      vessel_name: vessel ? vessel.vessel_name : null,
+      fish_name: fish ? (fish.fish_name || fish.name) : null,
+      owner_name: owner ? owner.username : null,
+      vessel: vessel || null,
+      fish: fish || null,
+      owner: owner || null,
+      trip: resolvedTrip || null,
+      trip_value: resolvedTrip ? `${resolvedTrip.count}/${resolvedTrip.qr_count}` : null,
+    };
+  });
 }
 
 
