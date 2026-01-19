@@ -9,7 +9,7 @@ services:
     buildCommand: |
       npm install
     startCommand: |
-      npm run dev
+      npm start
 
     # OPTIONAL but recommended: run knex migrations on every deploy
     preDeployCommand: |
