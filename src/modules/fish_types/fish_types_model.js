@@ -17,7 +17,7 @@ export function getbyfishTypesId(id){
 }
 
 export function updateFishTypesById(id, updates){
-    return db(TABLE).where({ id }).update(updates).returning('*')
+    return db(TABLE).where({id}).update(updates).returning('*')
 }
 
 export function deleteFishTypesById(id){

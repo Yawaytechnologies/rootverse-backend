@@ -39,8 +39,11 @@ export async function getbyfishTypesIdController(req, res){
 
 export async function updateFishTypesByIdController(req, res){
     try{
-    const {id}= req.params;
-    const {updates} = req.body;
+    const {id} = req.params;
+    const updates = req.body;
+    if (!updates || typeof updates !== 'object') {
+        return res.status(400).json({error: 'Updates must be a valid object'});
+    }
     const fishTypes = await updateFishTypesByIdService(id , updates);
     res.status(201).json(fishTypes)
     }
