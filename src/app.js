@@ -12,6 +12,7 @@ import vesselRegRouter from './modules/wildcapture/vesselregistration/vesselreg.
 import tripPlanRouter from './modules/trip-planning/trip_plan_router.js'
 import fishTypes from './modules/fish_types/fish_types_router.js'
 import loginRoutes from './modules/auth/auth.routes.js';
+import qualityCheckerRouter from './modules/quality_checker/quality.router.js';
 
 
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api', qrsRouter);
 app.use('/api/vessels', vesselRegRouter);
 app.use('/api', tripPlanRouter);
 app.use('/api', fishTypes);
+app.use('/api/quality-checker', qualityCheckerRouter);
 
 app.get("/db-test", async (req, res) => {
   try {
