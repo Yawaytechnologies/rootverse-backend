@@ -2,7 +2,7 @@ import { createQualityChecker, getAllQualityCheckers, getQualityCheckerByCode, u
 
 export async function createQualityCheckerService(payload) {
     try {
-        const [qualityChecker] = await createQualityChecker(payload);
+        const qualityChecker = await createQualityChecker(payload);
         return qualityChecker;
     } catch (error) {
         console.error("Error in createQualityCheckerService:", error);
@@ -32,7 +32,7 @@ export async function getQualityCheckerByCodeService(checker_code) {
 
 export async function updateQualityCheckerByIdService(id, updates) {
     try {
-        const [qualityChecker] = await updateQualityCheckerById(id, updates);
+        const qualityChecker = await updateQualityCheckerById(id, updates);
         return qualityChecker;
     } catch (error) {
         console.error("Error in updateQualityCheckerByIdService:", error);
