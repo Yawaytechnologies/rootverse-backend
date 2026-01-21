@@ -13,6 +13,7 @@ import tripPlanRouter from './modules/trip-planning/trip_plan_router.js'
 import fishTypes from './modules/fish_types/fish_types_router.js'
 import loginRoutes from './modules/auth/auth.routes.js';
 import qualityCheckerRouter from './modules/quality_checker/quality.router.js';
+import userRoutes from './modules/users/user.routes.js';
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 
 app.use('/api/auth',loginRoutes);
+app.use('/api/users',userRoutes);
 app.use('/api', ownerRouter);
 app.use('/api', stateRouter);
 app.use('/api', districtRouter);
