@@ -59,7 +59,7 @@ export async function updateQrImagesController(req, res) {
     const files = req.files;
 
     // Accept optional fill data in body
-    const { rv_vessel_id, fish_id, owner_id, trip_id, weight, date, time, status } = req.body || {};
+    const { rv_vessel_id, fish_id, owner_id, trip_id,  date, time, status } = req.body || {};
 
     if (!files || files.length === 0) {
       return res.status(400).json({ success: false, message: "No images provided" });
@@ -77,7 +77,6 @@ export async function updateQrImagesController(req, res) {
     if (rv_vessel_id !== undefined) updatesFromBody.rv_vessel_id = rv_vessel_id === '' ? null : rv_vessel_id;
     if (fish_id !== undefined) updatesFromBody.fish_id = fish_id === '' ? null : fish_id;
     if (owner_id !== undefined) updatesFromBody.owner_id = owner_id === '' ? null : owner_id;
-    if (weight !== undefined) updatesFromBody.weight = weight === '' ? null : weight;
     if (date !== undefined) updatesFromBody.date = date === '' ? null : date;
     if (time !== undefined) updatesFromBody.time = time === '' ? null : time;
     if (status !== undefined) updatesFromBody.status = status;
@@ -90,6 +89,148 @@ export async function updateQrImagesController(req, res) {
       message: `${uploadedImages.length} image(s) uploaded successfully`,
       qr: updatedQr,
       images: uploadedImages
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+}
+
+export async function fillQrWithQcDetailsController(req, res) {
+  try {
+    const { code } = req.params;
+    const files = req.files;
+
+    // Extract QC details from body
+    const {
+      rv_vessel_id,
+      fish_id,
+      owner_id,
+      trip_id,
+      date,
+      time,
+      weight,
+      quality_checker_id,
+      qc_result,
+      quality_grade,
+      qc_score,
+      temperature_c,
+      sample_count,
+      odor_score,
+      gill_score,
+      eye_score,
+      firmness_score,
+      ice_present,
+      packaging_intact,
+      foreign_matter_found,
+      is_mixed_species,
+      is_contaminated,
+      is_damaged,
+      reject_reason,
+      qc_remarks
+    } = req.body || {};
+
+    // Validate required fields for filling
+    if (!quality_checker_id) {
+      return res.status(400).json({ success: false, message: "quality_checker_id is required" });
+    }
+
+    // Convert numeric string fields from multipart form data
+    const parsedQcScore = qc_score !== undefined && qc_score !== '' ? parseInt(qc_score) : undefined;
+    const parsedTemperature = temperature_c !== undefined && temperature_c !== '' ? parseFloat(temperature_c) : undefined;
+    const parsedSampleCount = sample_count !== undefined && sample_count !== '' ? parseInt(sample_count) : undefined;
+    const parsedOdorScore = odor_score !== undefined && odor_score !== '' ? parseInt(odor_score) : undefined;
+    const parsedGillScore = gill_score !== undefined && gill_score !== '' ? parseInt(gill_score) : undefined;
+    const parsedEyeScore = eye_score !== undefined && eye_score !== '' ? parseInt(eye_score) : undefined;
+    const parsedFirmnessScore = firmness_score !== undefined && firmness_score !== '' ? parseInt(firmness_score) : undefined;
+    const parsedWeight = weight !== undefined && weight !== '' ? parseFloat(weight) : undefined;
+
+    // Validate QC result and grade
+    const validQcResults = ['PASS', 'HOLD', 'REJECT'];
+    const validQualityGrades = ['A', 'B', 'C', 'REJECTED'];
+
+    if (qc_result && !validQcResults.includes(qc_result)) {
+      return res.status(400).json({ success: false, message: "Invalid qc_result. Must be PASS, HOLD, or REJECT" });
+    }
+
+    if (quality_grade && !validQualityGrades.includes(quality_grade)) {
+      return res.status(400).json({ success: false, message: "Invalid quality_grade. Must be A, B, C, or REJECTED" });
+    }
+
+    // Validate organoleptic scores (0-5)
+    const organolepticScores = [parsedOdorScore, parsedGillScore, parsedEyeScore, parsedFirmnessScore];
+    for (const score of organolepticScores) {
+      if (score !== undefined && (score < 0 || score > 5)) {
+        return res.status(400).json({ success: false, message: "Organoleptic scores must be between 0 and 5" });
+      }
+    }
+
+    // Validate QC score (0, 10, 20, 30, 40)
+    const validQcScores = [0, 10, 20, 30, 40];
+    if (parsedQcScore !== undefined && !validQcScores.includes(parsedQcScore)) {
+      return res.status(400).json({ success: false, message: "Invalid qc_score. Must be 0, 10, 20, 30, or 40" });
+    }
+
+    // Handle crate images upload if provided
+    let uploadedCrateImages = [];
+    if (files && files.length > 0) {
+      if (files.length > 5) {
+        return res.status(400).json({ success: false, message: "Maximum 5 crate images allowed" });
+      }
+
+      // Upload crate images to Supabase
+      uploadedCrateImages = await uploadImagesToSupabase(files, `${code}_crate`);
+    }
+
+    // Build updates object
+    const updates = {
+      status: 'FILLED',
+      qc_status: 'CHECKED',
+      filled_at: new Date()
+    };
+
+    // Add optional fields
+    if (rv_vessel_id !== undefined) updates.rv_vessel_id = rv_vessel_id === '' ? null : rv_vessel_id;
+    if (fish_id !== undefined) updates.fish_id = fish_id === '' ? null : fish_id;
+    if (owner_id !== undefined) updates.owner_id = owner_id === '' ? null : owner_id;
+    if (trip_id !== undefined) updates.trip_id = trip_id === '' ? null : trip_id;
+    if (date !== undefined) updates.date = date === '' ? null : date;
+    if (time !== undefined) updates.time = time === '' ? null : time;
+    if (parsedWeight !== undefined) updates.weight = parsedWeight;
+
+    // QC fields
+    updates.quality_checker_id = quality_checker_id;
+    if (qc_result) updates.qc_result = qc_result;
+    if (quality_grade) updates.quality_grade = quality_grade;
+    if (parsedQcScore !== undefined) updates.qc_score = parsedQcScore;
+    if (parsedTemperature !== undefined) updates.temperature_c = parsedTemperature;
+    if (parsedSampleCount !== undefined) updates.sample_count = parsedSampleCount;
+    if (parsedOdorScore !== undefined) updates.odor_score = parsedOdorScore;
+    if (parsedGillScore !== undefined) updates.gill_score = parsedGillScore;
+    if (parsedEyeScore !== undefined) updates.eye_score = parsedEyeScore;
+    if (parsedFirmnessScore !== undefined) updates.firmness_score = parsedFirmnessScore;
+    if (ice_present !== undefined) updates.ice_present = ice_present;
+    if (packaging_intact !== undefined) updates.packaging_intact = packaging_intact;
+    if (foreign_matter_found !== undefined) updates.foreign_matter_found = foreign_matter_found;
+    if (is_mixed_species !== undefined) updates.is_mixed_species = is_mixed_species;
+    if (is_contaminated !== undefined) updates.is_contaminated = is_contaminated;
+    if (is_damaged !== undefined) updates.is_damaged = is_damaged;
+    if (reject_reason) updates.reject_reason = reject_reason;
+    if (qc_remarks) updates.qc_remarks = qc_remarks;
+
+    // Store first crate image in crate_image fields
+    if (uploadedCrateImages.length > 0) {
+      updates.crate_image_key = uploadedCrateImages[0].key;
+      updates.crate_image_url = uploadedCrateImages[0].url;
+    }
+
+    // Update QR record
+    const updatedQr = await updateQrWithImages(code, [], updates);
+
+    res.status(200).json({
+      success: true,
+      message: "QR filled with QC details successfully",
+      qr: updatedQr,
+      crate_images: uploadedCrateImages
     });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
