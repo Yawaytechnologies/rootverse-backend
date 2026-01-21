@@ -114,8 +114,8 @@ export async function updateQrWithImages(code, images, updatesFromBody = {}) {
     updates.image_url = images[0].url;
   }
 
-  // Status: prefer provided status, otherwise default to FILLED
   updates.status = updatesFromBody.status ? String(updatesFromBody.status).trim().toUpperCase() : "FILLED";
+
 
   // Helper to check and normalize foreign ids
   if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'rv_vessel_id')) {
@@ -227,6 +227,74 @@ export async function updateQrWithImages(code, images, updatesFromBody = {}) {
   }
   if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'time')) {
     updates.time = updatesFromBody.time === '' ? null : updatesFromBody.time;
+  }
+
+  // QC fields
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'quality_checker_id')) {
+    updates.quality_checker_id = updatesFromBody.quality_checker_id;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'qc_status')) {
+    updates.qc_status = updatesFromBody.qc_status;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'qc_result')) {
+    updates.qc_result = updatesFromBody.qc_result;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'quality_grade')) {
+    updates.quality_grade = updatesFromBody.quality_grade;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'qc_score')) {
+    updates.qc_score = updatesFromBody.qc_score;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'temperature_c')) {
+    updates.temperature_c = updatesFromBody.temperature_c;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'sample_count')) {
+    updates.sample_count = updatesFromBody.sample_count;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'odor_score')) {
+    updates.odor_score = updatesFromBody.odor_score;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'gill_score')) {
+    updates.gill_score = updatesFromBody.gill_score;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'eye_score')) {
+    updates.eye_score = updatesFromBody.eye_score;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'firmness_score')) {
+    updates.firmness_score = updatesFromBody.firmness_score;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'ice_present')) {
+    updates.ice_present = updatesFromBody.ice_present;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'packaging_intact')) {
+    updates.packaging_intact = updatesFromBody.packaging_intact;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'foreign_matter_found')) {
+    updates.foreign_matter_found = updatesFromBody.foreign_matter_found;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'is_mixed_species')) {
+    updates.is_mixed_species = updatesFromBody.is_mixed_species;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'is_contaminated')) {
+    updates.is_contaminated = updatesFromBody.is_contaminated;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'is_damaged')) {
+    updates.is_damaged = updatesFromBody.is_damaged;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'reject_reason')) {
+    updates.reject_reason = updatesFromBody.reject_reason;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'qc_remarks')) {
+    updates.qc_remarks = updatesFromBody.qc_remarks;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'crate_image_url')) {
+    updates.crate_image_url = updatesFromBody.crate_image_url;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'crate_image_key')) {
+    updates.crate_image_key = updatesFromBody.crate_image_key;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'filled_at')) {
+    updates.filled_at = updatesFromBody.filled_at;
   }
 
   // Update the QR record
