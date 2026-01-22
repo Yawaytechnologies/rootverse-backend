@@ -14,7 +14,7 @@ export const loginService = async (req) => {
   if (user.verification_status !== "VERIFIED") throw new Error("User not verified");
 
   const token = signToken({
-    user_id: user.id,
+    id: user.id,
     role: user.rootverse_type,
   });
 
