@@ -1,4 +1,7 @@
 import { reserveQrservice, reserveBulkService, listQrsService, getFilledQrByCode, uploadImagesToSupabase, updateQrWithImages } from "./qrs.service.js";
+import { getQrByCodePopulate } from "./qrs.model.js";
+import { updateOwner } from "../owner/owner.model.js";
+import db from "../../config/db.js";
 
 export async function reserveQrsController(req, res) {
     try{
@@ -59,7 +62,7 @@ export async function updateQrImagesController(req, res) {
     const files = req.files;
 
     // Accept optional fill data in body
-    const { rv_vessel_id, fish_id, owner_id, trip_id,  date, time, status } = req.body || {};
+    const { rv_vessel_id, fish_id, owner_id, trip_id, date, time, status, latitude, longitude } = req.body || {};
 
     if (!files || files.length === 0) {
       return res.status(400).json({ success: false, message: "No images provided" });
@@ -80,9 +83,16 @@ export async function updateQrImagesController(req, res) {
     if (date !== undefined) updatesFromBody.date = date === '' ? null : date;
     if (time !== undefined) updatesFromBody.time = time === '' ? null : time;
     if (status !== undefined) updatesFromBody.status = status;
+    if (latitude !== undefined) updatesFromBody.latitude = latitude === '' ? null : parseFloat(latitude);
+    if (longitude !== undefined) updatesFromBody.longitude = longitude === '' ? null : parseFloat(longitude);
 
     // Update QR record with image information and optional fill fields
     const updatedQr = await updateQrWithImages(code, uploadedImages, updatesFromBody);
+
+    // Update owner_register_progress to COMPLETED (this is the fisherman update, status remains NEW)
+    if (updatedQr.owner_id) {
+      await updateOwner(updatedQr.owner_id, { owner_register_progress: 'COMPLETED' });
+    }
 
     res.status(200).json({
       success: true,
@@ -100,6 +110,26 @@ export async function fillQrWithQcDetailsController(req, res) {
     const { code } = req.params;
     const files = req.files;
 
+    // First check if QR exists and owner_register_progress is COMPLETED
+    const qr = await getQrByCodePopulate(code);
+    if (!qr) {
+      return res.status(404).json({ success: false, message: "QR not found" });
+    }
+
+    // Check if owner exists and has COMPLETED registration progress
+    if (!qr.owner_id) {
+      return res.status(400).json({ success: false, message: "QR must have an owner before QC filling" });
+    }
+
+    const owner = await db('rootverse_users').where({ id: qr.owner_id }).first();
+    if (!owner) {
+      return res.status(400).json({ success: false, message: "Owner not found" });
+    }
+
+    if (owner.owner_register_progress !== 'COMPLETED') {
+      return res.status(400).json({ success: false, message: "Owner registration must be completed before QC filling" });
+    }
+
     // Extract QC details from body
     const {
       rv_vessel_id,
@@ -109,6 +139,8 @@ export async function fillQrWithQcDetailsController(req, res) {
       date,
       time,
       weight,
+      latitude,
+      longitude,
       quality_checker_id,
       qc_result,
       quality_grade,
@@ -196,6 +228,8 @@ export async function fillQrWithQcDetailsController(req, res) {
     if (date !== undefined) updates.date = date === '' ? null : date;
     if (time !== undefined) updates.time = time === '' ? null : time;
     if (parsedWeight !== undefined) updates.weight = parsedWeight;
+    if (latitude !== undefined) updates.latitude = latitude === '' ? null : parseFloat(latitude);
+    if (longitude !== undefined) updates.longitude = longitude === '' ? null : parseFloat(longitude);
 
     // QC fields
     updates.quality_checker_id = quality_checker_id;
