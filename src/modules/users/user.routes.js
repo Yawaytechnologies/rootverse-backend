@@ -4,7 +4,7 @@ import { requireAuth } from "../../shared/middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/profile", requireAuth, userController.getUserController);
+router.get("/", requireAuth, userController.getUserController);
 
 const userRoutes = router;
 export default userRoutes;

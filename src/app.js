@@ -26,7 +26,7 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 
 app.use('/api/auth',loginRoutes);
-app.use('/api/users',userRoutes);
+app.use('/api/me',userRoutes);
 app.use('/api', ownerRouter);
 app.use('/api', stateRouter);
 app.use('/api', districtRouter);
