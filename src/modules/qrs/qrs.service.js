@@ -114,7 +114,10 @@ export async function updateQrWithImages(code, images, updatesFromBody = {}) {
     updates.image_url = images[0].url;
   }
 
-  updates.status = updatesFromBody.status ? String(updatesFromBody.status).trim().toUpperCase() : "FILLED";
+  // Only set status if explicitly provided, don't default to FILLED
+  if (updatesFromBody.status !== undefined) {
+    updates.status = String(updatesFromBody.status).trim().toUpperCase();
+  }
 
 
   // Helper to check and normalize foreign ids
@@ -227,6 +230,12 @@ export async function updateQrWithImages(code, images, updatesFromBody = {}) {
   }
   if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'time')) {
     updates.time = updatesFromBody.time === '' ? null : updatesFromBody.time;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'latitude')) {
+    updates.latitude = updatesFromBody.latitude === '' ? null : updatesFromBody.latitude;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'longitude')) {
+    updates.longitude = updatesFromBody.longitude === '' ? null : updatesFromBody.longitude;
   }
 
   // QC fields
