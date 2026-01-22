@@ -44,9 +44,7 @@ export async function getVesselById(req, res) {
     const row = await getVessel(vesselId);
 
     if (!row) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Vessel not found" });
+      return res.status(404).json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, data: row });
@@ -64,6 +62,39 @@ export async function getAllVessels(req, res) {
   }
 }
 
+// ✅ UPDATE OPTION (PUT) - full update
+export async function updateVesselById(req, res) {
+  try {
+    const { vesselId } = req.params;
+
+    // block owner_id updates to avoid ownership change
+    if ("owner_id" in (req.body || {})) {
+      return res.status(400).json({
+        success: false,
+        message: "owner_id cannot be updated",
+      });
+    }
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields provided to update",
+      });
+    }
+
+    const row = await updateVessel(vesselId, req.body);
+
+    if (!row) {
+      return res.status(404).json({ success: false, message: "Vessel not found" });
+    }
+
+    return res.json({ success: true, data: row });
+  } catch (err) {
+    return sendError(res, err);
+  }
+}
+
+// ✅ PATCH (partial update) - keep yours as is
 export async function patchVessel(req, res) {
   try {
     const { vesselId } = req.params;
@@ -79,9 +110,7 @@ export async function patchVessel(req, res) {
     const row = await updateVessel(vesselId, req.body);
 
     if (!row) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Vessel not found" });
+      return res.status(404).json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, data: row });
@@ -96,9 +125,7 @@ export async function deleteVessel(req, res) {
     const ok = await removeVessel(vesselId);
 
     if (!ok) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Vessel not found" });
+      return res.status(404).json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, message: "Vessel deleted" });
