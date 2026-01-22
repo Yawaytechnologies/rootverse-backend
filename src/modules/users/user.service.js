@@ -9,7 +9,7 @@ export const getUserByIdService = async (userId) => {
   if (user) return user;
 
   const qualityChecker = await db("quality_checkers")
-    .select("id", "phone_no", "rootverse_type", "name")
+    .select("id", "checker_phone", "rootverse_type", "checker_name")
     .where({ id: userId })
     .first();
 
