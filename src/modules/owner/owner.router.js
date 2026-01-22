@@ -9,7 +9,7 @@ router.post("/owner/:id/verify", verifyOwnerController);
 router.get('/owner/:rootverse_type', getUsersByRootverseTypeController);
 
 router.get("/owner", listOwners);
-router.get("/owner/:id", getOwnerController);
+router.get("/:id", getOwnerController);
 router.put("/owner/:id", upload.any(), updateOwnerController);
 router.put(
   "/owner/:id/verify",
