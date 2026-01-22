@@ -5,18 +5,30 @@ export const loginService = async (req) => {
   const cleanPhone = String(req.body?.phone_no || "").trim();
   if (!cleanPhone) throw new Error("phone_no is required");
 
-  const user = await db("rootverse_users")
-    .select("id", "rootverse_type", "verification_status", "phone_no")
+  const owner = await db("rootverse_users")
+    .select("id", "rootverse_type", "verification_status")
     .where({ phone_no: cleanPhone })
     .first();
 
-  if (!user) throw new Error("User not found");
-  if (user.verification_status !== "VERIFIED") throw new Error("User not verified");
+  if (owner) {
+    if (owner.verification_status !== "VERIFIED")
+      throw new Error("User not verified");
 
-  const token = signToken({
-    id: user.id,
-    role: user.rootverse_type,
-  });
+    return signToken({
+      id: owner.id,
+    });
+  }
 
-  return token;
+  const qualityChecker = await db("quality_checkers")
+    .select("id", "rootverse_type")
+    .where({ phone_no: cleanPhone })
+    .first();
+
+  if (qualityChecker) {
+    return signToken({
+      id: qualityChecker.id,
+    });
+  }
+
+  throw new Error("User not found");
 };
