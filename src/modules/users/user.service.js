@@ -2,7 +2,7 @@ import db from "../../config/db.js";
 
 export const getUserByIdService = async (userId) => {
   const user = await db("rootverse_users")
-    .select("id", "phone_no", "rootverse_type", "verification_status", "name")
+    .select("id", "phone_no", "rootverse_type", "verification_status", "username")
     .where({ id: userId })
     .first();
 
