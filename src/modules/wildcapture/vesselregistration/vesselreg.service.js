@@ -1,4 +1,5 @@
 import * as VesselModel from "./vesselreg.model.js";
+import db from "../../../config/db.js";
 
 function badRequest(message) {
   const e = new Error(message);
@@ -18,8 +19,20 @@ function isRvId(s) {
   return typeof s === "string" && s.toUpperCase().startsWith("RV-VES-");
 }
 
+// CHANGE if your owner table name differs
+const OWNERS_TABLE = "rootverse_users";
+
+async function assertOwnerExists(owner_id) {
+  // If your owner id is UUID, remove Number() logic entirely.
+  const row = await db(OWNERS_TABLE).select("id").where({ id: owner_id }).first();
+  if (!row) badRequest("Invalid owner_id (owner not found)");
+}
+
 function validateCreate(payload) {
   if (!payload) badRequest("Payload required");
+
+  // ✅ owner_id required because DB is NOT NULL now
+  if (!payload.owner_id) badRequest("owner_id is required");
 
   if (!payload.govt_registration_number?.trim())
     badRequest("Govt registration number is required");
@@ -35,12 +48,18 @@ function validateCreate(payload) {
   return {
     ...payload,
     allowed_fishing_methods: methods,
-    state_code: payload.state_code ? String(payload.state_code).trim().toUpperCase() : "TN",
+    state_code: payload.state_code
+      ? String(payload.state_code).trim().toUpperCase()
+      : "TN",
   };
 }
 
 export async function registerVessel(payload) {
   const clean = validateCreate(payload);
+
+  // ✅ prevents FK violation before insert
+  await assertOwnerExists(clean.owner_id);
+
   return VesselModel.createVessel(clean, { region: clean.state_code });
 }
 
@@ -72,7 +91,6 @@ export async function updateVessel(vesselId, patch) {
 
   const id = String(vesselId).trim();
 
-  // Only numeric update (you can extend this later)
   const numeric = Number(id);
   if (!Number.isInteger(numeric) || numeric <= 0) badRequest("Invalid vesselId");
 
@@ -82,6 +100,9 @@ export async function updateVessel(vesselId, patch) {
     if (invalid.length) badRequest(`Invalid fishing methods: ${invalid.join(", ")}`);
     patch.allowed_fishing_methods = methods;
   }
+
+  // ✅ hard block
+  if ("owner_id" in patch) badRequest("owner_id cannot be updated");
 
   return VesselModel.patchVessel(numeric, patch);
 }
