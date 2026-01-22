@@ -21,7 +21,7 @@ export const loginService = async (req) => {
 
   const qualityChecker = await db("quality_checkers")
     .select("id", "rootverse_type")
-    .where({ phone_no: cleanPhone })
+    .where({ checker_phone: cleanPhone })
     .first();
 
   if (qualityChecker) {
