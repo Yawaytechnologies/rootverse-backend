@@ -5,7 +5,7 @@ const VESSEL_TABLE = "vessel_registration";
 // ---- RV ID config ----
 const ID_PREFIX = "RV-VES";
 const DEFAULT_REGION = "TN";
-const PAD_LEN = 6; // RV-VES-TN-000001 (safe long-term)
+const PAD_LEN = 6;
 
 /** ---------------------- JSON helpers ---------------------- **/
 function toJsonString(v) {
@@ -47,6 +47,7 @@ function buildRvVesselId({ region = DEFAULT_REGION, id }) {
 /** ---------------------- Normalizers ---------------------- **/
 function normalizeForInsert(payload = {}) {
   return {
+    owner_id: payload.owner_id, // ✅ ADDED
     govt_registration_number: payload.govt_registration_number?.trim(),
     local_identifier: payload.local_identifier?.trim() ?? null,
     vessel_name: payload.vessel_name?.trim(),
@@ -79,6 +80,9 @@ function normalizeForUpdate(updates = {}) {
         : toJsonString(updates.allowed_fishing_methods);
   }
 
+  // 🚫 do not allow owner_id update from model layer too
+  if ("owner_id" in updates) delete out.owner_id;
+
   out.updated_at = db.fn.now();
   return out;
 }
@@ -92,18 +96,16 @@ function mapRow(row) {
 }
 
 /** ---------------------- CRUD ---------------------- **/
-
 export async function createVessel(payload, opts = {}) {
   const region = (opts.region || DEFAULT_REGION).toUpperCase().trim();
 
   return db.transaction(async (trx) => {
     const data = normalizeForInsert(payload);
 
-    // 1) Insert first WITHOUT rv_vessel_id
     const [inserted] = await trx(VESSEL_TABLE).insert(
       {
         ...data,
-        rv_vessel_id: null, // must be nullable in DB
+        rv_vessel_id: null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -111,11 +113,8 @@ export async function createVessel(payload, opts = {}) {
     );
 
     const id = inserted.id;
-
-    // 2) Build rv_vessel_id based on DB id
     const rv_vessel_id = buildRvVesselId({ region, id });
 
-    // 3) Update same row with final rv_vessel_id
     const [created] = await trx(VESSEL_TABLE)
       .where({ id })
       .update(
