@@ -2,15 +2,15 @@ import db from "../../config/db.js";
 
 export const getUserByIdService = async (userId) => {
   const user = await db("rootverse_users")
-    .select("id", "phone_no", "rootverse_type", "verification_status", "username")
-    .where({ id: userId })
+    .select("*")
+    .where({ owner_id: userId })
     .first();
 
   if (user) return user;
 
-  const qualityChecker = await db("quality_checkers")
-    .select("id", "checker_phone", "rootverse_type", "checker_name")
-    .where({ id: userId })
+  const qualityChecker = await db("quality_checker")
+    .select("*")
+    .where({ checker_code: userId })
     .first();
 
   if (qualityChecker) return qualityChecker;
