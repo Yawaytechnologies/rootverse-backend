@@ -6,7 +6,7 @@ export const loginService = async (req) => {
   if (!cleanPhone) throw new Error("phone_no is required");
 
   const owner = await db("rootverse_users")
-    .select("id", "rootverse_type", "verification_status")
+    .select("id", "rootverse_type", "verification_status", "owner_id")
     .where({ phone_no: cleanPhone })
     .first();
 
@@ -15,18 +15,18 @@ export const loginService = async (req) => {
       throw new Error("User not verified");
 
     return signToken({
-      id: owner.id,
+      id: owner.owner_id,
     });
   }
 
-  const qualityChecker = await db("quality_checkers")
-    .select("id", "rootverse_type")
+  const qualityChecker = await db("quality_checker")
+    .select("id", "rootverse_type", "checker_code")
     .where({ checker_phone: cleanPhone })
     .first();
 
   if (qualityChecker) {
     return signToken({
-      id: qualityChecker.id,
+      id: qualityChecker.checker_code,
     });
   }
 
