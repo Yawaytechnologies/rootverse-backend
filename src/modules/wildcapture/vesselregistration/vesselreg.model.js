@@ -47,7 +47,7 @@ function buildRvVesselId({ region = DEFAULT_REGION, id }) {
 /** ---------------------- Normalizers ---------------------- **/
 function normalizeForInsert(payload = {}) {
   return {
-    owner_id: payload.owner_id, // ✅ ADDED
+    owner_id: payload.owner_id, 
     govt_registration_number: payload.govt_registration_number?.trim(),
     local_identifier: payload.local_identifier?.trim() ?? null,
     vessel_name: payload.vessel_name?.trim(),
@@ -80,7 +80,7 @@ function normalizeForUpdate(updates = {}) {
         : toJsonString(updates.allowed_fishing_methods);
   }
 
-  // 🚫 do not allow owner_id update from model layer too
+  //  do not allow owner_id update from model layer too
   if ("owner_id" in updates) delete out.owner_id;
 
   out.updated_at = db.fn.now();
@@ -165,4 +165,22 @@ export async function patchVessel(id, updates) {
 export async function deleteVessel(id) {
   const deleted = await db(VESSEL_TABLE).where({ id }).del();
   return deleted > 0;
+}
+
+//  get vessels by owner_id (numeric DB owner id)
+export async function listVesselsByOwnerId(owner_id, { limit = 50, offset = 0, q = "" } = {}) {
+  const query = db(VESSEL_TABLE).select("*").where({ owner_id });
+
+  if (q && q.trim()) {
+    const like = `%${q.trim()}%`;
+    query.andWhere((b) => {
+      b.whereILike("rv_vessel_id", like)
+        .orWhereILike("govt_registration_number", like)
+        .orWhereILike("vessel_name", like)
+        .orWhereILike("home_port", like);
+    });
+  }
+
+  const rows = await query.orderBy("id", "desc").limit(limit).offset(offset);
+  return rows.map(mapRow);
 }
