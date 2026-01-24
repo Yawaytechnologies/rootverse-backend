@@ -16,7 +16,7 @@ const knexfile = {
       password: config.DB_password,
       ssl: { rejectUnauthorized: false } // Supabase requires SSL in many setups
     },
-    pool: { min: 2, max: 10 },
+    pool: { min: 0, max: 5 },
     migrations: {
       directory: "./migrations",
       tableName: "rootverse_knex_migrations"
@@ -37,7 +37,7 @@ const knexfile = {
       password: config.DB_password,
       ssl: { rejectUnauthorized: false }
     },
-    pool: { min: 2, max: 10 ,
+    pool: { min: 0, max: 5 ,
       acquireTimeoutMillis: 10000,
       idleTimeoutMillis: 30000,
       createRetryIntervalMillis: 200,
@@ -64,7 +64,7 @@ const knexfile = {
       ssl: { rejectUnauthorized: false }
     },
     pool: {
-      min: 1,
+      min: 0,
       max: 5,
       acquireTimeoutMillis: 20000,
       idleTimeoutMillis: 30000,
