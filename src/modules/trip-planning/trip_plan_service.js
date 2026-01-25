@@ -1,4 +1,4 @@
-import { createTrips, getAllTrip, getTriPlanById, updateTrip, deleteTrip, approveTripPlan, getbyownerCode } from "./trip_plan_model.js";
+import { createTrips, getAllTrip, getTriPlanById, updateTrip, deleteTrip, approveTripPlan, getbyownerCode, getbyownerCodeAndStatus } from "./trip_plan_model.js";
 import { nanoid } from "nanoid";
 
 export async function createTripPlanService(payload){
@@ -36,6 +36,10 @@ export async function approveTripPlanService(id) {
 
 export async function getByOwnerCodeService(owner_code){
     return getbyownerCode(owner_code)
+}
+
+export async function getByOwnerCodeAndStatusService(owner_code, approval_status){
+    return getbyownerCodeAndStatus(owner_code, approval_status)
 }
 
 

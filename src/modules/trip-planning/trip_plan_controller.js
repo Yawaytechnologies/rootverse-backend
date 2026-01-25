@@ -1,4 +1,4 @@
-import { createTripPlanService, getAllTripService, getTripByIdService, deleteTripPlanService, updateTripPlanService, approveTripPlanService, getByOwnerCodeService } from "./trip_plan_service.js";
+import { createTripPlanService, getAllTripService, getTripByIdService, deleteTripPlanService, updateTripPlanService, approveTripPlanService, getByOwnerCodeService, getByOwnerCodeAndStatusService } from "./trip_plan_service.js";
 
 
 export async function createTripController(req, res){
@@ -73,5 +73,17 @@ export async function getByOwnerCodeController(req, res) {
     return res.status(400).json({ success: false, message: error.message });
   }
 
+}
+
+
+export async function getByOwnerCodeAndStatusController(req, res) {
+  try {
+    const { owner_code, approval_status} = req.params; // "OWN-0009"
+    const tripPlan = await getByOwnerCodeAndStatusService(owner_code, approval_status);
+
+    return res.status(200).json({ success: true, data: tripPlan });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
 }
 
