@@ -1,4 +1,4 @@
-import { reserveQrservice, reserveBulkService, listQrsService, getFilledQrByCode, uploadImagesToSupabase, updateQrWithImages } from "./qrs.service.js";
+import { reserveQrservice, reserveBulkService, listQrsService, getFilledQrByCode, uploadImagesToSupabase, updateQrWithImages, getQrByStatusAndCodeService } from "./qrs.service.js";
 import { getQrByCodePopulate } from "./qrs.model.js";
 import { updateOwner } from "../owner/owner.model.js";
 import db from "../../config/db.js";
@@ -6,7 +6,7 @@ import db from "../../config/db.js";
 export async function reserveQrsController(req, res) {
     try{
         const {type} = req.body;
-        const qr = await reserveQrservice(type||"CRATE");
+        const qr = await reserveQrservice(type||"FISH");
         res.status(201).json({sucess:true, qr});
     }
     catch(err){
@@ -82,6 +82,7 @@ export async function updateQrImagesController(req, res) {
     if (owner_id !== undefined) updatesFromBody.owner_id = owner_id === '' ? null : owner_id;
     if (date !== undefined) updatesFromBody.date = date === '' ? null : date;
     if (time !== undefined) updatesFromBody.time = time === '' ? null : time;
+    if (trip_id !== undefined) updatesFromBody.trip_id = trip_id === '' ? null : trip_id;
     if (status !== undefined) updatesFromBody.status = status;
     if (latitude !== undefined) updatesFromBody.latitude = latitude === '' ? null : parseFloat(latitude);
     if (longitude !== undefined) updatesFromBody.longitude = longitude === '' ? null : parseFloat(longitude);
@@ -108,7 +109,7 @@ export async function updateQrImagesController(req, res) {
 export async function fillQrWithQcDetailsController(req, res) {
   try {
     const { code } = req.params;
-    const files = req.files;
+    const { fish_images: fishImages, pond_condition_image: pondConditionImage } = req.files || {};
 
     // First check if QR exists and owner_register_progress is COMPLETED
     const qr = await getQrByCodePopulate(code);
@@ -146,19 +147,15 @@ export async function fillQrWithQcDetailsController(req, res) {
       quality_grade,
       qc_score,
       temperature_c,
-      sample_count,
+      size,
+      damage,
+      water_temperature,
+      ph_level,
+      grade,
       odor_score,
-      gill_score,
-      eye_score,
       firmness_score,
-      ice_present,
-      packaging_intact,
-      foreign_matter_found,
-      is_mixed_species,
-      is_contaminated,
       is_damaged,
-      reject_reason,
-      qc_remarks
+      reject_reason
     } = req.body || {};
 
     // Validate required fields for filling
@@ -169,10 +166,10 @@ export async function fillQrWithQcDetailsController(req, res) {
     // Convert numeric string fields from multipart form data
     const parsedQcScore = qc_score !== undefined && qc_score !== '' ? parseInt(qc_score) : undefined;
     const parsedTemperature = temperature_c !== undefined && temperature_c !== '' ? parseFloat(temperature_c) : undefined;
-    const parsedSampleCount = sample_count !== undefined && sample_count !== '' ? parseInt(sample_count) : undefined;
+    const parsedWaterTemperature = water_temperature !== undefined && water_temperature !== '' ? parseFloat(water_temperature) : undefined;
+    const parsedPhLevel = ph_level !== undefined && ph_level !== '' ? parseFloat(ph_level) : undefined;
+    const parsedGrade = grade !== undefined && grade !== '' ? parseInt(grade) : undefined;
     const parsedOdorScore = odor_score !== undefined && odor_score !== '' ? parseInt(odor_score) : undefined;
-    const parsedGillScore = gill_score !== undefined && gill_score !== '' ? parseInt(gill_score) : undefined;
-    const parsedEyeScore = eye_score !== undefined && eye_score !== '' ? parseInt(eye_score) : undefined;
     const parsedFirmnessScore = firmness_score !== undefined && firmness_score !== '' ? parseInt(firmness_score) : undefined;
     const parsedWeight = weight !== undefined && weight !== '' ? parseFloat(weight) : undefined;
 
@@ -189,11 +186,29 @@ export async function fillQrWithQcDetailsController(req, res) {
     }
 
     // Validate organoleptic scores (0-5)
-    const organolepticScores = [parsedOdorScore, parsedGillScore, parsedEyeScore, parsedFirmnessScore];
+    const organolepticScores = [parsedOdorScore, parsedFirmnessScore];
     for (const score of organolepticScores) {
       if (score !== undefined && (score < 0 || score > 5)) {
         return res.status(400).json({ success: false, message: "Organoleptic scores must be between 0 and 5" });
       }
+    }
+
+    // Validate size
+    const validSizes = ['SMALL', 'MEDIUM', 'LARGE'];
+    if (size && !validSizes.includes(size)) {
+      return res.status(400).json({ success: false, message: "Invalid size. Must be SMALL, MEDIUM, or LARGE" });
+    }
+
+    // Validate damage
+    const validDamages = ['NONE', 'MINOR', 'MODERATE', 'SEVERE'];
+    if (damage && !validDamages.includes(damage)) {
+      return res.status(400).json({ success: false, message: "Invalid damage. Must be NONE, MINOR, MODERATE, or SEVERE" });
+    }
+
+    // Validate grade
+    const validGrades = [30, 40];
+    if (parsedGrade !== undefined && !validGrades.includes(parsedGrade)) {
+      return res.status(400).json({ success: false, message: "Invalid grade. Must be 30 or 40" });
     }
 
     // Validate QC score (0, 10, 20, 30, 40)
@@ -202,15 +217,23 @@ export async function fillQrWithQcDetailsController(req, res) {
       return res.status(400).json({ success: false, message: "Invalid qc_score. Must be 0, 10, 20, 30, or 40" });
     }
 
-    // Handle crate images upload if provided
-    let uploadedCrateImages = [];
-    if (files && files.length > 0) {
-      if (files.length > 5) {
-        return res.status(400).json({ success: false, message: "Maximum 5 crate images allowed" });
+    // Handle fish images upload if provided
+    let uploadedFishImages = [];
+    if (fishImages && fishImages.length > 0) {
+      if (fishImages.length > 5) {
+        return res.status(400).json({ success: false, message: "Maximum 5 fish images allowed" });
       }
 
-      // Upload crate images to Supabase
-      uploadedCrateImages = await uploadImagesToSupabase(files, `${code}_crate`);
+      // Upload fish images to Supabase
+      uploadedFishImages = await uploadImagesToSupabase(fishImages, `${code}_fish`);
+    }
+
+    // Handle pond condition image upload if provided
+    let uploadedPondConditionImage = null;
+    if (pondConditionImage) {
+      // Upload pond condition image to Supabase
+      const uploadedImages = await uploadImagesToSupabase([pondConditionImage], `${code}_pond_condition`);
+      uploadedPondConditionImage = uploadedImages[0];
     }
 
     // Build updates object
@@ -233,39 +256,55 @@ export async function fillQrWithQcDetailsController(req, res) {
 
     // QC fields
     updates.quality_checker_id = quality_checker_id;
+
+    // Fetch quality checker details to store code and name
+    const qualityChecker = await db('quality_checker').where({ id: quality_checker_id }).first();
+    if (qualityChecker) {
+      updates.quality_checker_code = qualityChecker.checker_code;
+      updates.quality_checker_name = qualityChecker.checker_name;
+    }
+
     if (qc_result) updates.qc_result = qc_result;
     if (quality_grade) updates.quality_grade = quality_grade;
     if (parsedQcScore !== undefined) updates.qc_score = parsedQcScore;
     if (parsedTemperature !== undefined) updates.temperature_c = parsedTemperature;
-    if (parsedSampleCount !== undefined) updates.sample_count = parsedSampleCount;
+    if (size) updates.size = size;
+    if (damage) updates.damage = damage;
+    if (parsedWaterTemperature !== undefined) updates.water_temperature = parsedWaterTemperature;
+    if (parsedPhLevel !== undefined) updates.ph_level = parsedPhLevel;
+    if (parsedGrade !== undefined) updates.grade = parsedGrade;
     if (parsedOdorScore !== undefined) updates.odor_score = parsedOdorScore;
-    if (parsedGillScore !== undefined) updates.gill_score = parsedGillScore;
-    if (parsedEyeScore !== undefined) updates.eye_score = parsedEyeScore;
     if (parsedFirmnessScore !== undefined) updates.firmness_score = parsedFirmnessScore;
-    if (ice_present !== undefined) updates.ice_present = ice_present;
-    if (packaging_intact !== undefined) updates.packaging_intact = packaging_intact;
-    if (foreign_matter_found !== undefined) updates.foreign_matter_found = foreign_matter_found;
-    if (is_mixed_species !== undefined) updates.is_mixed_species = is_mixed_species;
-    if (is_contaminated !== undefined) updates.is_contaminated = is_contaminated;
     if (is_damaged !== undefined) updates.is_damaged = is_damaged;
     if (reject_reason) updates.reject_reason = reject_reason;
-    if (qc_remarks) updates.qc_remarks = qc_remarks;
 
-    // Store first crate image in crate_image fields
-    if (uploadedCrateImages.length > 0) {
-      updates.crate_image_key = uploadedCrateImages[0].key;
-      updates.crate_image_url = uploadedCrateImages[0].url;
-    }
+    // Store images
+    updates.fish_images = uploadedFishImages;
+    updates.pond_condition_image = uploadedPondConditionImage;
 
-    // Update QR record
+    // Update the QR record
     const updatedQr = await updateQrWithImages(code, [], updates);
 
     res.status(200).json({
       success: true,
-      message: "QR filled with QC details successfully",
+      message: 'QR filled with QC details successfully',
       qr: updatedQr,
-      crate_images: uploadedCrateImages
+      fish_images: uploadedFishImages,
+      pond_condition_image: uploadedPondConditionImage
     });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+}
+
+export async function getQrByStatusAndCodeController(req, res) {
+  try {
+    const { status, code } = req.params;
+    const qr = await getQrByStatusAndCodeService(status, code);
+    if (!qr) {
+      return res.status(404).json({ success: false, message: "QR not found with the specified status and code" });
+    }
+    res.status(200).json({ success: true, qr });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
