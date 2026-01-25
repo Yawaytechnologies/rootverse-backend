@@ -39,4 +39,10 @@ export async function getbyownerCode(owner_code){
     .where("owner_code", owner_code)
 }
 
+export async function getbyownerCodeAndStatus(owner_code, approval_status){
+    return db('trip_plans')
+    .where("owner_code", owner_code)
+    .andWhere("approval_status", approval_status)
+}
+
 

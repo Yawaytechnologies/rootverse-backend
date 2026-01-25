@@ -2,6 +2,7 @@ import {
   registerVessel,
   getVessel,
   getVesselList,
+  getVesselsByOwnerId, // ✅ service function (keep this)
   updateVessel,
   removeVessel,
 } from "./vesselreg.service.js";
@@ -44,7 +45,9 @@ export async function getVesselById(req, res) {
     const row = await getVessel(vesselId);
 
     if (!row) {
-      return res.status(404).json({ success: false, message: "Vessel not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, data: row });
@@ -62,7 +65,7 @@ export async function getAllVessels(req, res) {
   }
 }
 
-// ✅ UPDATE OPTION (PUT) - full update
+// UPDATE OPTION (PUT) - full update
 export async function updateVesselById(req, res) {
   try {
     const { vesselId } = req.params;
@@ -85,7 +88,9 @@ export async function updateVesselById(req, res) {
     const row = await updateVessel(vesselId, req.body);
 
     if (!row) {
-      return res.status(404).json({ success: false, message: "Vessel not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, data: row });
@@ -94,7 +99,7 @@ export async function updateVesselById(req, res) {
   }
 }
 
-// ✅ PATCH (partial update) - keep yours as is
+//  PATCH (partial update) - keep yours as is
 export async function patchVessel(req, res) {
   try {
     const { vesselId } = req.params;
@@ -110,7 +115,9 @@ export async function patchVessel(req, res) {
     const row = await updateVessel(vesselId, req.body);
 
     if (!row) {
-      return res.status(404).json({ success: false, message: "Vessel not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, data: row });
@@ -125,10 +132,32 @@ export async function deleteVessel(req, res) {
     const ok = await removeVessel(vesselId);
 
     if (!ok) {
-      return res.status(404).json({ success: false, message: "Vessel not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Vessel not found" });
     }
 
     return res.json({ success: true, message: "Vessel deleted" });
+  } catch (err) {
+    return sendError(res, err);
+  }
+}
+
+//  NEW handler (renamed to avoid clash with service import)
+export async function getVesselsByOwnerIdHandler(req, res) {
+  try {
+    // if auth exists, prefer logged-in owner, else take from params
+    const owner_id = resolveOwnerId(req) ?? req.params.ownerId;
+
+    if (!owner_id) {
+      return res.status(400).json({
+        success: false,
+        message: "owner_id is required",
+      });
+    }
+
+    const rows = await getVesselsByOwnerId(owner_id, req.query);
+    return res.json({ success: true, data: rows });
   } catch (err) {
     return sendError(res, err);
   }
