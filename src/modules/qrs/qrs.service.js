@@ -1,24 +1,24 @@
-import { reserveQr, reserveBulkQrs, listQrs, getQrByCodePopulate, updateQr, deleteQr } from "./qrs.model.js";
+import { reserveQr, reserveBulkQrs, listQrs, getQrByCodePopulate, updateQr, deleteQr , getQrByStatusAndCode} from "./qrs.model.js";
 import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
 import { buildProfileKey } from "../../utils/storageKey.js";
 import db from "../../config/db.js";
 
 
-const ALLOWED_TYPES = new Set(["CRATE", "TRIP", "VESSEL"]);
+const ALLOWED_TYPES = new Set(["TRIP", "VESSEL", "FISH"]);
 
 
 function normType(type) {
   return String(type || "").trim().toUpperCase();
 }
 
-export async function reserveQrservice(type="CRATE"){
+export async function reserveQrservice(type="FISH") {
     if(!type) throw new Error("type is required");
     return reserveQr({type});
 
 }
 
 
-export async function reserveBulkService(type = "CRATE", count = 10) {
+export async function reserveBulkService(type = "FISH", count = 10) {
   const t = normType(type);
   if (!ALLOWED_TYPES.has(t)) throw new Error(`Invalid type: ${t}`);
 
@@ -305,6 +305,21 @@ export async function updateQrWithImages(code, images, updatesFromBody = {}) {
   if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'filled_at')) {
     updates.filled_at = updatesFromBody.filled_at;
   }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'size')) {
+    updates.size = updatesFromBody.size;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'damage')) {
+    updates.damage = updatesFromBody.damage;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'water_temperature')) {
+    updates.water_temperature = updatesFromBody.water_temperature;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'ph_level')) {
+    updates.ph_level = updatesFromBody.ph_level;
+  }
+  if (Object.prototype.hasOwnProperty.call(updatesFromBody, 'grade')) {
+    updates.grade = updatesFromBody.grade;
+  }
 
   // Update the QR record
   const updatedQr = await updateQr(qr.id, updates);
@@ -318,4 +333,12 @@ export async function updateQrWithImages(code, images, updatesFromBody = {}) {
 
   return updatedQr;
 }
+
+export async function getQrByStatusAndCodeService(status, code) {
+  if (!status) throw new Error("status is required");
+  if (!code) throw new Error("code is required");
+  return getQrByStatusAndCode(status, code);
+}
+
+
 
