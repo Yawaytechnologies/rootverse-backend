@@ -18,10 +18,12 @@ export function getOwnerById(id) {
         return trx(`${TABLE} as ru`)
             .leftJoin("states as s", "ru.state_id", "s.id")
             .leftJoin("districts as d", "ru.district_id", "d.id")
+            .leftJoin("locations as l", "ru.location_id", "l.id")
             .select(
                 "ru.*",
                 "s.name as state_name",
-                "d.name as district_name"
+                "d.name as district_name",
+                "l.name as location_name"
             )
             .where("ru.id", id)
             .first();
@@ -33,10 +35,12 @@ export function getAllOwners() {
         return trx(`${TABLE} as ru`)
             .leftJoin("states as s", "ru.state_id", "s.id")
             .leftJoin("districts as d", "ru.district_id", "d.id")
+            .leftJoin("locations as l", "ru.location_id", "l.id")
             .select(
                 "ru.*",
                 "s.name as state_name",
-                "d.name as district_name"
+                "d.name as district_name",
+                "l.name as location_name"
             );
     });
 }
@@ -45,10 +49,13 @@ export function getByRootverseType(rootverse_type) {
     return db(`${TABLE} as ru`)
         .leftJoin("states as s", "ru.state_id", "s.id")
         .leftJoin("districts as d", "ru.district_id", "d.id")
+        .leftJoin("locations as l", "ru.location_id", "l.id")
+
         .select(
             "ru.*",
             "s.name as state_name",
-            "d.name as district_name"
+            "d.name as district_name",
+            "l.name as location_name"
         )
         .where("ru.rootverse_type", rootverse_type);
 }
