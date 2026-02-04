@@ -18,6 +18,7 @@ export function getLocationByIdPopulated(id) {
             .select(    
                 "l.id",
                 "l.name",
+                "l.location_code",
                 "l.district_id",
                 "d.name as district_name",
                 "s.id as state_id",
@@ -40,6 +41,7 @@ export function getLocationByDistrictId(district_id) {
             .select(    
                 "l.id",
                 "l.name",
+                "l.location_code",
                 "l.district_id",
                 "d.name as district_name",
                 "s.id as state_id",
