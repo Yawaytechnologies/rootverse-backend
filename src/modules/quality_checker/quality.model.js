@@ -3,6 +3,7 @@ import db from "../../config/db.js";
 const TABLE = "quality_checker";
 const STATES = "states";
 const DISTRICTS = "districts";
+const LOCATIONS = "locations";
 
 /** ✅ Helper: returns quality checker with state and district names */
 export function getQualityCheckerPopulated(id) {
@@ -10,6 +11,7 @@ export function getQualityCheckerPopulated(id) {
         return trx(`${TABLE} as qc`)
             .join(`${STATES} as s`, "qc.state_id", "s.id")
             .join(`${DISTRICTS} as d`, "qc.district_id", "d.id")
+            .join(`${LOCATIONS} as l`, "qc.location_id", "l.id")
             .select(
                 "qc.id",
                 "qc.checker_name",
@@ -19,6 +21,8 @@ export function getQualityCheckerPopulated(id) {
                 "s.name as state_name",
                 "qc.district_id",
                 "d.name as district_name",
+                "qc.location_id",
+                "l.name as location_name",
                 "qc.checker_code",
                 "qc.is_active",
                 "qc.created_at",
@@ -38,6 +42,7 @@ export function getAllQualityCheckers(){
     return db(`${TABLE} as qc`)
         .join(`${STATES} as s`, "qc.state_id", "s.id")
         .join(`${DISTRICTS} as d`, "qc.district_id", "d.id")
+        .join(`${LOCATIONS} as l`, "qc.location_id", "l.id")
         .select(
             "qc.id",
             "qc.checker_name",
@@ -47,6 +52,8 @@ export function getAllQualityCheckers(){
             "s.name as state_name",
             "qc.district_id",
             "d.name as district_name",
+            "qc.location_id",
+            "l.name as location_name",
             "qc.checker_code",
             "qc.is_active",
             "qc.created_at",
@@ -68,6 +75,8 @@ export function getQualityCheckerByCode(checker_code){
             "s.name as state_name",
             "qc.district_id",
             "d.name as district_name",
+            "qc.location_id",
+            "l.name as location_name",
             "qc.checker_code",
             "qc.is_active",
             "qc.created_at",

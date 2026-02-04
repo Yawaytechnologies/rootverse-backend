@@ -39,6 +39,7 @@ export async function registerOwner(payload, profileImage) {
     const rootverse_type = payload.rootverse_type || payload.rootverseType;
     const state_id = payload.state_id || payload.stateId || null;
     const district_id = payload.district_id || payload.districtId || null;
+    const location_id = payload.location_id || payload.locationId || null;
 
     if (!phone(phone_no)) {
         throw new Error("Invalid phone number format.");
@@ -60,6 +61,7 @@ export async function registerOwner(payload, profileImage) {
             rootverse_type,
             state_id,
             district_id,
+            location_id,
             verification_status: "PENDING",
             profile_picture_url: null,
             profile_picture_key: null,
