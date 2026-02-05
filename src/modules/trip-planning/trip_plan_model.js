@@ -13,7 +13,7 @@ export function getAllTrip(){
         .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
         .select(
             "tp.id",
-            "tp.trip_name",
+            "tp.trip_id",
             "tp.owner_code",
             "tp.approval_status",
             "tp.created_at",
@@ -27,7 +27,7 @@ export function getTriPlanById(id){
    .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
    .select(
        "tp.id",
-       "tp.trip_name",
+       "tp.trip_id",
         "tp.owner_code",
         "tp.approval_status",
         "tp.created_at",
@@ -52,7 +52,7 @@ export async function approveTripPlan(id) {
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
   .select(
       "tp.id",
-      "tp.trip_name",
+      "tp.trip_id",
         "tp.owner_code",
         "tp.approval_status",
         "tp.created_at",
