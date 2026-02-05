@@ -1,4 +1,4 @@
-import { createTripPlanService, getAllTripService, getTripByIdService, deleteTripPlanService, updateTripPlanService, approveTripPlanService, getByOwnerCodeService, getByOwnerCodeAndStatusService, getAllTripPlansbyStatusService } from "./trip_plan_service.js";
+import { createTripPlanService, getAllTripService, getTripByIdService, deleteTripPlanService, updateTripPlanService, approveTripPlanService, getByOwnerCodeService, getByOwnerCodeAndStatusService, getAllTripPlansbyStatusService, getAllTripsByVesselIdService } from "./trip_plan_service.js";
 
 
 export async function createTripController(req, res){

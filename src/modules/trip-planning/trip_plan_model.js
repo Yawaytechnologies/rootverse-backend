@@ -83,9 +83,13 @@ export async function getbyownerCode(owner_code){
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
     .select(
         "tp.id",
-        "tp.trip_name",
+        "tp.trip_id",
         "tp.owner_code",
         "tp.approval_status",
+        "tp.diesel",
+        "tp.ice",
+        "tp.qr_count",
+        "tp.total",
         "tp.created_at",
         "tp.updated_at",
         "l.name as location_name"
@@ -98,9 +102,13 @@ export async function getbyownerCodeAndStatus(owner_code, approval_status){
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
     .select(
         "tp.id",
-        "tp.trip_name",
+        "tp.trip_id",
         "tp.owner_code",
         "tp.approval_status",
+        "tp.diesel",
+        "tp.ice",
+        "tp.qr_count",
+        "tp.total",
         "tp.created_at",
         "tp.updated_at",
         "l.name as location_name"
