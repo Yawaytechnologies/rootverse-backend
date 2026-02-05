@@ -4,7 +4,7 @@
  */
 export async function up(knex) {
     await knex.schema.alterTable("trip_plans", (table) => {
-        table.string("vessel_id").references("id").inTable("vessel_registration").onDelete("SET NULL");
+        table.integer("vessel_id").references("id").inTable("vessel_registration").onDelete("SET NULL");
     });
 
 };

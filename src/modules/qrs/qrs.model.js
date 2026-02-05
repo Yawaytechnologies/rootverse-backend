@@ -508,5 +508,6 @@ export const getAllCatchlogsRepo = async (filters) => {
   if (filters.trip_id) {
     q.where("qr.trip_id", filters.trip_id)
   }
+  
   return q;
 };
