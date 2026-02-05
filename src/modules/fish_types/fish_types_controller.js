@@ -4,7 +4,8 @@ import { createFishTypesService, getallfishTypesService, getbyfishTypesIdService
 export async function createFishTypesController(req, res){
     try{
         const payload = req.body;
-        const fishTypes = await createFishTypesService(payload);
+        const file = req.file;
+        const fishTypes = await createFishTypesService(payload, file);
         res.status(201).json(fishTypes)
     }
     catch(error){
