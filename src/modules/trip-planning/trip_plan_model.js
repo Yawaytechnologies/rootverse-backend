@@ -96,5 +96,7 @@ export async function getbyownerCodeAndStatus(owner_code, approval_status){
     .where("owner_code", owner_code)
     .andWhere("approval_status", approval_status)
 }
-
+export const getAllTripByStatus = async (status) => {
+    return db(TABLE).where("approval_status", status);
+};
 

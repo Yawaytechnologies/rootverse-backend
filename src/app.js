@@ -38,6 +38,7 @@ app.use('/api', fishTypes);
 app.use('/api/quality-checker', qualityCheckerRouter);
 app.use('/api/locations', locationRoutes);
 
+
 app.get("/db-test", async (req, res) => {
   try {
     const client =

@@ -1,4 +1,4 @@
-import { createTripPlanService, getAllTripService, getTripByIdService, deleteTripPlanService, updateTripPlanService, approveTripPlanService, getByOwnerCodeService, getByOwnerCodeAndStatusService } from "./trip_plan_service.js";
+import { createTripPlanService, getAllTripService, getTripByIdService, deleteTripPlanService, updateTripPlanService, approveTripPlanService, getByOwnerCodeService, getByOwnerCodeAndStatusService, getAllTripPlansbyStatusService } from "./trip_plan_service.js";
 
 
 export async function createTripController(req, res){
@@ -86,4 +86,14 @@ export async function getByOwnerCodeAndStatusController(req, res) {
     return res.status(400).json({ success: false, message: error.message });
   }
 }
+
+export const getAllTripPlansByStatusController = async (req, res) => {
+    try {
+        const { status } = req.params;  
+        const tripPlans = await getAllTripPlansbyStatusService(status);
+        return res.status(200).json({ success: true, data: tripPlans });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+};
 

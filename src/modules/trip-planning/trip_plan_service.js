@@ -1,4 +1,4 @@
-import { createTrips, getAllTrip, getTriPlanById, updateTrip, deleteTrip, approveTripPlan, getbyownerCode, getbyownerCodeAndStatus } from "./trip_plan_model.js";
+import { createTrips, getAllTrip, getTriPlanById, updateTrip, deleteTrip, approveTripPlan, getbyownerCode, getbyownerCodeAndStatus,getAllTripByStatus } from "./trip_plan_model.js";
 import { nanoid } from "nanoid";
 
 export async function createTripPlanService(payload){
@@ -41,6 +41,9 @@ export async function getByOwnerCodeService(owner_code){
 export async function getByOwnerCodeAndStatusService(owner_code, approval_status){
     return getbyownerCodeAndStatus(owner_code, approval_status)
 }
+export const getAllTripPlansbyStatusService = async (status) => {
+    return getAllTripByStatus(status);
+};
 
 
 
