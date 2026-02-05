@@ -11,6 +11,7 @@ export function getDistrictByIdPopulated(id) {
       .select(
         "d.id",
         "d.name",
+        "d.district_code",
         "d.state_id",
         "s.name as state_name",
         "d.created_at",
@@ -41,6 +42,7 @@ export function getAllDistricts() {
     .select(
       "d.id",
       "d.name",
+      "d.district_code",
       "d.state_id",
       "s.name as state_name",
       "d.created_at",
@@ -74,6 +76,7 @@ export function getDistrictsByStateId(state_id) {
       .select(
         "d.id",
         "d.name",
+        "d.district_code",
         "d.state_id",
         "s.name as state_name",
         "d.created_at",
