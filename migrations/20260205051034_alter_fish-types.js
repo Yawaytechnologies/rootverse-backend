@@ -2,7 +2,12 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
+export async function up(knex) {
+    await knex.schema.alterTable("fish-types", (table) => {
+        table.string("fish_type_url");
+        table.string("fish_type_key");
+    });
+
   
 };
 
@@ -10,6 +15,10 @@ exports.up = function(knex) {
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function(knex) {
+export async function down(knex) {
+    await knex.schema.alterTable("fish-types", (table) => {
+        table.dropColumn("fish_type_url");
+        table.dropColumn("fish_type_key");
+    });
   
 };
