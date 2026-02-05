@@ -120,3 +120,7 @@ export const getAllTripByStatus = async (status) => {
     return db(TABLE).where("approval_status", status);
 };
 
+ export const getAllTripsByVesselId = async (vessel_id) => {
+    return db(TABLE).where("vessel_id", vessel_id);
+}
+
