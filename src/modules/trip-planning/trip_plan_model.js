@@ -52,7 +52,7 @@ export async function approveTripPlan(id) {
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
   .select(
       "tp.id",
-      "tp.trip_id",
+      "tp.trip_id", 
         "tp.owner_code",
         "tp.approval_status",
         "tp.created_at",
