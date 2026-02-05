@@ -36,6 +36,7 @@ app.use('/api', tripPlanRouter);
 app.use('/api', fishTypes);
 app.use('/api/quality-checker', qualityCheckerRouter);
 
+
 app.get("/db-test", async (req, res) => {
   try {
     const client =
