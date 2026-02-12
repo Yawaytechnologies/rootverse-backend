@@ -15,6 +15,7 @@ import loginRoutes from './modules/auth/auth.routes.js';
 import qualityCheckerRouter from './modules/quality_checker/quality.router.js';
 import userRoutes from './modules/users/user.routes.js';
 import locationRoutes from './modules/location/location_router.js';
+import fishingMethods from './modules/fishing_methods/fishing_methods_router.js';
 
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api', tripPlanRouter);
 app.use('/api', fishTypes);
 app.use('/api/quality-checker', qualityCheckerRouter);
 app.use('/api/locations', locationRoutes);
+app.use('/api/fishing-methods', fishingMethods);
 
 
 app.get("/db-test", async (req, res) => {
