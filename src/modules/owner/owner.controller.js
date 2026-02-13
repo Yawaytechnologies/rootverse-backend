@@ -83,10 +83,9 @@ export async function getUsersByRootverseTypeController(req, res) {
 export async function updateVerification(req, res) {
   try {
     const ownerId = req.params.id;
-    const files = req.files;
     const payload = req.body;
 
-    const owner = await verifyOwnerDocs(ownerId, files, payload);
+    const owner = await verifyOwnerDocs(ownerId, payload);
     res.json(formatOwner(owner));
   } catch (err) {
     res.status(400).json({ error: err.message });
