@@ -2,7 +2,7 @@ import {
   registerVessel,
   getVessel,
   getVesselList,
-  getVesselsByOwnerId, // ✅ service function (keep this)
+  getVesselsByOwnerId, 
   updateVessel,
   removeVessel,
 } from "./vesselreg.service.js";
@@ -15,9 +15,8 @@ function sendError(res, err) {
   });
 }
 
-// ✅ choose owner from auth first (prevents spoofing), else allow body (for now)
+
 function resolveOwnerId(req) {
-  // If you have auth middleware, it should set req.user
   const fromAuth = req.user?.id || req.user?.userId || req.user?.owner_id;
   const fromBody = req.body?.owner_id;
 
@@ -65,12 +64,12 @@ export async function getAllVessels(req, res) {
   }
 }
 
-// UPDATE OPTION (PUT) - full update
+
 export async function updateVesselById(req, res) {
   try {
     const { vesselId } = req.params;
 
-    // block owner_id updates to avoid ownership change
+    
     if ("owner_id" in (req.body || {})) {
       return res.status(400).json({
         success: false,
@@ -99,12 +98,12 @@ export async function updateVesselById(req, res) {
   }
 }
 
-//  PATCH (partial update) - keep yours as is
+
 export async function patchVessel(req, res) {
   try {
     const { vesselId } = req.params;
 
-    // optional: block owner_id updates from patch to avoid ownership change
+    
     if ("owner_id" in (req.body || {})) {
       return res.status(400).json({
         success: false,
@@ -143,10 +142,10 @@ export async function deleteVessel(req, res) {
   }
 }
 
-//  NEW handler (renamed to avoid clash with service import)
+
 export async function getVesselsByOwnerIdHandler(req, res) {
   try {
-    // if auth exists, prefer logged-in owner, else take from params
+    
     const owner_id = resolveOwnerId(req) ?? req.params.ownerId;
 
     if (!owner_id) {
