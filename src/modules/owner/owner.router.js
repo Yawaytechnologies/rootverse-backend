@@ -12,13 +12,7 @@ router.get('/owner/:rootverse_type', getUsersByRootverseTypeController);
 router.get("/owner", listOwners);
 router.put("/owner/:id", upload.any(), updateOwnerController);
 router.put(
-  "/owner/:id/verify",
-  upload.fields([
-    { name: "aadhar", maxCount: 1 },
-    { name: "pan", maxCount: 1 },
-    { name: "govt", maxCount: 1 },
-  ]),
-  updateVerification
+  "/owner/:id/verify", updateVerification
 );
 
 

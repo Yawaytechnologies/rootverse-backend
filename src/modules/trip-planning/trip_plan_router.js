@@ -9,7 +9,8 @@ import {
   getByOwnerCodeController,
   getByOwnerCodeAndStatusController,
   getAllTripPlansByStatusController,
-  getAlltripsByVesselIdController
+  getAlltripsByVesselIdController,
+  completeTripPlanController
 } from "./trip_plan_controller.js";
 
 const router = express.Router();
@@ -27,5 +28,6 @@ router.get(
 );
 router.get("/trip/status/:status", getAllTripPlansByStatusController);
 router.get("/trip/vessel/:vessel_id", getAlltripsByVesselIdController);
+router.put("/trip/:id/complete", completeTripPlanController);
 
 export default router;

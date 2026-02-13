@@ -2,6 +2,8 @@ import db from "../../config/db.js";
 
 const TABLE = "trip_plans"
 const LOCATIONS = "locations"
+const FISHING_METHODS = "fishing_methods"
+const FISH_TYPES = "fish-types"
 
 export function createTrips(payload) {
     return db(TABLE).insert(payload).returning('*')
@@ -11,6 +13,8 @@ export function createTrips(payload) {
 export function getAllTrip(){
     return db(`${TABLE} as tp`)
         .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
+        .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
+        .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
         .select(
             "tp.id",
             "tp.trip_id",
@@ -22,13 +26,23 @@ export function getAllTrip(){
             "tp.approval_status",
             "tp.created_at",
             "tp.updated_at",
-            "l.name as location_name"
+            "l.name as location_name",
+            "fm.name as method_name",
+            "fm.id as method_id",
+            "fm.code as method_code",
+            "fm.image_url as image_url",
+            "ft.name as fish_name",
+            "ft.id as fish_id",
+            "ft.code as fish_code",
+            "ft.image_url as fish_type_url",
         );
 }
 
 export function getTriPlanById(id){
    return db(`${TABLE} as tp`)
    .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
+   .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
+   .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
    .select(
        "tp.id",
        "tp.trip_id",
@@ -40,7 +54,15 @@ export function getTriPlanById(id){
         "tp.total",
         "tp.created_at",
         "tp.updated_at",
-        "l.name as location_name"
+        "l.name as location_name",
+        "fm.name as method_name",
+        "fm.id as method_id",
+        "fm.code as method_code",
+        "fm.image_url as image_url",
+        "ft.name as fish_name",
+        "ft.id as fish_id",
+        "ft.code as fish_code",
+        "ft.image_url as fish_type_url",
     )
     .where("tp.id", id)
     .first();
@@ -58,6 +80,8 @@ export function deleteTrip(id){
 export async function approveTripPlan(id) {
   return db(`${TABLE} as tp`)
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
+  .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
+  .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
   .select(
       "tp.id",
       "tp.trip_id", 
@@ -69,7 +93,15 @@ export async function approveTripPlan(id) {
         "tp.total",
         "tp.created_at",
         "tp.updated_at",
-        "l.name as location_name"
+        "l.name as location_name",
+        "fm.name as method_name",
+        "fm.id as method_id",
+        "fm.code as method_code",
+        "fm.image_url as image_url",
+        "ft.name as fish_name",
+        "ft.id as fish_id",
+        "ft.code as fish_code",
+        "ft.image_url as fish_type_url",
     )
 
     .where({ id })
@@ -81,6 +113,8 @@ export async function approveTripPlan(id) {
 export async function getbyownerCode(owner_code){
     return db(`${TABLE} as tp`)
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
+    .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
+    .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
     .select(
         "tp.id",
         "tp.trip_id",
@@ -92,7 +126,15 @@ export async function getbyownerCode(owner_code){
         "tp.total",
         "tp.created_at",
         "tp.updated_at",
-        "l.name as location_name"
+        "l.name as location_name",
+        "fm.name as method_name",
+        "fm.id as method_id",
+        "fm.code as method_code",
+        "fm.image_url as image_url",
+        "ft.name as fish_name",
+        "ft.id as fish_id",
+        "ft.code as fish_code",
+        "ft.image_url as fish_type_url",
     )
     .where("owner_code", owner_code)
 }
@@ -100,6 +142,8 @@ export async function getbyownerCode(owner_code){
 export async function getbyownerCodeAndStatus(owner_code, approval_status){
     return db(`${TABLE} as tp`)
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
+    .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
+    .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
     .select(
         "tp.id",
         "tp.trip_id",
@@ -111,7 +155,15 @@ export async function getbyownerCodeAndStatus(owner_code, approval_status){
         "tp.total",
         "tp.created_at",
         "tp.updated_at",
-        "l.name as location_name"
+        "l.name as location_name",
+        "fm.name as method_name",
+        "fm.id as method_id",
+        "fm.code as method_code",
+        "fm.image_url as image_url",
+        "ft.name as fish_name",
+        "ft.id as fish_id",
+        "ft.code as fish_code",
+        "ft.image_url as fish_type_url",
     )
     .where("owner_code", owner_code)
     .andWhere("approval_status", approval_status)
@@ -122,5 +174,38 @@ export const getAllTripByStatus = async (status) => {
 
  export const getAllTripsByVesselId = async (vessel_id) => {
     return db(TABLE).where("vessel_id", vessel_id);
+}
+
+export async function completeTripPlan(id) {
+  return db(`${TABLE} as tp`)
+  .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
+  .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
+  .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+  .select(
+      "tp.id",
+      "tp.trip_id", 
+        "tp.owner_code",
+        "tp.approval_status",
+        "tp.diesel",
+        "tp.ice",
+        "tp.qr_count",
+        "tp.total",
+        "tp.created_at",
+        "tp.updated_at",
+        "l.name as location_name",
+        "fm.name as method_name",
+        "fm.id as method_id",
+        "fm.code as method_code",
+        "fm.image_url as image_url",
+        "ft.name as fish_name",
+        "ft.id as fish_id",
+        "ft.code as fish_code",
+        "ft.image_url as fish_type_url",
+    )
+
+    .where({ id })
+    .where("tp.approval_status", "approved")
+    .update({ approval_status: "complete", updated_at: db.fn.now() })
+    .returning("*");
 }
 
