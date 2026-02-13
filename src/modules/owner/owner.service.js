@@ -17,6 +17,7 @@ async function uploadDoc(userId, file, type) {
 
   const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(key);
   return { key, url: data.publicUrl };
+  
 }
 
 
@@ -164,42 +165,19 @@ export async function fetchUsersByRootverseType(rootverse_type) {
 }
 
 
-export async function verifyOwnerDocs(id, files, payload ={}){
-    const updates ={};
-      if (payload?.aadhar_number) updates.aadhar_number = payload.aadhar_number;
-      if (payload?.pan_number) updates.pan_number = payload.pan_number;
-      if (payload?.govt_id) updates.govt_id = payload.govt_id;
-
-      if (files?.aadhar?.[0]) {
-      const { key, url } = await uploadDoc(id, files.aadhar[0], "aadhar");
-      updates.aadhar_pdf_key = key;
-      updates.aadhar_pdf_url = url;
-    }
-
-     // PAN file
-     if (files?.pan?.[0]) {
-     const { key, url } = await uploadDoc(id, files.pan[0], "pan");
-     updates.pan_pdf_key = key;
-     updates.pan_pdf_url = url;
-     }
-
-    // Govt ID file
-    if (files?.govt?.[0]) {
-    const { key, url } = await uploadDoc(id, files.govt[0], "govt");
-    updates.govt_pdf_key = key;
-    updates.govt_pdf_url = url;
-   }
-     updates.verification_status = "VERIFIED";
-  updates.updated_at = db.fn.now();
+export async function verifyOwnerDocs(id, payload = {}) {
+  const updates = {
+    verification_status: "VERIFIED",
+    updated_at: db.fn.now(),
+  };
 
   await updateOwner(id, updates);
   const owner = await getOwnerById(id);
   return owner;
-
-
-
-
-
 }
+
+
+
+
 
 
