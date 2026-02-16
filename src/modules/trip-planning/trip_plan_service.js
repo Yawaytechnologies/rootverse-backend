@@ -9,6 +9,7 @@ import {
   getbyownerCodeAndStatus,
   getAllTripByStatus,
   getAllTripsByVesselId,
+  completeTripPlan
 } from "./trip_plan_model.js";
 import { nanoid } from "nanoid";
 
@@ -60,3 +61,7 @@ export const getAllTripPlansbyStatusService = async (status) => {
 export const getAllTripsByVesselIdService = async (vessel_id) => {
   return getAllTripsByVesselId(vessel_id);
 };
+
+export async function completeTripPlanService(id) {
+  return completeTripPlan(id);
+}

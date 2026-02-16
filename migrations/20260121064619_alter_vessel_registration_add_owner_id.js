@@ -13,18 +13,12 @@ export async function up(knex) {
 
   const hasOwnerId = await knex.schema.hasColumn(tableName, "owner_id");
 
-  // 1) add as NULLABLE first
   if (!hasOwnerId) {
     await knex.schema.alterTable(tableName, (table) => {
       table.integer("owner_id").unsigned().nullable();
     });
   }
 
-  // 2) backfill existing rows
-  // You must decide how to backfill. Here are safe defaults:
-
-  // 2a) If there is exactly ONE owner in ownersTable, assign that owner to all old rows
-  // If multiple owners exist, this will pick the smallest id (first created)
   const firstOwner = await knex(ownersTable).select("id").orderBy("id", "asc").first();
 
   if (!firstOwner?.id) {
