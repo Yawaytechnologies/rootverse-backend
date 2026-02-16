@@ -121,6 +121,6 @@ export const getAllTripByStatus = async (status) => {
 };
 
  export const getAllTripsByVesselId = async (vessel_id) => {
-    return db(TABLE).where("vessel_id", vessel_id);
+    return db(TABLE).where("vessel_id", vessel_id).andWhere("approval_status", "approved");
 }
 
