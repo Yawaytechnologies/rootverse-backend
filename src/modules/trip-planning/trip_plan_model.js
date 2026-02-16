@@ -4,6 +4,7 @@ const TABLE = "trip_plans"
 const LOCATIONS = "locations"
 const FISHING_METHODS = "fishing_methods"
 const FISH_TYPES = "fish-types"
+const VESSELS = "vessel_registration"
 
 export function createTrips(payload) {
     return db(TABLE).insert(payload).returning('*')
@@ -15,6 +16,7 @@ export function getAllTrip(){
         .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
         .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
         .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+        .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
         .select(
             "tp.id",
             "tp.trip_id",
@@ -35,6 +37,9 @@ export function getAllTrip(){
             "ft.id as fish_id",
             "ft.fish_code as fish_code",
             "ft.fish_type_url as fish_type_url",
+            "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
         );
 }
 
@@ -43,6 +48,7 @@ export function getTriPlanById(id){
    .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
    .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
    .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+   .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
    .select(
       "tp.id",
             "tp.trip_id",
@@ -63,6 +69,9 @@ export function getTriPlanById(id){
             "ft.id as fish_id",
             "ft.fish_code as fish_code",
             "ft.fish_type_url as fish_type_url",
+            "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
     .where("tp.id", id)
     .first();
@@ -82,6 +91,7 @@ export async function approveTripPlan(id) {
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
   .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
   .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+  .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
   .select(
       "tp.id",
             "tp.trip_id",
@@ -102,6 +112,9 @@ export async function approveTripPlan(id) {
             "ft.id as fish_id",
             "ft.fish_code as fish_code",
             "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
 
     .where({ id })
@@ -115,6 +128,7 @@ export async function getbyownerCode(owner_code){
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
     .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
     .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+    .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
     .select(
        "tp.id",
             "tp.trip_id",
@@ -135,6 +149,9 @@ export async function getbyownerCode(owner_code){
             "ft.id as fish_id",
             "ft.fish_code as fish_code",
             "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
     .where("owner_code", owner_code)
 }
@@ -144,6 +161,7 @@ export async function getbyownerCodeAndStatus(owner_code, approval_status){
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
     .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
     .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+    .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
     .select(
        "tp.id",
             "tp.trip_id",
@@ -164,6 +182,9 @@ export async function getbyownerCodeAndStatus(owner_code, approval_status){
             "ft.id as fish_id",
             "ft.fish_code as fish_code",
             "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
     .where("owner_code", owner_code)
     .andWhere("approval_status", approval_status)
@@ -181,6 +202,7 @@ export async function completeTripPlan(id) {
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
   .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
   .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+  .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
   .select(
       "tp.id",
             "tp.trip_id",
@@ -201,6 +223,9 @@ export async function completeTripPlan(id) {
             "ft.id as fish_id",
             "ft.fish_code as fish_code",
             "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
 
     .where({ id })
