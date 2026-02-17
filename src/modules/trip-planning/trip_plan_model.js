@@ -4,6 +4,7 @@ const TABLE = "trip_plans"
 const LOCATIONS = "locations"
 const FISHING_METHODS = "fishing_methods"
 const FISH_TYPES = "fish-types"
+const VESSELS = "vessel_registration"
 
 export function createTrips(payload) {
     return db(TABLE).insert(payload).returning('*')
@@ -15,6 +16,7 @@ export function getAllTrip(){
         .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
         .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
         .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+        .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
         .select(
             "tp.id",
             "tp.trip_id",
@@ -27,14 +29,17 @@ export function getAllTrip(){
             "tp.created_at",
             "tp.updated_at",
             "l.name as location_name",
-            "fm.name as method_name",
+            "fm.method_name as method_name",
             "fm.id as method_id",
-            "fm.code as method_code",
+            "fm.method_code as method_code",
             "fm.image_url as image_url",
-            "ft.name as fish_name",
+            "ft.fish_name as fish_name",
             "ft.id as fish_id",
-            "ft.code as fish_code",
-            "ft.image_url as fish_type_url",
+            "ft.fish_code as fish_code",
+            "ft.fish_type_url as fish_type_url",
+            "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
         );
 }
 
@@ -43,26 +48,30 @@ export function getTriPlanById(id){
    .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
    .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
    .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+   .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
    .select(
-       "tp.id",
-       "tp.trip_id",
-        "tp.owner_code",
-        "tp.approval_status",
-        "tp.diesel",
-        "tp.ice",
-        "tp.qr_count",
-        "tp.total",
-        "tp.created_at",
-        "tp.updated_at",
-        "l.name as location_name",
-        "fm.name as method_name",
-        "fm.id as method_id",
-        "fm.code as method_code",
-        "fm.image_url as image_url",
-        "ft.name as fish_name",
-        "ft.id as fish_id",
-        "ft.code as fish_code",
-        "ft.image_url as fish_type_url",
+      "tp.id",
+            "tp.trip_id",
+            "tp.owner_code",
+            "tp.diesel",
+            "tp.ice",
+            "tp.qr_count",
+            "tp.total",
+            "tp.approval_status",
+            "tp.created_at",
+            "tp.updated_at",
+            "l.name as location_name",
+            "fm.method_name as method_name",
+            "fm.id as method_id",
+            "fm.method_code as method_code",
+            "fm.image_url as image_url",
+            "ft.fish_name as fish_name",
+            "ft.id as fish_id",
+            "ft.fish_code as fish_code",
+            "ft.fish_type_url as fish_type_url",
+            "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
     .where("tp.id", id)
     .first();
@@ -82,26 +91,30 @@ export async function approveTripPlan(id) {
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
   .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
   .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+  .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
   .select(
       "tp.id",
-      "tp.trip_id", 
-        "tp.owner_code",
-        "tp.approval_status",
-        "tp.diesel",
-        "tp.ice",
-        "tp.qr_count",
-        "tp.total",
-        "tp.created_at",
-        "tp.updated_at",
-        "l.name as location_name",
-        "fm.name as method_name",
-        "fm.id as method_id",
-        "fm.code as method_code",
-        "fm.image_url as image_url",
-        "ft.name as fish_name",
-        "ft.id as fish_id",
-        "ft.code as fish_code",
-        "ft.image_url as fish_type_url",
+            "tp.trip_id",
+            "tp.owner_code",
+            "tp.diesel",
+            "tp.ice",
+            "tp.qr_count",
+            "tp.total",
+            "tp.approval_status",
+            "tp.created_at",
+            "tp.updated_at",
+            "l.name as location_name",
+            "fm.method_name as method_name",
+            "fm.id as method_id",
+            "fm.method_code as method_code",
+            "fm.image_url as image_url",
+            "ft.fish_name as fish_name",
+            "ft.id as fish_id",
+            "ft.fish_code as fish_code",
+            "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
 
     .where({ id })
@@ -115,26 +128,30 @@ export async function getbyownerCode(owner_code){
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
     .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
     .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+    .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
     .select(
-        "tp.id",
-        "tp.trip_id",
-        "tp.owner_code",
-        "tp.approval_status",
-        "tp.diesel",
-        "tp.ice",
-        "tp.qr_count",
-        "tp.total",
-        "tp.created_at",
-        "tp.updated_at",
-        "l.name as location_name",
-        "fm.name as method_name",
-        "fm.id as method_id",
-        "fm.code as method_code",
-        "fm.image_url as image_url",
-        "ft.name as fish_name",
-        "ft.id as fish_id",
-        "ft.code as fish_code",
-        "ft.image_url as fish_type_url",
+       "tp.id",
+            "tp.trip_id",
+            "tp.owner_code",
+            "tp.diesel",
+            "tp.ice",
+            "tp.qr_count",
+            "tp.total",
+            "tp.approval_status",
+            "tp.created_at",
+            "tp.updated_at",
+            "l.name as location_name",
+            "fm.method_name as method_name",
+            "fm.id as method_id",
+            "fm.method_code as method_code",
+            "fm.image_url as image_url",
+            "ft.fish_name as fish_name",
+            "ft.id as fish_id",
+            "ft.fish_code as fish_code",
+            "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
     .where("owner_code", owner_code)
 }
@@ -144,26 +161,30 @@ export async function getbyownerCodeAndStatus(owner_code, approval_status){
     .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
     .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
     .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+    .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
     .select(
-        "tp.id",
-        "tp.trip_id",
-        "tp.owner_code",
-        "tp.approval_status",
-        "tp.diesel",
-        "tp.ice",
-        "tp.qr_count",
-        "tp.total",
-        "tp.created_at",
-        "tp.updated_at",
-        "l.name as location_name",
-        "fm.name as method_name",
-        "fm.id as method_id",
-        "fm.code as method_code",
-        "fm.image_url as image_url",
-        "ft.name as fish_name",
-        "ft.id as fish_id",
-        "ft.code as fish_code",
-        "ft.image_url as fish_type_url",
+       "tp.id",
+            "tp.trip_id",
+            "tp.owner_code",
+            "tp.diesel",
+            "tp.ice",
+            "tp.qr_count",
+            "tp.total",
+            "tp.approval_status",
+            "tp.created_at",
+            "tp.updated_at",
+            "l.name as location_name",
+            "fm.method_name as method_name",
+            "fm.id as method_id",
+            "fm.method_code as method_code",
+            "fm.image_url as image_url",
+            "ft.fish_name as fish_name",
+            "ft.id as fish_id",
+            "ft.fish_code as fish_code",
+            "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
     .where("owner_code", owner_code)
     .andWhere("approval_status", approval_status)
@@ -181,26 +202,30 @@ export async function completeTripPlan(id) {
   .join(`${LOCATIONS} as l`, "tp.location_id", "l.id")
   .join(`${FISHING_METHODS} as fm`, "tp.fishing_method_id", "fm.id")
   .join(`${FISH_TYPES} as ft`, "tp.fish_species", "ft.id")
+  .join(`${VESSELS} as v`, "tp.vessel_id", "v.id")
   .select(
       "tp.id",
-      "tp.trip_id", 
-        "tp.owner_code",
-        "tp.approval_status",
-        "tp.diesel",
-        "tp.ice",
-        "tp.qr_count",
-        "tp.total",
-        "tp.created_at",
-        "tp.updated_at",
-        "l.name as location_name",
-        "fm.name as method_name",
-        "fm.id as method_id",
-        "fm.code as method_code",
-        "fm.image_url as image_url",
-        "ft.name as fish_name",
-        "ft.id as fish_id",
-        "ft.code as fish_code",
-        "ft.image_url as fish_type_url",
+            "tp.trip_id",
+            "tp.owner_code",
+            "tp.diesel",
+            "tp.ice",
+            "tp.qr_count",
+            "tp.total",
+            "tp.approval_status",
+            "tp.created_at",
+            "tp.updated_at",
+            "l.name as location_name",
+            "fm.method_name as method_name",
+            "fm.id as method_id",
+            "fm.method_code as method_code",
+            "fm.image_url as image_url",
+            "ft.fish_name as fish_name",
+            "ft.id as fish_id",
+            "ft.fish_code as fish_code",
+            "ft.fish_type_url as fish_type_url",
+                       "v.id as vessel_id",
+            "v.vessel_name as vessel_name",
+            "v.rv_vessel_id as vessel_code",
     )
 
     .where({ id })
