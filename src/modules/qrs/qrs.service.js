@@ -1,5 +1,4 @@
 import {
-  reserveQr,
   reserveBulkQrs,
   listQrs,
   getQrByCodePopulate,
@@ -12,7 +11,7 @@ import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
 import { buildProfileKey } from "../../utils/storageKey.js";
 import db from "../../config/db.js";
 
-const ALLOWED_TYPES = new Set(["TRIP", "VESSEL", "FISH"]);
+const ALLOWED_TYPES = new Set(["WC", "AC", "MC"]);
 
 function normType(type) {
   return String(type || "")
@@ -20,12 +19,7 @@ function normType(type) {
     .toUpperCase();
 }
 
-export async function reserveQrservice(type = "FISH") {
-  if (!type) throw new Error("type is required");
-  return reserveQr({ type });
-}
-
-export async function reserveBulkService(type = "FISH", count = 10) {
+export async function reserveBulkService(type, count, locationId, methodId) {
   const t = normType(type);
   if (!ALLOWED_TYPES.has(t)) throw new Error(`Invalid type: ${t}`);
 
@@ -33,7 +27,7 @@ export async function reserveBulkService(type = "FISH", count = 10) {
   if (!Number.isFinite(c) || c < 1) throw new Error("count must be >= 1");
   if (c > 500) throw new Error("count too large (max 500)");
 
-  return reserveBulkQrs({ type: t, count: c });
+  return reserveBulkQrs({ type: t, count: c, locationId, methodId });
 }
 
 export async function listQrsService({ type, status, page, limit, populate }) {
@@ -389,7 +383,6 @@ export async function getQrByStatusAndCodeService(status, code) {
 export async function getAllCatchlogsService(query) {
   const trip_id = query.trip_id || null;
   const trip_status = query.trip_status || null;
- 
 
   const filters = { trip_id, trip_status };
   return getAllCatchlogsRepo(filters);
