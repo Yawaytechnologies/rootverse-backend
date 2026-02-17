@@ -69,63 +69,53 @@ export async function getQrByIdPopulated(id) {
   };
 }
 
-export async function reserveQr({ type }) {
-  return db.transaction(async (trx) => {
-    // 1) insert row first
-    const [row] = await trx(TABLE)
-      .insert({ type, status: "NEW" })
-      .returning(["id", "type", "status"]);
-
-    // 2) build final code using id
-    const code = buildCode(type, row.id);
-
-    // 3) update code back
-    const [updated] = await trx(TABLE)
-      .where({ id: row.id })
-      .update({ code, updated_at: trx.fn.now() })
-      .returning(["id", "type", "code", "status", "created_at", "updated_at"]);
-
-    return updated;
-  });
-}
-
-/** Milestone 2: bulk reserve */
-export async function reserveBulkQrs({ type, count }) {
+export async function reserveBulkQrs({ type, count, locationId, methodId }) {
   const t = normalizeType(type);
   const c = Number(count);
 
+  if (!Number.isInteger(c) || c <= 0)
+    throw new Error("count must be a positive integer");
+  if (!locationId) throw new Error("locationId is required");
+  if (!methodId) throw new Error("methodId is required");
+
   return db.transaction(async (trx) => {
-    // 1) insert N rows
+    // Gets location_code from locations table
+    const loc = await trx("locations")
+      .select("id", "location_code")
+      .where({ id: locationId })
+      .first();
+    if (!loc) throw new Error("Invalid locationId");
+
+    // Gets method_code from fishing_methods table
+    const method = await trx("fishing_methods")
+      .select("id", "method_code")
+      .where({ id: methodId })
+      .first();
+    if (!method) throw new Error("Invalid methodId");
+
     const rows = Array.from({ length: c }, () => ({
       type: t,
       status: "NEW",
+      location_id: loc.id,
+      method_id: method.id,
+      location_code: loc.location_code,
+      method_code: method.method_code,
     }));
 
-    const inserted = await trx(TABLE)
+    return trx("qrs")
       .insert(rows)
-      .returning(["id", "type", "status", "created_at"]);
-
-    // 2) update each row with its code
-    const results = [];
-    for (const r of inserted) {
-      const code = buildCode(r.type, r.id);
-
-      const [updated] = await trx(TABLE)
-        .where({ id: r.id })
-        .update({ code, updated_at: trx.fn.now() })
-        .returning([
-          "id",
-          "type",
-          "code",
-          "status",
-          "created_at",
-          "updated_at",
-        ]);
-
-      results.push(updated);
-    }
-
-    return results;
+      .returning([
+        "id",
+        "type",
+        "location_id",
+        "method_id",
+        "location_code",
+        "method_code",
+        "code",
+        "status",
+        "created_at",
+        "updated_at",
+      ]);
   });
 }
 
@@ -506,8 +496,8 @@ export const getAllCatchlogsRepo = async (filters) => {
     q.where("t.approval_status", filters.trip_status);
   }
   if (filters.trip_id) {
-    q.where("qr.trip_id", filters.trip_id)
+    q.where("qr.trip_id", filters.trip_id);
   }
-  
+
   return q;
 };
