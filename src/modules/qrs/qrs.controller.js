@@ -1,5 +1,4 @@
 import {
-  reserveQrservice,
   reserveBulkService,
   listQrsService,
   getFilledQrByCode,
@@ -12,20 +11,10 @@ import { getQrByCodePopulate } from "./qrs.model.js";
 import { updateOwner } from "../owner/owner.model.js";
 import db from "../../config/db.js";
 
-export async function reserveQrsController(req, res) {
-  try {
-    const { type } = req.body;
-    const qr = await reserveQrservice(type || "FISH");
-    res.status(201).json({ sucess: true, qr });
-  } catch (err) {
-    res.status(400).json({ sucess: false, message: err.message });
-  }
-}
-
 export async function reserveBulkController(req, res) {
   try {
-    const { type, count } = req.body;
-    const qrs = await reserveBulkService(type, count);
+    const { type, count, locationId, methodId } = req.body;
+    const qrs = await reserveBulkService(type, count, locationId, methodId);
     res.status(201).json({ success: true, count: qrs.length, qrs });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
