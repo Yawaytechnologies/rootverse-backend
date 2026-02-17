@@ -7,34 +7,6 @@ const ID_PREFIX = "RV-VES";
 const DEFAULT_REGION = "TN";
 const PAD_LEN = 6;
 
-/** ---------------------- JSON helpers ---------------------- **/
-function toJsonString(v) {
-  if (v == null) return null;
-  if (Array.isArray(v)) return JSON.stringify(v);
-
-  if (typeof v === "string") {
-    try {
-      return JSON.stringify(JSON.parse(v));
-    } catch {
-      return JSON.stringify([v]);
-    }
-  }
-
-  return JSON.stringify([String(v)]);
-}
-
-function fromJsonString(v) {
-  if (v == null) return null;
-  if (Array.isArray(v)) return v;
-  if (typeof v !== "string") return null;
-
-  try {
-    return JSON.parse(v);
-  } catch {
-    return v;
-  }
-}
-
 function padN(n, len) {
   const s = String(n);
   return s.length >= len ? s : "0".repeat(len - s.length) + s;
@@ -47,16 +19,28 @@ function buildRvVesselId({ region = DEFAULT_REGION, id }) {
 /** ---------------------- Normalizers ---------------------- **/
 function normalizeForInsert(payload = {}) {
   return {
-    owner_id: payload.owner_id, 
+    owner_id: payload.owner_id,
+
     govt_registration_number: payload.govt_registration_number?.trim(),
     local_identifier: payload.local_identifier?.trim() ?? null,
     vessel_name: payload.vessel_name?.trim(),
     home_port: payload.home_port?.trim(),
     vessel_type: payload.vessel_type?.trim(),
-    allowed_fishing_methods:
-      payload.allowed_fishing_methods == null
-        ? null
-        : toJsonString(payload.allowed_fishing_methods),
+
+    
+    fishing_license_no: payload.fishing_license_no?.trim() ?? null,
+    crew_capacity_max:
+      payload.crew_capacity_max == null ? null : Number(payload.crew_capacity_max),
+    storage_capacity_kg:
+      payload.storage_capacity_kg == null ? null : Number(payload.storage_capacity_kg),
+    engine_power_hp:
+      payload.engine_power_hp == null ? null : Number(payload.engine_power_hp),
+    fuel_type: payload.fuel_type?.trim() ?? null,
+
+    // Enum values
+    approval_status: payload.approval_status
+      ? String(payload.approval_status).toUpperCase().trim()
+      : undefined,
   };
 }
 
@@ -73,14 +57,34 @@ function normalizeForUpdate(updates = {}) {
   if ("home_port" in updates) out.home_port = updates.home_port?.trim();
   if ("vessel_type" in updates) out.vessel_type = updates.vessel_type?.trim();
 
-  if ("allowed_fishing_methods" in updates) {
-    out.allowed_fishing_methods =
-      updates.allowed_fishing_methods == null
+  // ✅ NEW
+  if ("fishing_license_no" in updates)
+    out.fishing_license_no = updates.fishing_license_no?.trim() ?? null;
+
+  if ("crew_capacity_max" in updates)
+    out.crew_capacity_max =
+      updates.crew_capacity_max == null ? null : Number(updates.crew_capacity_max);
+
+  if ("storage_capacity_kg" in updates)
+    out.storage_capacity_kg =
+      updates.storage_capacity_kg == null ? null : Number(updates.storage_capacity_kg);
+
+  if ("engine_power_hp" in updates)
+    out.engine_power_hp =
+      updates.engine_power_hp == null ? null : Number(updates.engine_power_hp);
+
+  if ("fuel_type" in updates)
+    out.fuel_type = updates.fuel_type?.trim() ?? null;
+
+  // ✅ enum: PENDING / APPROVED
+  if ("approval_status" in updates) {
+    out.approval_status =
+      updates.approval_status == null
         ? null
-        : toJsonString(updates.allowed_fishing_methods);
+        : String(updates.approval_status).toUpperCase().trim();
   }
 
-  //  do not allow owner_id update from model layer too
+  //  Do not allow owner_id update from model layer
   if ("owner_id" in updates) delete out.owner_id;
 
   out.updated_at = db.fn.now();
@@ -88,11 +92,7 @@ function normalizeForUpdate(updates = {}) {
 }
 
 function mapRow(row) {
-  if (!row) return row;
-  return {
-    ...row,
-    allowed_fishing_methods: fromJsonString(row.allowed_fishing_methods),
-  };
+  return row;
 }
 
 /** ---------------------- CRUD ---------------------- **/
@@ -138,7 +138,9 @@ export async function listVessels({ limit = 20, offset = 0, q = "" } = {}) {
       b.whereILike("rv_vessel_id", like)
         .orWhereILike("govt_registration_number", like)
         .orWhereILike("vessel_name", like)
-        .orWhereILike("home_port", like);
+        .orWhereILike("home_port", like)
+        .orWhereILike("fishing_license_no", like)
+        .orWhereILike("fuel_type", like);
     });
   }
 
@@ -167,8 +169,11 @@ export async function deleteVessel(id) {
   return deleted > 0;
 }
 
-//  get vessels by owner_id (numeric DB owner id)
-export async function listVesselsByOwnerId(owner_id, { limit = 50, offset = 0, q = "" } = {}) {
+// Get vessels by owner_id (numeric DB owner id)
+export async function listVesselsByOwnerId(
+  owner_id,
+  { limit = 50, offset = 0, q = "" } = {}
+) {
   const query = db(VESSEL_TABLE).select("*").where({ owner_id });
 
   if (q && q.trim()) {
@@ -177,7 +182,9 @@ export async function listVesselsByOwnerId(owner_id, { limit = 50, offset = 0, q
       b.whereILike("rv_vessel_id", like)
         .orWhereILike("govt_registration_number", like)
         .orWhereILike("vessel_name", like)
-        .orWhereILike("home_port", like);
+        .orWhereILike("home_port", like)
+        .orWhereILike("fishing_license_no", like)
+        .orWhereILike("fuel_type", like);
     });
   }
 
