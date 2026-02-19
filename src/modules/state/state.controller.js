@@ -1,4 +1,4 @@
-import { registerState, listStates, getState, modifyState, removeState  } from "./state.service.js";
+import { registerState, listStates, getState, modifyState, removeState, listStatesByCountryId  } from "./state.service.js";
 
 export async function createStateController(req, res) {
     try {
@@ -45,6 +45,17 @@ export async function deleteStateController(req, res) {
         const { id } = req.params;
         await removeState(id);
         res.status(204).send();
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+
+export async function listStatesByCountryIdController(req, res) {
+    try {
+        const { country_id } = req.params;
+        const states = await listStatesByCountryId(country_id);
+        res.status(200).json(states);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
