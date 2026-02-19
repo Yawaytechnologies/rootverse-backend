@@ -2,12 +2,14 @@ import db from "../../config/db.js";
 
 const DISTRICT = "districts";
 const STATE = "states";
+const COUNTRY = "country";
 
 /** ✅ Helper: always returns a district row with state_name */
 export function getDistrictByIdPopulated(id) {
   return db.transaction(async (trx) => {
     return trx(`${DISTRICT} as d`)
       .join(`${STATE} as s`, "d.state_id", "s.id")
+      .join(`${COUNTRY} as c`, "s.country_id", "c.id")
       .select(
         "d.id",
         "d.name",
@@ -15,7 +17,10 @@ export function getDistrictByIdPopulated(id) {
         "d.state_id",
         "s.name as state_name",
         "d.created_at",
-        "d.updated_at"
+        "d.updated_at",
+        "c.id as country_id",
+        "c.name as country_name",
+        "c.code as country_code"
       )
       .where("d.id", id)
       .first();
@@ -39,12 +44,16 @@ export function getDistrictById(id) {
 export function getAllDistricts() {
   return db(`${DISTRICT} as d`)
     .join(`${STATE} as s`, "d.state_id", "s.id")
+    .join(`${COUNTRY} as c`, "s.country_id", "c.id")
     .select(
       "d.id",
       "d.name",
       "d.district_code",
       "d.state_id",
       "s.name as state_name",
+      "c.id as country_id",
+      "c.name as country_name",
+      "c.code as country_code",
       "d.created_at",
       "d.updated_at"
     )
@@ -73,12 +82,16 @@ export function getDistrictsByStateId(state_id) {
   return db.transaction(async (trx) => {
     return trx(`${DISTRICT} as d`)
       .join(`${STATE} as s`, "d.state_id", "s.id")
+      .join(`${COUNTRY} as c`, "s.country_id", "c.id")
       .select(
         "d.id",
         "d.name",
         "d.district_code",
         "d.state_id",
         "s.name as state_name",
+        "c.id as country_id",
+        "c.name as country_name",
+        "c.code as country_code",
         "d.created_at",
         "d.updated_at"
       )
