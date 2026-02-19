@@ -3,7 +3,6 @@ import db from '../../config/db.js';
 const Locaton = 'locations';
 const Districts = 'districts';
 const States = 'states';
-const Country = 'country';
 
 export async function creationLocation(payload) {
     const [row] = await db(Locaton).insert(payload).returning(['id']);
@@ -16,7 +15,6 @@ export function getLocationByIdPopulated(id) {
         return trx(`${Locaton} as l`)
             .join(`${Districts} as d`, "l.district_id", "d.id")
             .join(`${States} as s`, "d.state_id", "s.id")
-            .join(`${Country} as c`, "s.country_id", "c.id")
             .select(    
                 "l.id",
                 "l.name",
@@ -25,9 +23,6 @@ export function getLocationByIdPopulated(id) {
                 "d.name as district_name",
                 "s.id as state_id",
                 "s.name as state_name",
-                "c.id as country_id",
-                "c.name as country_name",
-                "c.code as country_code",
                 "l.created_at",
                 "l.updated_at"
             )
@@ -43,7 +38,6 @@ export function getLocationByDistrictId(district_id) {
         return trx(`${Locaton} as l`)
             .join(`${Districts} as d`, "l.district_id", "d.id")
             .join(`${States} as s`, "d.state_id", "s.id")
-            .join(`${Country} as c`, "s.country_id", "c.id")
             .select(    
                 "l.id",
                 "l.name",
@@ -52,9 +46,6 @@ export function getLocationByDistrictId(district_id) {
                 "d.name as district_name",
                 "s.id as state_id",
                 "s.name as state_name",
-                "c.id as country_id",
-                "c.name as country_name",
-                "c.code as country_code",
                 "l.created_at",
                 "l.updated_at"
             )
