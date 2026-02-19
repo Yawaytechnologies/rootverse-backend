@@ -16,6 +16,7 @@ import qualityCheckerRouter from './modules/quality_checker/quality.router.js';
 import userRoutes from './modules/users/user.routes.js';
 import locationRoutes from './modules/location/location_router.js';
 import fishingMethods from './modules/fishing_methods/fishing_methods_router.js';
+import countryRoutes from './modules/country/country.router.js';
 
 
 const app = express();
@@ -39,6 +40,7 @@ app.use('/api', fishTypes);
 app.use('/api/quality-checker', qualityCheckerRouter);
 app.use('/api/locations', locationRoutes);
 app.use('/api/fishing-methods', fishingMethods);
+app.use('/api/country', countryRoutes);
 
 
 app.get("/db-test", async (req, res) => {
