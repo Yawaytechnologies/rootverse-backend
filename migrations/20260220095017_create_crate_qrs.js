@@ -26,12 +26,12 @@ export async function up(knex) {
   });
 
   await knex.raw(`
-  ALTER TABLE qrs
+  ALTER TABLE crate_qrs
   ADD COLUMN code text
   GENERATED ALWAYS AS (
     district_code
     || '-' || type
-    || '-' || to_char(created_at, 'YY')
+    || '-' || lpad(((EXTRACT(YEAR FROM (created_at AT TIME ZONE 'UTC'))::int % 100))::text, 2, '0')
     ||lpad(id::text, 6, '0')
   ) STORED
 `);
@@ -44,4 +44,5 @@ export async function up(knex) {
 
 export async function down(knex) {
   await knex.schema.dropTableIfExists("crate_qrs");
+  
 }

@@ -12,7 +12,7 @@ export const createQrBatch = async (count, type, districtId) => {
       type,
       district_id: districtId,
       district_code: district.district_code,
-      status: "NEW",
+      status: "OPEN",
     }));
 
     return trx(TABLE).insert(rows).returning(["code", "id", "status"]);
