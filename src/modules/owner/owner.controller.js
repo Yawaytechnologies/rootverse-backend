@@ -1,4 +1,4 @@
-import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType, verifyOwnerDocs, formatOwner } from "./owner.service.js";
+import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType, verifyOwnerDocs, formatOwner, deleteOwnerService, getOwnerByLocationService } from "./owner.service.js";
 
 export async function createOwner(req, res) {
     try {
@@ -90,5 +90,36 @@ export async function updateVerification(req, res) {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+}
+
+
+export async function deleteOwnerController(req, res) {
+    try {
+        const { id } = req.params;
+        const result = await deleteOwnerService(id);
+        res.status(200).json(result);
+    }
+    catch (err) {        console.error("Error deleting owner:", err);
+        try {
+            await deleteOwnerService(id);
+        } catch (deleteErr) {
+            console.error("Failed to delete owner on error:", deleteErr);
+        }
+        res.status(400).json({ error: err.message });
+    }
+}
+
+export async function getOwnerByLocationController(req, res) {
+    try {        const { location_id } = req.params;
+        const owners = await getOwnerByLocationService(location_id);
+        res.status(200).json(owners);
+    }
+    catch (err) {        console.error("Error fetching owners by location:", err);
+        try {
+            await getOwnerByLocationService(location_id);
+        } catch (fetchErr) {
+            console.error("Failed to fetch owners by location on error:", fetchErr);
+        }        res.status(400).json({ error: err.message });
+    }
 }
 

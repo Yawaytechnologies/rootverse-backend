@@ -1,4 +1,4 @@
-import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner, generateOwnerId,  } from "./owner.model.js";
+import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner, generateOwnerId, getOwnerByLocation  } from "./owner.model.js";
 import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
 import { buildProfileKey } from "../../utils/storageKey.js";
 import db from "../../config/db.js";
@@ -107,8 +107,12 @@ export async function registerOwner(payload, profileImage) {
         const full = await getOwnerById(created.id);
         return formatOwner(full);
     } catch (err) {
-        if (created?.id) {
-            await deleteOwner(created.id);
+        if (created && created.id) {
+            try {
+                await deleteOwner(created.id);
+            } catch (deleteErr) {
+                console.error("Failed to delete owner on error:", deleteErr);
+            }
         }
         throw err;
     }
@@ -174,6 +178,16 @@ export async function verifyOwnerDocs(id, payload = {}) {
   await updateOwner(id, updates);
   const owner = await getOwnerById(id);
   return owner;
+}
+
+export async function deleteOwnerService(id) {
+    await deleteOwner(id);
+    return { message: "Owner deleted successfully" };
+}
+
+export async function getOwnerByLocationService(location_id) {
+    const rows = await getOwnerByLocation(location_id);
+    return rows.map(formatOwner);
 }
 
 
