@@ -14,6 +14,10 @@ export const loginService = async (req) => {
     if (owner.verification_status !== "VERIFIED")
       throw new Error("User not verified");
 
+    if (!owner.owner_id) {
+      throw new Error("Owner ID not found for user");
+    }
+
     return signToken({
       id: owner.owner_id,
     });
@@ -25,6 +29,10 @@ export const loginService = async (req) => {
     .first();
 
   if (qualityChecker) {
+    if (!qualityChecker.checker_code) {
+      throw new Error("Checker code not found for user");
+    }
+
     return signToken({
       id: qualityChecker.checker_code,
     });

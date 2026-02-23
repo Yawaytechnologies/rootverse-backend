@@ -68,6 +68,20 @@ export function deleteOwner(id) {
     return db(TABLE).where({ id }).del();
 }
 
+export function getOwnerByLocation(location_id) {
+    return db(`${TABLE} as ru`)
+        .leftJoin("states as s", "ru.state_id", "s.id")
+        .leftJoin("districts as d", "ru.district_id", "d.id")
+        .leftJoin("locations as l", "ru.location_id", "l.id")
+        .select(
+            "ru.*",
+            "s.name as state_name",
+            "d.name as district_name",
+            "l.name as location_name"
+        )
+        .where("ru.location_id", location_id);
+}
+
 
 
 export function verifyOwner(id) {
@@ -76,6 +90,8 @@ export function verifyOwner(id) {
         .update({ verification_status: "VERIFIED", updated_at: db.fn.now() })
         .returning("*");
 }
+
+
 
 
 
