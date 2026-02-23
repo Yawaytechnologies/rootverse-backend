@@ -1,7 +1,7 @@
 import { createState, getAllStates, getStateById, deleteState, updateState, getStatesByCountryId } from "./state.model.js";
 
 export async function registerState(payload) {
-    const [state] = await createState(payload);
+    const state = await createState(payload);
     return state;
 }
 

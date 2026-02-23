@@ -18,6 +18,8 @@ import locationRoutes from './modules/location/location_router.js';
 import fishingMethods from './modules/fishing_methods/fishing_methods_router.js';
 import crateQrRoutes from './modules/crate_qrs/routes.js';
 import countryRoutes from './modules/country/country.router.js';
+import superAdminRouter from './modules/super_admin/super_admin_router.js';
+import adminRouter from './modules/admin/admin.router.js';
 
 
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/locations', locationRoutes);
 app.use('/api/fishing-methods', fishingMethods);
 app.use('/api/crate', crateQrRoutes);
 app.use('/api/country', countryRoutes);
+app.use('/api', superAdminRouter);
+app.use('/api/admin', adminRouter);
 
 
 app.get("/db-test", async (req, res) => {
