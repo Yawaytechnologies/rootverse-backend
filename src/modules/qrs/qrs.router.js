@@ -8,6 +8,7 @@ import {
   fillQrWithQcDetailsController,
   getQrByStatusAndCodeController,
   getAllCatchlogsController,
+  updateQrController,
 } from "./qrs.controller.js";
 import { upload } from "../../shared/middlewares/upload.js";
 
@@ -28,5 +29,6 @@ router.put(
 );
 router.get("/qrs/status/:status/code/:code", getQrByStatusAndCodeController);
 router.get("/catchlogs", getAllCatchlogsController);
+router.put("/qrs/update/:id",updateQrController)
 
 export default router;

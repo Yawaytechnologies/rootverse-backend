@@ -1,3 +1,5 @@
+import * as service from "./service.js";
+
 export const createCratePacker = async (req, res) => {
   try {
     const cratePacker = await service.createCratePacker(req.body);

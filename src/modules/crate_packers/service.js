@@ -1,3 +1,4 @@
+import * as repository from "./repository.js";
 export const createCratePacker = async (data) => {
     const { name, phone, address, email, date_of_birth, location_id } = data;
     if (!name || !phone || !address || !email || !date_of_birth) {
@@ -10,6 +11,7 @@ export const createCratePacker = async (data) => {
         email,
         date_of_birth,
         location_id,
+        status: "active",
     });
     return cratePacker;
 };
@@ -23,18 +25,10 @@ export const updateCratePacker = async (id, data) => {
     if (!cratePacker) {
         throw new Error("Crate packer not found");
     }
-    const { name, phone, address, email, date_of_birth, location_id, status } = data;
-    const updatedCratePacker = await repository.updateCratePacker(id, {
-        name: name || cratePacker.name,
-        phone: phone || cratePacker.phone,
-        address: address || cratePacker.address,
-        email: email || cratePacker.email,
-        date_of_birth: date_of_birth || cratePacker.date_of_birth,
-        location_id: location_id || cratePacker.location_id,
-        status: status || cratePacker.status,
-    });
+    const updatedCratePacker = await repository.updateCratePacker(id, data);
     return updatedCratePacker;
 };
+   
 
 export const deleteCratePacker = async (id) => {
     const cratePacker = await repository.getCratePackerById(id);
