@@ -20,7 +20,7 @@ import crateQrRoutes from './modules/crate_qrs/routes.js';
 import countryRoutes from './modules/country/country.router.js';
 import superAdminRouter from './modules/super_admin/super_admin_router.js';
 import adminRouter from './modules/admin/admin.router.js';
-
+import cratePackerRoutes from './modules/crate_packers/routes.js';
 
 const app = express();
 
@@ -47,6 +47,7 @@ app.use('/api/crate', crateQrRoutes);
 app.use('/api/country', countryRoutes);
 app.use('/api', superAdminRouter);
 app.use('/api/admin', adminRouter);
+app.use("/api/crate-packer", cratePackerRoutes);
 
 
 app.get("/db-test", async (req, res) => {

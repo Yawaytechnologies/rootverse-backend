@@ -6,6 +6,9 @@ import {
   deleteQr,
   getQrByStatusAndCode,
   getAllCatchlogsRepo,
+  updateQrRepo,
+  getQrById
+
 } from "./qrs.model.js";
 import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
 import { buildProfileKey } from "../../utils/storageKey.js";
@@ -387,3 +390,11 @@ export async function getAllCatchlogsService(query) {
   const filters = { trip_id, trip_status };
   return getAllCatchlogsRepo(filters);
 }
+
+export const updateQrService = async (id, updates) => {
+    const qr = await getQrById(id);
+    if (!qr) {
+        throw new Error("QR code not found");
+    }
+    return updateQrRepo(id, updates);
+};

@@ -501,3 +501,15 @@ export const getAllCatchlogsRepo = async (filters) => {
 
   return q;
 };
+
+export const getQrById = async (id) => {
+  return db(TABLE).where({ id }).first();
+};
+
+export const updateQrRepo = async (id, updates) => {
+  const rows = await db(TABLE)
+    .where({ id })
+    .update({ ...updates, updated_at: db.fn.now() })
+    .returning("*");
+  return rows[0] || null;
+};
