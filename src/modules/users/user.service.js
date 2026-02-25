@@ -5,7 +5,6 @@ export const getUserByIdService = async (userId) => {
     .select("*")
     .where({ owner_id: userId })
     .first();
-
   if (user) return user;
 
   const qualityChecker = await db("quality_checker")
@@ -14,13 +13,17 @@ export const getUserByIdService = async (userId) => {
     .first();
 
   if (qualityChecker) return qualityChecker;
+  const cratePacker = await db("crate_packers")
+    .select("*")
+    .where({ code: userId })
+    .first();
+  if (cratePacker) return cratePacker;
 
   return null;
 };
 
 export const deleteUserByIdService = async (userId) => {
   await db("rootverse_users").where({ id: userId }).del();
-  await db("quality_checkers").where({ id: userId }).del();
 };
 
 export const updateUserByIdService = async (userId, updateData) => {
