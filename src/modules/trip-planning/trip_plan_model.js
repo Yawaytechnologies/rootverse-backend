@@ -231,6 +231,7 @@ export async function completeTripPlan(id) {
     .where({ id })
     .where("tp.approval_status", "approved")
     .update({ approval_status: "complete", updated_at: db.fn.now() })
+    .update({ comleted_at: db.fn.now() })
     .returning("*");
 }
 

@@ -33,8 +33,8 @@ export const listQrs = async (filters) => {
     if (filters.districtId) qb.where({ district_id: filters.districtId });
     if (filters.status) qb.where({ status: filters.status });
   });
-  return query.select("*").limit(20).offset(filters.offset || 0);
+  return query
+    .select("*")
+    .limit(20)
+    .offset(filters.offset || 0);
 };
-
-
-
