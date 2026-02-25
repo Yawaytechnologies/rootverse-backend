@@ -24,7 +24,11 @@ export const getQrByCode = async (code) => {
 };
 
 export const updateQr = async (id, updates) => {
-  return db(TABLE).where({ id }).update(updates).returning("*");
+  const rows = await db(TABLE).where({ id }).update({ ...updates, updated_at: db.fn.now() }).returning("*");
+  return rows[0] || null;
+};
+export const getQrById = async (id) => {
+  return db(TABLE).where({ id }).first();
 };
 
 export const listQrs = async (filters) => {

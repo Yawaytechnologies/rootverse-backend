@@ -5,6 +5,7 @@ import {
   uploadImagesToSupabase,
   updateQrWithImages,
   getQrByStatusAndCodeService,
+  updateQrService,
   getAllCatchlogsService,
 } from "./qrs.service.js";
 import { getQrByCodePopulate } from "./qrs.model.js";
@@ -425,4 +426,19 @@ export const getAllCatchlogsController = async (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
+};
+
+export const updateQrController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const updatedQr = await updateQrService(id, updates);
+        if (!updatedQr) {
+            return res.status(404).json({ success: false, message: "QR code not found" });
+        }
+        res.status(200).json({ success: true, qr: updatedQr });
+    }
+    catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
 };

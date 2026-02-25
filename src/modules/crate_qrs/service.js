@@ -20,6 +20,10 @@ export const getQrByCode = async (code) => {
 };
 
 export const updateQr = async (id, updates) => {
+    const qr = await repo.getQrById(id);
+    if (!qr) {
+        throw new Error("QR code not found");
+    }
     return repo.updateQr(id, updates);
 };
 
