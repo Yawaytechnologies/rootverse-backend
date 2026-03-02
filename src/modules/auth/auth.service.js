@@ -37,7 +37,7 @@ export const loginService = async (req) => {
       id: qualityChecker.checker_code,
     });
   }
-  const cratePacker = await db("crate_packers")
+  const cratePacker = await db("crate_packer")
     .select("code")
     .where({ phone: cleanPhone })
     .first(); 

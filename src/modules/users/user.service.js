@@ -13,7 +13,7 @@ export const getUserByIdService = async (userId) => {
     .first();
 
   if (qualityChecker) return qualityChecker;
-  const cratePacker = await db("crate_packers")
+  const cratePacker = await db("crate_packer")
     .select("*")
     .where({ code: userId })
     .first();
