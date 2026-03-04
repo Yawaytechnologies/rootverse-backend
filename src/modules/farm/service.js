@@ -1,3 +1,4 @@
+
 export const registerFarm = async (data) => {
   try {
     const {
@@ -7,6 +8,9 @@ export const registerFarm = async (data) => {
       total_area,
       water_source,
       farm_address,
+      country_id,
+      district_id,
+      pond_count
     } = data;
     if (
       !name ||
@@ -14,18 +18,14 @@ export const registerFarm = async (data) => {
       !owner_id ||
       !total_area ||
       !water_source ||
-      !farm_address
+      !farm_address ||
+      !country_id ||
+      !district_id ||
+      !pond_count
     ) {
       throw new Error("All fields are required");
     }
-    const location = await findlocationById(location_id);
-    if (!location) {
-      throw new Error("Location not found");
-    }
-    const owner = await findOwnerById(owner_id);
-    if (!owner) {
-      throw new Error("Owner not found");
-    }
+    
     const farm = await createFarm({
       name,
       location_id,
@@ -33,6 +33,9 @@ export const registerFarm = async (data) => {
       total_area,
       water_source,
       farm_address,
+      country_id,
+      district_id,
+      pond_count
     });
     return farm;
   } catch (error) {
