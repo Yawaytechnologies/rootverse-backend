@@ -164,8 +164,12 @@ async function populateQrItems(items) {
     const fish = it.fish_id ? fishById[it.fish_id] || null : null;
     const owner = it.owner_id ? ownerById[it.owner_id] || null : null;
 
+
     // prefer explicit trip_id if present
     let tripObj = it.trip_id ? tripById[it.trip_id] || null : null;
+    const qualityChecker = it.quality_checker_id
+      ? qualityCheckerById[it.quality_checker_id] || null
+      : null;
 
     // if no trip and owner present, try to find the most recent trip by owner_code
     if (!tripObj && owner) {
@@ -260,6 +264,7 @@ export async function listQrs({
       "fish_image_url",
       "pond_condition_url",
       "quality_checker_code",
+      "quality_checker_id",
       "checked_at",
       "filled_at",
       "created_at",
