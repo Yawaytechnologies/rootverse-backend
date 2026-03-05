@@ -386,8 +386,9 @@ export async function getQrByStatusAndCodeService(status, code) {
 export async function getAllCatchlogsService(query) {
   const trip_id = query.trip_id || null;
   const trip_status = query.trip_status || null;
+  const crate_id = query.crate_id || null;
 
-  const filters = { trip_id, trip_status };
+  const filters = { trip_id, trip_status, crate_id };
   return getAllCatchlogsRepo(filters);
 }
 
