@@ -1,4 +1,4 @@
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 
 export async function createAdmin(payload) {
     const admin = await db("admin").insert(payload).returning("*");

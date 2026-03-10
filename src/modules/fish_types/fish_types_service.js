@@ -1,6 +1,6 @@
 import { createFishTypes, getallfishTypes, getbyfishTypesId, updateFishTypesById, deleteFishTypesById } from "./fish_types_model.js";
-import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
-import { buildFishTypeKey } from "../../utils/storageKey.js";
+import { supabase, SUPABASE_BUCKET } from "../../shared/lib/supabase.js";
+import { buildFishTypeKey } from "../../shared/utils/storageKey.js";
 
 export async function createFishTypesService(payload, file = null){
     let updatedPayload = { ...payload };

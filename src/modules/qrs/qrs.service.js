@@ -10,9 +10,9 @@ import {
   getQrById
 
 } from "./qrs.model.js";
-import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
-import { buildProfileKey } from "../../utils/storageKey.js";
-import db from "../../config/db.js";
+import { supabase, SUPABASE_BUCKET } from "../../shared/lib/supabase.js";
+import { buildProfileKey } from "../../shared/utils/storageKey.js";
+import db from "../../shared/lib/db.js";
 
 const ALLOWED_TYPES = new Set(["WC", "AC", "MC"]);
 

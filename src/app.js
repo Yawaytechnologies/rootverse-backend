@@ -3,7 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import db from './config/db.js';
+import swaggerUi from 'swagger-ui-express';
+import { buildSwaggerSpec } from './config/swagger.js';
+import db from './shared/lib/db.js';
 import ownerRouter from './modules/owner/owner.router.js';
 import stateRouter from './modules/state/state.router.js';
 import districtRouter from './modules/district/district.router.js';
@@ -27,9 +29,30 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan("dev"));
 app.use(cookieParser());
+
+// ── Swagger UI ────────────────────────────────────────────────────────────
+const swaggerSpec = buildSwaggerSpec();
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'RootVerse API Docs',
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'list',
+      filter: true,
+      tryItOutEnabled: true,
+    },
+  })
+);
+// Serve raw OpenAPI JSON spec
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 app.use('/api/auth',loginRoutes);
 app.use('/api/me',userRoutes);

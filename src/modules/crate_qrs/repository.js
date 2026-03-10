@@ -1,4 +1,4 @@
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 
 const TABLE = "crate_qrs";
 export const createQrBatch = async (count, type, districtId) => {
