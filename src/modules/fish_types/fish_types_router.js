@@ -1,6 +1,6 @@
 import express from 'express'
 import { createFishTypesController, getallfishTypesController, getbyfishTypesIdController, updateFishTypesByIdController, deleteFishTypesByIdController } from "./fish_types_controller.js";
-import { upload } from '../../shared/middlewares/upload.js';
+import upload from '../../shared/middlewares/upload.js';
 
 
 const router = express.Router();
