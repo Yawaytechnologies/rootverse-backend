@@ -1,5 +1,5 @@
 import {createClient} from '@supabase/supabase-js';
-import config from './env.js';
+import config from '../../config/env.js';
 
 export const supabase = createClient(
     config.SUPABASE_URL,
@@ -7,3 +7,4 @@ export const supabase = createClient(
 );
 
 export const SUPABASE_BUCKET = config.SUPABASE_BUCKET || 'root_verse';
+

@@ -1,4 +1,4 @@
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 
 export const getUserByIdService = async (userId) => {
   const user = await db("rootverse_users")

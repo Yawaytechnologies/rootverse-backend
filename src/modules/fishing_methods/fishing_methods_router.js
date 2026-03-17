@@ -1,6 +1,6 @@
 import express from 'express'
 import { createFishingMethodController, getAllFishingMethodsController, updateFishingMethodController, deleteFishingMethodController } from './fishing_methods_controller.js';
-import { upload } from "../../shared/middlewares/upload.js";
+import upload from "../../shared/middlewares/upload.js";
 
 
 const router = express.Router();

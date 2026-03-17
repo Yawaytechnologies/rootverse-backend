@@ -1,4 +1,4 @@
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 import { signToken } from "../auth/utils/token.js";
 
 export const loginService = async (req) => {

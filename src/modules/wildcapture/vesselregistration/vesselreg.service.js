@@ -2,7 +2,7 @@ import * as VesselModel from "./vesselreg.model.js";
 import {listVesselsByOwnerId,
 } from "./vesselreg.model.js";
 
-import db from "../../../config/db.js";
+import db from "../../../shared/lib/db.js";
 
 function badRequest(message) {
   const e = new Error(message);

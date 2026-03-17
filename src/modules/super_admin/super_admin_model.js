@@ -1,4 +1,4 @@
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 
 export async function createSuperAdmin(payload) {
     const superAdmin = await db("super_admin").insert(payload).returning("*");

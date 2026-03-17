@@ -10,9 +10,9 @@ import {
   getQrById
 
 } from "./qrs.model.js";
-import { supabase, SUPABASE_BUCKET } from "../../config/supabase.js";
-import { buildProfileKey } from "../../utils/storageKey.js";
-import db from "../../config/db.js";
+import { supabase, SUPABASE_BUCKET } from "../../shared/lib/supabase.js";
+import { buildProfileKey } from "../../shared/utils/storageKey.js";
+import db from "../../shared/lib/db.js";
 
 const ALLOWED_TYPES = new Set(["WC", "AC", "MC"]);
 
@@ -386,8 +386,9 @@ export async function getQrByStatusAndCodeService(status, code) {
 export async function getAllCatchlogsService(query) {
   const trip_id = query.trip_id || null;
   const trip_status = query.trip_status || null;
+  const crate_id = query.crate_id || null;
 
-  const filters = { trip_id, trip_status };
+  const filters = { trip_id, trip_status, crate_id };
   return getAllCatchlogsRepo(filters);
 }
 

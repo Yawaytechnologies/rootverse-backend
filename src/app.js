@@ -3,7 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import db from './config/db.js';
+import swaggerUi from 'swagger-ui-express';
+import { buildSwaggerSpec } from './config/swagger.js';
+import db from './shared/lib/db.js';
 import ownerRouter from './modules/owner/owner.router.js';
 import stateRouter from './modules/state/state.router.js';
 import districtRouter from './modules/district/district.router.js';
@@ -21,15 +23,38 @@ import countryRoutes from './modules/country/country.router.js';
 import superAdminRouter from './modules/super_admin/super_admin_router.js';
 import adminRouter from './modules/admin/admin.router.js';
 import cratePackerRoutes from './modules/crate_packers/routes.js';
+import farmRoutes from './modules/farm/routes.js';
+import pondRoutes from './modules/pond/routes.js';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan("dev"));
 app.use(cookieParser());
+
+// ── Swagger UI ────────────────────────────────────────────────────────────
+const swaggerSpec = buildSwaggerSpec();
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'RootVerse API Docs',
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'list',
+      filter: true,
+      tryItOutEnabled: true,
+    },
+  })
+);
+// Serve raw OpenAPI JSON spec
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 app.use('/api/auth',loginRoutes);
 app.use('/api/me',userRoutes);
@@ -48,6 +73,8 @@ app.use('/api/country', countryRoutes);
 app.use('/api', superAdminRouter);
 app.use('/api/admin', adminRouter);
 app.use("/api/crate-packer", cratePackerRoutes);
+app.use("/api/farms", farmRoutes);
+app.use('/api/ponds', pondRoutes);
 
 
 app.get("/db-test", async (req, res) => {
