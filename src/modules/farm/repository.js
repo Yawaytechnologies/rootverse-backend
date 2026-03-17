@@ -31,9 +31,33 @@ export const getFarmById = async (id) => {
     .first();
 };
 
-export const getAllFarms = async () => {
-  return await db(TABLE).select("*");
-};
+export const getAllFarms = async (filters) => {
+  let query = db(TABLE)
+    .leftJoin("rootverse_users", "farms.owner_id", "rootverse_users.id")
+    .select("farms.*", "rootverse_users.username as owner_name");
+  if (filters) {
+    if (filters.location_id) {
+      query = query.where("farms.location_id", filters.location_id);
+    }
+    if (filters.state_id) {
+      query = query.where("farms.state_id", filters.state_id);
+    }
+    if (filters.country_id) {
+      query = query.where("farms.country_id", filters.country_id);
+    }
+    if (filters.district_id) {
+      query = query.where("farms.district_id", filters.district_id);
+    }
+      if (filters.owner_id) {
+      query = query.where("farms.owner_id", filters.owner_id);
+    }
+     if (filters.status) {
+      query = query.where("farms.status", filters.status);
+    }
+  }
+  return await query;
+}
+    
 export const getFarmsByCode = async (code) => {
   return await db(TABLE).where({ farm_code: code }).first();
 };
@@ -49,25 +73,3 @@ export const deleteFarm = async (id) => {
   return await db(TABLE).where({ id }).del();
 };
 
-export const getFarmsByfilter = async (filters) => {
-  let query = db(TABLE).select("*");
-  if (filters.country_id) {
-    query = query.where("country_id", filters.country_id);
-  }
-  if (filters.district_id) {
-    query = query.where("district_id", filters.district_id);
-  }
-  if (filters.owner_id) {
-    query = query.where("owner_id", filters.owner_id);
-  }
-  if (filters.status) {
-    query = query.where("status", filters.status);
-  }
-  if (filters.location_id) {
-    query = query.where("location_id", filters.location_id);
-  }
-  if (filters.state_id) {
-    query = query.where("state_id", filters.state_id);
-  }
-  return await query;
-};

@@ -24,6 +24,7 @@ import superAdminRouter from './modules/super_admin/super_admin_router.js';
 import adminRouter from './modules/admin/admin.router.js';
 import cratePackerRoutes from './modules/crate_packers/routes.js';
 import farmRoutes from './modules/farm/routes.js';
+import pondRoutes from './modules/pond/routes.js';
 
 const app = express();
 
@@ -73,6 +74,7 @@ app.use('/api', superAdminRouter);
 app.use('/api/admin', adminRouter);
 app.use("/api/crate-packer", cratePackerRoutes);
 app.use("/api/farms", farmRoutes);
+app.use('/api/ponds', pondRoutes);
 
 
 app.get("/db-test", async (req, res) => {

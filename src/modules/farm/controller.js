@@ -22,7 +22,7 @@ export const getFarmById = async (req, res) => {
 
 export const getAllFarms = async (req, res) => {
   try {
-    const farms = await farmService.getAllFarms();
+    const farms = await farmService.getAllFarms(req.query);
     res.json(farms);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -65,11 +65,3 @@ export const deleteFarm = async (req, res) => {
   }
 };
 
-export const getFarmsByFilter = async (req, res) => {
-  try {
-    const farms = await farmService.getFarmsByFilter(req.query);
-    res.json(farms);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};

@@ -66,8 +66,8 @@ export const getFarmById = async (id) => {
   return await farmRepository.getFarmById(id);
 };
 
-export const getAllFarms = async () => {
-  return await farmRepository.getAllFarms();
+export const getAllFarms = async (filters) => {
+  return await farmRepository.getAllFarms(filters);
 };
 
 export const getFarmsByCode = async (code) => {
@@ -90,6 +90,3 @@ export const deleteFarm = async (id) => {
   return await farmRepository.deleteFarm(id);
 };
 
-export const getFarmsByFilter = async (filters) => {
-  return await farmRepository.getFarmsByfilter(filters);
-};

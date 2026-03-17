@@ -561,6 +561,265 @@
  *           type: string
  *         location_id:
  *           type: integer
+
+ *
+ *     # ── Farm ──────────────────────────────────────────────────────────────
+ *     Farm:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         owner_id:
+ *           type: integer
+ *           example: 12
+ *         owner_name:
+ *           type: string
+ *           example: Ravi Kumar
+ *         name:
+ *           type: string
+ *           example: Green Aqua Farm
+ *         location_id:
+ *           type: integer
+ *           example: 5
+ *         district_id:
+ *           type: integer
+ *           example: 7
+ *         state_id:
+ *           type: integer
+ *           example: 3
+ *         country_id:
+ *           type: integer
+ *           example: 1
+ *         location_code:
+ *           type: string
+ *           example: LOC-001
+ *         district_code:
+ *           type: string
+ *           example: DIS-001
+ *         state_code:
+ *           type: string
+ *           example: ST-001
+ *         country_code:
+ *           type: string
+ *           example: IN
+ *         farm_code:
+ *           type: string
+ *           nullable: true
+ *           example: FARM-000001
+ *         total_area:
+ *           type: number
+ *           format: float
+ *           example: 12.5
+ *         pond_count:
+ *           type: integer
+ *           example: 4
+ *         water_source:
+ *           type: string
+ *           example: Borewell
+ *         farm_address:
+ *           type: string
+ *           example: No.12, East Coast Road, Chennai
+ *         latitude:
+ *           type: number
+ *           format: float
+ *           example: 13.0827
+ *         longitude:
+ *           type: number
+ *           format: float
+ *           example: 80.2707
+ *         image_url:
+ *           type: string
+ *           example: https://example.com/farms/farm1.jpg
+ *         image_key:
+ *           type: string
+ *           example: farms/1710000000-farm.jpg
+ *         status:
+ *           type: string
+ *           enum: [pending, approved, rejected]
+ *           example: pending
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CreateFarmRequest:
+ *       type: object
+ *       required:
+ *         - name
+ *         - location_id
+ *         - owner_id
+ *         - total_area
+ *         - water_source
+ *         - farm_address
+ *         - country_id
+ *         - state_id
+ *         - district_id
+ *         - pond_count
+ *         - latitude
+ *         - longitude
+ *         - image
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: Green Aqua Farm
+ *         location_id:
+ *           type: integer
+ *           example: 5
+ *         owner_id:
+ *           type: integer
+ *           example: 12
+ *         total_area:
+ *           type: number
+ *           format: float
+ *           example: 12.5
+ *         water_source:
+ *           type: string
+ *           example: Borewell
+ *         farm_address:
+ *           type: string
+ *           example: No.12, East Coast Road, Chennai
+ *         country_id:
+ *           type: integer
+ *           example: 1
+ *         state_id:
+ *           type: integer
+ *           example: 3
+ *         district_id:
+ *           type: integer
+ *           example: 7
+ *         pond_count:
+ *           type: integer
+ *           example: 4
+ *         latitude:
+ *           type: number
+ *           format: float
+ *           example: 13.0827
+ *         longitude:
+ *           type: number
+ *           format: float
+ *           example: 80.2707
+ *         image:
+ *           type: string
+ *           format: binary
+ *
+ *     UpdateFarmRequest:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         location_id:
+ *           type: integer
+ *         owner_id:
+ *           type: integer
+ *         total_area:
+ *           type: number
+ *           format: float
+ *         water_source:
+ *           type: string
+ *         farm_address:
+ *           type: string
+ *         country_id:
+ *           type: integer
+ *         state_id:
+ *           type: integer
+ *         district_id:
+ *           type: integer
+ *         pond_count:
+ *           type: integer
+ *         latitude:
+ *           type: number
+ *           format: float
+ *         longitude:
+ *           type: number
+ *         status:
+ *           type: string
+ *           enum: [pending, approved, rejected]
+ *
+ *     # ── Pond ──────────────────────────────────────────────────────────────
+ *     Pond:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           example: 10
+ *         species_id:
+ *           type: integer
+ *           example: 3
+ *         name:
+ *           type: string
+ *           example: Pond A
+ *         area:
+ *           type: number
+ *           format: float
+ *           example: 2.5
+ *         image_url:
+ *           type: string
+ *           example: https://example.com/ponds/pond-a.jpg
+ *         image_key:
+ *           type: string
+ *           example: ponds/1710000000-pond-a.jpg
+ *         pond_code:
+ *           type: string
+ *           nullable: true
+ *           example: POND-000001
+ *         status:
+ *           type: string
+ *           enum: [pending, approved, rejected]
+ *           example: pending
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CreatePondRequest:
+ *       type: object
+ *       required:
+ *         - name
+ *         - area
+ *         - farm_id
+ *         - species_id
+ *         - image
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: Pond A
+ *         area:
+ *           type: number
+ *           format: float
+ *           example: 2.5
+ *         farm_id:
+ *           type: integer
+ *           example: 10
+ *         species_id:
+ *           type: integer
+ *           example: 3
+ *         image:
+ *           type: string
+ *           format: binary
+ *
+ *     UpdatePondRequest:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         area:
+ *           type: number
+ *           format: float
+ *         farm_id:
+ *           type: integer
+ *         species_id:
+ *           type: integer
+ *         status:
+ *           type: string
+ *           enum: [pending, approved, rejected]
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -604,6 +863,10 @@
  *     description: Admin account management
  *   - name: Super Admins
  *     description: Super-admin account management
+ *   - name: Farms
+ *     description: Farm management APIs
+ *   - name: Ponds
+ *     description: Pond management APIs
  */
 
 /**
@@ -2700,3 +2963,394 @@
  */
 
 export {};
+
+// ════════════════════════════════════════════════════════════════════════════
+// FARMS
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/farms/register:
+ *   post:
+ *     summary: Register a new farm
+ *     description: Accepts multipart/form-data with the farm image under the `image` field.
+ *     tags: [Farms]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateFarmRequest'
+ *     responses:
+ *       201:
+ *         description: Farm created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Farm'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/farms:
+ *   get:
+ *     summary: Get all farms with optional filters
+ *     tags: [Farms]
+ *     parameters:
+ *       - in: query
+ *         name: location_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by location id
+ *       - in: query
+ *         name: state_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by state id
+ *       - in: query
+ *         name: country_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by country id
+ *       - in: query
+ *         name: district_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by district id
+ *       - in: query
+ *         name: owner_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by owner id
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, approved, rejected]
+ *         description: Filter by farm status
+ *     responses:
+ *       200:
+ *         description: List of farms
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Farm'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/farms/{id}:
+ *   get:
+ *     summary: Get farm by id
+ *     tags: [Farms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Farm details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Farm'
+ *       404:
+ *         description: Farm not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   put:
+ *     summary: Update farm by id
+ *     tags: [Farms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateFarmRequest'
+ *     responses:
+ *       200:
+ *         description: Farm updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Farm'
+ *       400:
+ *         description: Validation or update error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Farm not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   delete:
+ *     summary: Delete farm by id
+ *     tags: [Farms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Farm deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       404:
+ *         description: Farm not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/farms/code/{code}:
+ *   get:
+ *     summary: Get farm by farm code
+ *     tags: [Farms]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: FARM-000001
+ *     responses:
+ *       200:
+ *         description: Farm details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Farm'
+ *       404:
+ *         description: Farm not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+// ════════════════════════════════════════════════════════════════════════════
+// PONDS
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/ponds/register:
+ *   post:
+ *     summary: Register a new pond
+ *     description: Accepts multipart/form-data with the pond image under the `image` field.
+ *     tags: [Ponds]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/CreatePondRequest'
+ *     responses:
+ *       201:
+ *         description: Pond created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pond'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds:
+ *   get:
+ *     summary: Get all ponds with optional filters
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, approved, rejected]
+ *         description: Filter by pond status
+ *       - in: query
+ *         name: farm_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by farm id
+ *     responses:
+ *       200:
+ *         description: List of ponds
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Pond'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds/{id}:
+ *   get:
+ *     summary: Get pond by id
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pond details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pond'
+ *       404:
+ *         description: Pond not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   put:
+ *     summary: Update pond by id
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePondRequest'
+ *     responses:
+ *       200:
+ *         description: Pond updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pond'
+ *       400:
+ *         description: Validation or update error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Pond not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   delete:
+ *     summary: Delete pond by id
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Pond deleted successfully
+ *       400:
+ *         description: Delete error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds/code/{code}:
+ *   get:
+ *     summary: Get pond by pond code
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: POND-000001
+ *     responses:
+ *       200:
+ *         description: Pond details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pond'
+ *       404:
+ *         description: Pond not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
