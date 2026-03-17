@@ -1,8 +1,8 @@
 import multer from "multer";
 
-export const upload = multer({
+const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 }, 
   fileFilter: (req, file, cb) => {
     const isImage = file.mimetype.startsWith("image/");
     const isPdf = file.mimetype === "application/pdf";
@@ -14,3 +14,5 @@ export const upload = multer({
     }
   },
 });
+
+export default upload;

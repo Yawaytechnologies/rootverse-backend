@@ -10,7 +10,7 @@ import {
 } from "./qrs.service.js";
 import { getQrByCodePopulate } from "./qrs.model.js";
 import { updateOwner } from "../owner/owner.model.js";
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 
 export async function reserveBulkController(req, res) {
   try {

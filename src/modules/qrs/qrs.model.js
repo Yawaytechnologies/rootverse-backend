@@ -1,10 +1,11 @@
-import db from "../../config/db.js";
+import db from "../../shared/lib/db.js";
 
 const TABLE = "qrs";
 const FISH_TABLE = "fish-types";
 const VESSEL_TABLE = "vessel_registration";
 const USER_TABLE = "rootverse_users";
 const TRIP_TABLE = "trip_plans";
+const CRATE_TABLE = "crate_qrs";
 
 function pad6n(n) {
   const s = String(n);
@@ -490,12 +491,14 @@ export const getAllCatchlogsRepo = async (filters) => {
     .leftJoin(`${FISH_TABLE} as f`, "f.id", "qr.fish_id")
     .leftJoin(`${USER_TABLE} as u`, "u.id", "qr.owner_id")
     .leftJoin(`${TRIP_TABLE} as t`, "t.id", "qr.trip_id")
+    .leftJoin(`${CRATE_TABLE} as c`, "c.id", "qr.crate_id")
     .select([
       "qr.*",
       db.raw("to_jsonb(v) as vessel"),
       db.raw("to_jsonb(f) as fish"),
       db.raw("to_jsonb(u) as owner"),
       db.raw("to_jsonb(t) as trip"),
+      db.raw("to_jsonb(c) as crate"),
     ]);
   if (filters.trip_status) {
     q.where("t.approval_status", filters.trip_status);
@@ -503,7 +506,9 @@ export const getAllCatchlogsRepo = async (filters) => {
   if (filters.trip_id) {
     q.where("qr.trip_id", filters.trip_id);
   }
-
+  if (filters.crate_id) {
+    q.where("qr.crate_id", filters.crate_id);
+  }
   return q;
 };
 

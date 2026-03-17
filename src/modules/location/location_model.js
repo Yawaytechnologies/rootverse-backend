@@ -1,19 +1,19 @@
-import db from '../../config/db.js';
+import db from '../../shared/lib/db.js';
 
-const Locaton = 'locations';
+const Location = 'locations';
 const Districts = 'districts';
 const States = 'states';
 const Country = 'country';
 
 export async function creationLocation(payload) {
-    const [row] = await db(Locaton).insert(payload).returning(['id']);
+    const [row] = await db(Location).insert(payload).returning(['id']);
     const insertedId = row?.id; 
     return getLocationByIdPopulated(insertedId);
 }
 
 export function getLocationByIdPopulated(id) {
     return db.transaction(async (trx) => {
-        return trx(`${Locaton} as l`)
+        return trx(`${Location} as l`)
             .join(`${Districts} as d`, "l.district_id", "d.id")
             .join(`${States} as s`, "d.state_id", "s.id")
             .join(`${Country} as c`, "s.country_id", "c.id")
@@ -40,7 +40,7 @@ export function getLocationByIdPopulated(id) {
 
 export function getLocationByDistrictId(district_id) {
     return db.transaction(async (trx) => {
-        return trx(`${Locaton} as l`)
+        return trx(`${Location} as l`)
             .join(`${Districts} as d`, "l.district_id", "d.id")
             .join(`${States} as s`, "d.state_id", "s.id")
             .join(`${Country} as c`, "s.country_id", "c.id")
@@ -66,14 +66,14 @@ export function getLocationByDistrictId(district_id) {
 
 export function getallLocations(){
     return db.transaction(async (trx) => {
-        return trx(Locaton).select('*')
+        return trx(Location).select('*')
     });
 }
 
 export function updateLocationById(id, updates){
-    return db(Locaton).where({id}).update(updates).returning('*')
+    return db(Location).where({id}).update(updates).returning('*')
 }
 
 export function deleteLocationById(id){
-    return db(Locaton).where("id", id).del()
+    return db(Location).where("id", id).del()
 }
