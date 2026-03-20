@@ -5,9 +5,9 @@ import upload from "../../shared/middlewares/upload.js";
 const router = express.Router();
 
 router.post("/register", upload.single("image"), farmController.registerFarm);
-router.get("/:id", farmController.getFarmById);
+router.get("/code/:code", farmController.getFarmsByCode); // must be before /:id
 router.get("/", farmController.getAllFarms);
-router.get("/code/:code", farmController.getFarmsByCode);
+router.get("/:id", farmController.getFarmById);
 router.put("/:id", farmController.updateFarm);
 router.delete("/:id", farmController.deleteFarm);
 

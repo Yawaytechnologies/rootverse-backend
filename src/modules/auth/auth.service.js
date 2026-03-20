@@ -20,6 +20,7 @@ export const loginService = async (req) => {
 
     return signToken({
       id: owner.owner_id,
+      role: "OWNER",
     });
   }
 
@@ -35,17 +36,74 @@ export const loginService = async (req) => {
 
     return signToken({
       id: qualityChecker.checker_code,
+      role: "QUALITY_CHECKER",
     });
   }
+
   const cratePacker = await db("crate_packer")
     .select("code")
     .where({ phone: cleanPhone })
-    .first(); 
+    .first();
   if (cratePacker) {
     return signToken({
       id: cratePacker.code,
+      role: "CRATE_PACKER",
     });
   }
 
   throw new Error("User not found");
+};
+
+export const getMeService = async (user) => {
+  const { id, role } = user;
+
+  if (role === "ADMIN" || role === "SUPER_ADMIN") {
+    const admin = await db("admin")
+      .select("id", "username as full_name", "email", "phone as mobile", "created_at")
+      .where({ id })
+      .first();
+    if (admin) return { ...admin, role: "ADMIN" };
+  }
+
+  if (role === "COLLECTION_CENTRE_OPERATOR") {
+    const op = await db("collection_centre_operators")
+      .select("id", "operator_rv_id", "full_name", "email", "mobile", "centre_id", "designation", "is_active", "created_at")
+      .where({ id })
+      .first();
+    if (op) return { ...op, role: "COLLECTION_CENTRE_OPERATOR" };
+  }
+
+  if (role === "TRANSPORT_OPERATOR") {
+    const op = await db("transport_operators")
+      .select("id", "operator_rv_id", "full_name", "email", "mobile", "transport_id", "vehicle_no", "route_name", "is_active", "created_at")
+      .where({ id })
+      .first();
+    if (op) return { ...op, role: "TRANSPORT_OPERATOR" };
+  }
+
+  if (role === "OWNER") {
+    const owner = await db("rootverse_users")
+      .select("id", "owner_id", "username", "phone_no", "address", "rootverse_type", "verification_status", "profile_picture_url", "created_at", "updated_at")
+      .where({ owner_id: id })
+      .first();
+    if (owner) return { ...owner, role: "OWNER" };
+  }
+
+  if (role === "QUALITY_CHECKER") {
+    const qc = await db("quality_checker")
+      .select("id", "checker_code", "checker_name", "checker_phone", "rootverse_type", "state_id", "district_id", "location_id", "created_at")
+      .where({ checker_code: id })
+      .first();
+    if (qc) return { ...qc, role: "QUALITY_CHECKER" };
+  }
+
+  if (role === "CRATE_PACKER") {
+    const cp = await db("crate_packer")
+      .select("id", "code", "name", "phone", "created_at")
+      .where({ code: id })
+      .first();
+    if (cp) return { ...cp, role: "CRATE_PACKER" };
+  }
+
+  throw new Error("Profile not found");
 };

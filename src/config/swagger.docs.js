@@ -46,11 +46,11 @@
  *         owner_id:
  *           type: string
  *           example: OWN-0001
- *         name:
+ *         username:
  *           type: string
  *         phone_no:
  *           type: string
- *         email:
+ *         address:
  *           type: string
  *         rootverse_type:
  *           type: string
@@ -58,8 +58,6 @@
  *         verification_status:
  *           type: string
  *           enum: [PENDING, VERIFIED, REJECTED]
- *         owner_register_progress:
- *           type: string
  *         state_id:
  *           type: integer
  *         district_id:
@@ -72,7 +70,7 @@
  *           type: string
  *         location_name:
  *           type: string
- *         profile_image_url:
+ *         profile_picture_url:
  *           type: string
  *         created_at:
  *           type: string
@@ -83,13 +81,13 @@
  *
  *     CreateOwnerRequest:
  *       type: object
- *       required: [name, phone_no, rootverse_type]
+ *       required: [username, phone_no, rootverse_type, address]
  *       properties:
- *         name:
+ *         username:
  *           type: string
  *         phone_no:
  *           type: string
- *         email:
+ *         address:
  *           type: string
  *         rootverse_type:
  *           type: string
@@ -495,12 +493,217 @@
  *
  *     AdminLoginRequest:
  *       type: object
- *       required: [email, password]
+ *       required: [password]
  *       properties:
+ *         login_id:
+ *           type: string
+ *           description: Email or phone number (also accepts legacy "email" field)
+ *           example: admin@oneblue.com
  *         email:
  *           type: string
+ *           description: Legacy field — use login_id instead
+ *           example: admin@oneblue.com
  *         password:
  *           type: string
+ *           example: Admin@123
+ *
+ *     AdminLoginResponse:
+ *       type: object
+ *       properties:
+ *         access_token:
+ *           type: string
+ *           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *         refresh_token:
+ *           type: string
+ *           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *         token_type:
+ *           type: string
+ *           example: Bearer
+ *         role:
+ *           type: string
+ *           example: ADMIN
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *             full_name:
+ *               type: string
+ *             email:
+ *               type: string
+ *
+ *     OperatorLoginRequest:
+ *       type: object
+ *       required: [login_id, password]
+ *       properties:
+ *         login_id:
+ *           type: string
+ *           description: operator_rv_id, email, or mobile
+ *           example: RV-CC-001
+ *         password:
+ *           type: string
+ *           example: Pass@123
+ *         device_info:
+ *           type: object
+ *           description: Optional device tracking metadata
+ *
+ *     OperatorLoginResponse:
+ *       type: object
+ *       properties:
+ *         access_token:
+ *           type: string
+ *         token_type:
+ *           type: string
+ *           example: Bearer
+ *         role:
+ *           type: string
+ *           example: COLLECTION_CENTRE_OPERATOR
+ *         user:
+ *           type: object
+ *
+ *     CollectionCentre:
+ *       type: object
+ *       properties:
+ *         centre_id:
+ *           type: string
+ *           example: CC-000003
+ *         centre_name:
+ *           type: string
+ *           example: Nagapattinam Main Collection Centre
+ *         district:
+ *           type: string
+ *         state:
+ *           type: string
+ *         address_line_1:
+ *           type: string
+ *         address_line_2:
+ *           type: string
+ *         pincode:
+ *           type: string
+ *         gps_lat:
+ *           type: number
+ *         gps_lng:
+ *           type: number
+ *         cold_storage_capacity_kg:
+ *           type: number
+ *         contact_name:
+ *           type: string
+ *         contact_mobile:
+ *           type: string
+ *         status:
+ *           type: string
+ *           enum: [ACTIVE, INACTIVE]
+ *
+ *     CrateStatusHistory:
+ *       type: object
+ *       properties:
+ *         event_id:
+ *           type: string
+ *           format: uuid
+ *         crate_id:
+ *           type: integer
+ *         from_status:
+ *           type: string
+ *         to_status:
+ *           type: string
+ *         actor_role:
+ *           type: string
+ *         actor_id:
+ *           type: string
+ *         event_at_utc:
+ *           type: string
+ *           format: date-time
+ *         remarks:
+ *           type: string
+ *
+ *     TemperatureLog:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         crate_id:
+ *           type: integer
+ *         actor_role:
+ *           type: string
+ *         actor_id:
+ *           type: string
+ *         temperature_value:
+ *           type: string
+ *           example: 4°C
+ *         recorded_at_utc:
+ *           type: string
+ *           format: date-time
+ *         notes:
+ *           type: string
+ *
+ *     CrateAssignment:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         crate_id:
+ *           type: integer
+ *         destination_name:
+ *           type: string
+ *         transport_operator_id:
+ *           type: string
+ *         driver_name:
+ *           type: string
+ *         vehicle_no:
+ *           type: string
+ *         scheduled_time_utc:
+ *           type: string
+ *           format: date-time
+ *         picked_up_at_utc:
+ *           type: string
+ *           format: date-time
+ *         delivered_at_utc:
+ *           type: string
+ *           format: date-time
+ *
+ *     CrateDetail:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         code:
+ *           type: string
+ *           example: RV-CRATE-000121
+ *         custody_status:
+ *           type: string
+ *           enum: [RECEIVED_AT_COLLECTION_CENTRE, SCHEDULED_FOR_DISPATCH, IN_TRANSIT, DELIVERED, HOLD, CANCELLED]
+ *         production_category:
+ *           type: string
+ *           enum: [WILD_CAPTURE, AQUACULTURE, MARICULTURE]
+ *         current_custodian_role:
+ *           type: string
+ *         current_custodian_id:
+ *           type: string
+ *         status_history:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CrateStatusHistory'
+ *         dispatch_assignment:
+ *           $ref: '#/components/schemas/CrateAssignment'
+ *         temperature_logs:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/TemperatureLog'
+ *
+ *     OneBlueSuccess:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         data:
+ *           type: object
+ *         meta:
+ *           type: object
+ *           properties:
+ *             server_time_utc:
+ *               type: string
+ *               format: date-time
  *
  *     # ── Crate QR ──────────────────────────────────────────────────────────
  *     CrateQr:
@@ -1019,7 +1222,7 @@
  * @swagger
  * /api/owner/{rootverse_type}:
  *   get:
- *     summary: Get owners filtered by rootverse type
+ *     summary: Get owners filtered by rootverse type with progress summary
  *     tags: [Owners]
  *     parameters:
  *       - in: path
@@ -1030,13 +1233,31 @@
  *           enum: [WILD_CAPTURE, AQUACULTURE, MARICULTURE]
  *     responses:
  *       200:
- *         description: Array of owners with the given type
+ *         description: Owners of the given type with verification progress summary
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Owner'
+ *               type: object
+ *               properties:
+ *                 rootverse_type:
+ *                   type: string
+ *                   enum: [WILD_CAPTURE, AQUACULTURE, MARICULTURE]
+ *                 total:
+ *                   type: integer
+ *                 progress:
+ *                   type: object
+ *                   properties:
+ *                     verified:
+ *                       type: integer
+ *                     pending:
+ *                       type: integer
+ *                     percentage_verified:
+ *                       type: string
+ *                       example: "75.00"
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Owner'
  *       400:
  *         description: Invalid rootverse_type
  */
@@ -2752,7 +2973,7 @@
  * @swagger
  * /api/admin/login:
  *   post:
- *     summary: Admin login
+ *     summary: Admin login (accepts login_id or email + password)
  *     tags: [Admins]
  *     requestBody:
  *       required: true
@@ -2762,11 +2983,11 @@
  *             $ref: '#/components/schemas/AdminLoginRequest'
  *     responses:
  *       200:
- *         description: JWT token
+ *         description: Access token + refresh token
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
+ *               $ref: '#/components/schemas/AdminLoginResponse'
  *       400:
  *         description: Invalid credentials
  */
@@ -3352,5 +3573,1111 @@ export {};
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH — /me, /refresh, /logout
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user profile (all authenticated roles)
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile for the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Profile not found
+ */
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Issue a new access token using a refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [refresh_token]
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *     responses:
+ *       200:
+ *         description: New access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     access_token:
+ *                       type: string
+ *                     token_type:
+ *                       type: string
+ *       400:
+ *         description: Missing or invalid token type
+ *       401:
+ *         description: Invalid or expired refresh token
+ */
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout current user (client should discard token)
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN — Collection Centre Management
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/admin/collection-centres:
+ *   post:
+ *     summary: Register a new collection centre
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [centre_id, centre_name, district, state, address_line_1]
+ *             properties:
+ *               centre_id:
+ *                 type: string
+ *                 example: CC-000003
+ *               centre_name:
+ *                 type: string
+ *                 example: Nagapattinam Main Collection Centre
+ *               district:
+ *                 type: string
+ *                 example: Nagapattinam
+ *               state:
+ *                 type: string
+ *                 example: Tamil Nadu
+ *               address_line_1:
+ *                 type: string
+ *                 example: Harbour Road
+ *               address_line_2:
+ *                 type: string
+ *               pincode:
+ *                 type: string
+ *                 example: "611001"
+ *               gps_lat:
+ *                 type: number
+ *                 example: 10.7672
+ *               gps_lng:
+ *                 type: number
+ *                 example: 79.8449
+ *               cold_storage_capacity_kg:
+ *                 type: number
+ *                 example: 5000
+ *               contact_name:
+ *                 type: string
+ *               contact_mobile:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [ACTIVE, INACTIVE]
+ *                 default: ACTIVE
+ *     responses:
+ *       201:
+ *         description: Collection centre registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/CollectionCentre'
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: Centre ID already exists
+ *   get:
+ *     summary: List all collection centres
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: page_size
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: List of collection centres
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CollectionCentre'
+ */
+
+/**
+ * @swagger
+ * /api/admin/collection-centres/{centreId}:
+ *   get:
+ *     summary: Get a collection centre by ID
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: centreId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: CC-000003
+ *     responses:
+ *       200:
+ *         description: Collection centre details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/CollectionCentre'
+ *       404:
+ *         description: Centre not found
+ *   patch:
+ *     summary: Update collection centre metadata
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: centreId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CollectionCentre'
+ *     responses:
+ *       200:
+ *         description: Centre updated
+ *       404:
+ *         description: Centre not found
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN — Operator Registration
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/admin/operators/collection-centre:
+ *   post:
+ *     summary: Register a collection centre operator
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [operator_rv_id, full_name, email, mobile, password, centre_id]
+ *             properties:
+ *               operator_rv_id:
+ *                 type: string
+ *                 example: RV-CC-001
+ *               full_name:
+ *                 type: string
+ *                 example: Jana
+ *               email:
+ *                 type: string
+ *                 example: jana@oneblue.com
+ *               mobile:
+ *                 type: string
+ *                 example: "9876500001"
+ *               password:
+ *                 type: string
+ *                 example: Pass@123
+ *               centre_id:
+ *                 type: string
+ *                 example: CC-000003
+ *               designation:
+ *                 type: string
+ *               is_active:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       201:
+ *         description: Operator registered
+ *       400:
+ *         description: Validation error or centre not found
+ */
+
+/**
+ * @swagger
+ * /api/admin/operators/transport:
+ *   post:
+ *     summary: Register a transport operator
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [operator_rv_id, full_name, email, mobile, password, transport_id, vehicle_no]
+ *             properties:
+ *               operator_rv_id:
+ *                 type: string
+ *                 example: RV-TR-009
+ *               full_name:
+ *                 type: string
+ *                 example: Prakash
+ *               email:
+ *                 type: string
+ *               mobile:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               transport_id:
+ *                 type: string
+ *                 example: TR-009
+ *               vehicle_no:
+ *                 type: string
+ *                 example: TN51AB4321
+ *               route_name:
+ *                 type: string
+ *                 example: Nagapattinam Harbour
+ *               vehicle_type:
+ *                 type: string
+ *                 example: Refrigerated van
+ *               is_active:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       201:
+ *         description: Transport operator registered
+ *       400:
+ *         description: Validation error
+ */
+
+/**
+ * @swagger
+ * /api/admin/operators/{operatorId}/status:
+ *   patch:
+ *     summary: Activate, deactivate, or suspend an operator
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: operatorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: RV-CC-001
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended]
+ *     responses:
+ *       200:
+ *         description: Operator status updated
+ *       400:
+ *         description: Invalid status value
+ *       404:
+ *         description: Operator not found
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN — Monitoring
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/admin/dashboard/summary:
+ *   get:
+ *     summary: Top-level admin dashboard summary
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2026-03-20"
+ *     responses:
+ *       200:
+ *         description: Summary counts for centres, operators, and crates
+ */
+
+/**
+ * @swagger
+ * /api/admin/crates:
+ *   get:
+ *     summary: List all crates with optional filters
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [RECEIVED_AT_COLLECTION_CENTRE, SCHEDULED_FOR_DISPATCH, IN_TRANSIT, DELIVERED, HOLD, CANCELLED]
+ *       - in: query
+ *         name: centre_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: transport_operator_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: destination_name
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: page_size
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: Crate list
+ */
+
+/**
+ * @swagger
+ * /api/admin/crates/{crateId}:
+ *   get:
+ *     summary: Full crate timeline — status history, dispatch, temperature logs
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Crate detail with full audit trail
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/CrateDetail'
+ *       404:
+ *         description: Crate not found
+ *   patch:
+ *     summary: Admin exception status override
+ *     description: Requires reason_code and reason_text. Recorded in audit trail.
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [new_status, reason_code, reason_text, admin_id]
+ *             properties:
+ *               new_status:
+ *                 type: string
+ *                 enum: [RECEIVED_AT_COLLECTION_CENTRE, SCHEDULED_FOR_DISPATCH, IN_TRANSIT, DELIVERED, HOLD, CANCELLED]
+ *               reason_code:
+ *                 type: string
+ *                 enum: [MISMATCH, DAMAGE, DUPLICATE_SCAN, MANUAL_CORRECTION, HOLD, CANCEL]
+ *               reason_text:
+ *                 type: string
+ *                 example: Crate physically damaged and held for inspection
+ *               admin_id:
+ *                 type: string
+ *                 example: "1"
+ *     responses:
+ *       200:
+ *         description: Status overridden and audit record created
+ *       400:
+ *         description: Missing required fields
+ *       404:
+ *         description: Crate not found
+ */
+
+/**
+ * @swagger
+ * /api/admin/assignments:
+ *   get:
+ *     summary: List all dispatch assignments
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: transport_operator_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: page_size
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Assignment list
+ */
+
+/**
+ * @swagger
+ * /api/admin/temperature-logs:
+ *   get:
+ *     summary: View centre and transport temperature logs
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [COLLECTION_CENTRE_OPERATOR, TRANSPORT_OPERATOR]
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: page_size
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Temperature log list
+ */
+
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: List all registered admin and operator accounts
+ *     tags: [Admins]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [ADMIN, COLLECTION_CENTRE_OPERATOR, TRANSPORT_OPERATOR]
+ *       - in: query
+ *         name: is_active
+ *         schema:
+ *           type: string
+ *           enum: ["true", "false"]
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: page_size
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User list
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COLLECTION CENTRE OPERATOR
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/collection-centre/auth/login:
+ *   post:
+ *     summary: Collection centre operator login
+ *     tags: [Collection Centre]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OperatorLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OperatorLoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       403:
+ *         description: Account inactive
+ *       404:
+ *         description: Operator not found
+ */
+
+/**
+ * @swagger
+ * /api/collection-centre/dashboard:
+ *   get:
+ *     summary: Collection centre dashboard stats for the logged-in operator
+ *     tags: [Collection Centre]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2026-03-20"
+ *     responses:
+ *       200:
+ *         description: Dashboard counts — total, received, assigned, pending
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     selected_date:
+ *                       type: string
+ *                     centre:
+ *                       type: object
+ *                     stats:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         received:
+ *                           type: integer
+ *                         assigned:
+ *                           type: integer
+ *                         pending:
+ *                           type: integer
+ */
+
+/**
+ * @swagger
+ * /api/collection-centre/crates:
+ *   get:
+ *     summary: List crates at this collection centre
+ *     tags: [Collection Centre]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [RECEIVED_AT_COLLECTION_CENTRE, SCHEDULED_FOR_DISPATCH]
+ *     responses:
+ *       200:
+ *         description: Crate list for this centre
+ */
+
+/**
+ * @swagger
+ * /api/collection-centre/crates/receive:
+ *   post:
+ *     summary: Receive a crate by QR scan
+ *     tags: [Collection Centre]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [crate_qr, centre_id, operator_id]
+ *             properties:
+ *               crate_qr:
+ *                 type: string
+ *                 example: RV-CRATE-000121
+ *               centre_id:
+ *                 type: string
+ *                 example: CC-000003
+ *               operator_id:
+ *                 type: string
+ *                 example: RV-CC-001
+ *               production_category:
+ *                 type: string
+ *                 enum: [WILD_CAPTURE, AQUACULTURE, MARICULTURE]
+ *               gps_lat:
+ *                 type: number
+ *               gps_lng:
+ *                 type: number
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Crate received — status set to RECEIVED_AT_COLLECTION_CENTRE
+ *       404:
+ *         description: Unknown crate QR
+ *       409:
+ *         description: Crate cannot be received in its current status
+ */
+
+/**
+ * @swagger
+ * /api/collection-centre/crates/{crateId}:
+ *   get:
+ *     summary: View crate details — audit trail, dispatch info, temperature logs
+ *     tags: [Collection Centre]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Crate detail
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/CrateDetail'
+ *       404:
+ *         description: Crate not found
+ */
+
+/**
+ * @swagger
+ * /api/collection-centre/crates/{crateId}/temperature:
+ *   post:
+ *     summary: Log cold-storage temperature for a crate
+ *     description: Only allowed when crate is under this centre's custody.
+ *     tags: [Collection Centre]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [temperature_value, collection_centre_id, operator_id]
+ *             properties:
+ *               temperature_value:
+ *                 type: string
+ *                 example: 4°C
+ *               collection_centre_id:
+ *                 type: string
+ *                 example: CC-000003
+ *               operator_id:
+ *                 type: string
+ *                 example: RV-CC-001
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Temperature logged
+ *       409:
+ *         description: Crate not under this centre's custody
+ */
+
+/**
+ * @swagger
+ * /api/collection-centre/crates/{crateId}/assign-dispatch:
+ *   post:
+ *     summary: Assign a crate to a transport operator for dispatch
+ *     description: Moves crate status to SCHEDULED_FOR_DISPATCH.
+ *     tags: [Collection Centre]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [destination_name, transport_operator_id, scheduled_time_utc, driver_name, vehicle_no]
+ *             properties:
+ *               destination_name:
+ *                 type: string
+ *                 example: Main Harbour Processing Unit
+ *               transport_operator_id:
+ *                 type: string
+ *                 example: RV-TR-009
+ *               transport_id:
+ *                 type: string
+ *                 example: TR-009
+ *               scheduled_time_utc:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2026-03-20T10:30:00Z"
+ *               assigned_to_label:
+ *                 type: string
+ *               driver_name:
+ *                 type: string
+ *                 example: Prakash
+ *               vehicle_no:
+ *                 type: string
+ *                 example: TN51AB4321
+ *               operator_id:
+ *                 type: string
+ *                 description: Overrides the JWT-derived operator ID. Defaults to the authenticated operator.
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Crate assigned for dispatch
+ *       404:
+ *         description: Crate or transport operator not found
+ *       422:
+ *         description: Crate must be in RECEIVED_AT_COLLECTION_CENTRE status
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TRANSPORT OPERATOR
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/transport/auth/login:
+ *   post:
+ *     summary: Transport operator login
+ *     tags: [Transport]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OperatorLoginRequest'
+ *     responses:
+ *       200:
+ *         description: Access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OperatorLoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       403:
+ *         description: Account inactive
+ *       404:
+ *         description: Operator not found
+ */
+
+/**
+ * @swagger
+ * /api/transport/dashboard:
+ *   get:
+ *     summary: Transport operator dashboard — stats for assigned and in-transit crates
+ *     tags: [Transport]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2026-03-20"
+ *     responses:
+ *       200:
+ *         description: Dashboard stats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     current_transport:
+ *                       type: object
+ *                     stats:
+ *                       type: object
+ *                       properties:
+ *                         total_my_crates:
+ *                           type: integer
+ *                         assigned:
+ *                           type: integer
+ *                         in_transit:
+ *                           type: integer
+ */
+
+/**
+ * @swagger
+ * /api/transport/assigned-crates:
+ *   get:
+ *     summary: List crates assigned to this transport operator (SCHEDULED_FOR_DISPATCH)
+ *     tags: [Transport]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Assigned crate list
+ */
+
+/**
+ * @swagger
+ * /api/transport/in-transit:
+ *   get:
+ *     summary: List crates currently in transit for this operator
+ *     tags: [Transport]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: In-transit crate list
+ */
+
+/**
+ * @swagger
+ * /api/transport/crates/scan-pickup:
+ *   post:
+ *     summary: Scan crate QR to accept custody — moves crate to IN_TRANSIT
+ *     tags: [Transport]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [crate_qr]
+ *             properties:
+ *               crate_qr:
+ *                 type: string
+ *                 example: RV-CRATE-000121
+ *               transport_operator_id:
+ *                 type: string
+ *                 example: RV-TR-009
+ *               transport_id:
+ *                 type: string
+ *                 example: TR-009
+ *               vehicle_no:
+ *                 type: string
+ *                 example: TN51AB4321
+ *               gps_lat:
+ *                 type: number
+ *               gps_lng:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Crate accepted — status IN_TRANSIT
+ *       404:
+ *         description: Unknown crate QR or no assignment found
+ *       409:
+ *         description: Crate not assigned to this transport
+ *       422:
+ *         description: Crate must be in SCHEDULED_FOR_DISPATCH status
+ */
+
+/**
+ * @swagger
+ * /api/transport/crates/{crateId}/temperature:
+ *   post:
+ *     summary: Log in-transit temperature
+ *     tags: [Transport]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [temperature_value]
+ *             properties:
+ *               temperature_value:
+ *                 type: string
+ *                 example: 5.1°C
+ *               transport_id:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Temperature logged
+ *       409:
+ *         description: Crate is not in transit
+ */
+
+/**
+ * @swagger
+ * /api/transport/crates/{crateId}/deliver:
+ *   post:
+ *     summary: Mark crate as delivered at destination
+ *     tags: [Transport]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: crateId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               destination_entity_id:
+ *                 type: string
+ *               destination_entity_name:
+ *                 type: string
+ *               receiver_name:
+ *                 type: string
+ *               gps_lat:
+ *                 type: number
+ *               gps_lng:
+ *                 type: number
+ *               remarks:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Crate delivered — status DELIVERED
+ *       404:
+ *         description: Crate not found
+ *       422:
+ *         description: Crate must be IN_TRANSIT to deliver
  */
 
