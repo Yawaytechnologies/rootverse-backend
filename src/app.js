@@ -26,6 +26,10 @@ import cratePackerRoutes from './modules/crate_packers/routes.js';
 import farmRoutes from './modules/farm/routes.js';
 import pondRoutes from './modules/pond/routes.js';
 
+// ── OneBlue routes ────────────────────────────────────────────────────────────
+import collectionCentreRoutes from './modules/collection_centre/routes.js';
+import transportOperatorRoutes from './modules/transport_operator/routes.js';
+
 const app = express();
 
 app.use(cors());
@@ -75,6 +79,10 @@ app.use('/api/admin', adminRouter);
 app.use("/api/crate-packer", cratePackerRoutes);
 app.use("/api/farms", farmRoutes);
 app.use('/api/ponds', pondRoutes);
+
+// ── OneBlue routes ────────────────────────────────────────────────────────────
+app.use('/api/collection-centre', collectionCentreRoutes);
+app.use('/api/transport', transportOperatorRoutes);
 
 
 app.get("/db-test", async (req, res) => {
