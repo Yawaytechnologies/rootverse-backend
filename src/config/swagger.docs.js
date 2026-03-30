@@ -532,34 +532,6 @@
  *             email:
  *               type: string
  *
- *     OperatorLoginRequest:
- *       type: object
- *       required: [login_id, password]
- *       properties:
- *         login_id:
- *           type: string
- *           description: operator_rv_id, email, or mobile
- *           example: RV-CC-001
- *         password:
- *           type: string
- *           example: Pass@123
- *         device_info:
- *           type: object
- *           description: Optional device tracking metadata
- *
- *     OperatorLoginResponse:
- *       type: object
- *       properties:
- *         access_token:
- *           type: string
- *         token_type:
- *           type: string
- *           example: Bearer
- *         role:
- *           type: string
- *           example: COLLECTION_CENTRE_OPERATOR
- *         user:
- *           type: object
  *
  *     CollectionCentre:
  *       type: object
@@ -1078,8 +1050,9 @@
  *   post:
  *     summary: Login with phone number
  *     description: >
- *       Authenticates an owner, quality checker, or crate packer by phone number
- *       and returns a signed JWT token.
+ *       Authenticates any user by phone number and returns a signed JWT token.
+ *       Supported roles: OWNER, QUALITY_CHECKER, CRATE_PACKER,
+ *       COLLECTION_CENTRE_OPERATOR, TRANSPORT_OPERATOR.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -3833,7 +3806,7 @@ export {};
  *         application/json:
  *           schema:
  *             type: object
- *             required: [operator_rv_id, full_name, email, mobile, password, centre_id]
+ *             required: [operator_rv_id, full_name, email, mobile, centre_id]
  *             properties:
  *               operator_rv_id:
  *                 type: string
@@ -3847,9 +3820,6 @@ export {};
  *               mobile:
  *                 type: string
  *                 example: "9876500001"
- *               password:
- *                 type: string
- *                 example: Pass@123
  *               centre_id:
  *                 type: string
  *                 example: CC-000003
@@ -3879,7 +3849,7 @@ export {};
  *         application/json:
  *           schema:
  *             type: object
- *             required: [operator_rv_id, full_name, email, mobile, password, transport_id, vehicle_no]
+ *             required: [operator_rv_id, full_name, email, mobile, transport_id, vehicle_no]
  *             properties:
  *               operator_rv_id:
  *                 type: string
@@ -3890,8 +3860,6 @@ export {};
  *               email:
  *                 type: string
  *               mobile:
- *                 type: string
- *               password:
  *                 type: string
  *               transport_id:
  *                 type: string
@@ -4187,27 +4155,15 @@ export {};
  * @swagger
  * /api/collection-centre/auth/login:
  *   post:
- *     summary: Collection centre operator login
+ *     summary: "[REMOVED] Use POST /api/auth/login with phone_no instead"
+ *     deprecated: true
  *     tags: [Collection Centre]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/OperatorLoginRequest'
+ *     description: >
+ *       This endpoint no longer exists. Collection centre operators now log in
+ *       via POST /api/auth/login using their registered mobile number as phone_no.
  *     responses:
- *       200:
- *         description: Access token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OperatorLoginResponse'
- *       401:
- *         description: Invalid credentials
- *       403:
- *         description: Account inactive
  *       404:
- *         description: Operator not found
+ *         description: Route not found
  */
 
 /**
@@ -4459,27 +4415,15 @@ export {};
  * @swagger
  * /api/transport/auth/login:
  *   post:
- *     summary: Transport operator login
+ *     summary: "[REMOVED] Use POST /api/auth/login with phone_no instead"
+ *     deprecated: true
  *     tags: [Transport]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/OperatorLoginRequest'
+ *     description: >
+ *       This endpoint no longer exists. Transport operators now log in
+ *       via POST /api/auth/login using their registered mobile number as phone_no.
  *     responses:
- *       200:
- *         description: Access token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OperatorLoginResponse'
- *       401:
- *         description: Invalid credentials
- *       403:
- *         description: Account inactive
  *       404:
- *         description: Operator not found
+ *         description: Route not found
  */
 
 /**

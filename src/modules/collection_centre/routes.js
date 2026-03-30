@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  loginController, getDashboardController, listCratesController,
+  getDashboardController, listCratesController,
   receiveCrateController, getCrateDetailController,
   logTemperatureController, assignDispatchController,
 } from "./controller.js";
@@ -9,9 +9,6 @@ import { requireRole } from "../../shared/middlewares/auth.middleware.js";
 const router = express.Router();
 
 const CC_OP = requireRole("COLLECTION_CENTRE_OPERATOR");
-
-// Auth (public)
-router.post("/auth/login", loginController);
 
 // Protected - collection centre operator only
 router.get("/dashboard", CC_OP, getDashboardController);

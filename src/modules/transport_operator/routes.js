@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  loginController, getDashboardController, listAssignedController,
+  getDashboardController, listAssignedController,
   listInTransitController, scanPickupController,
   logTemperatureController, deliverController,
 } from "./controller.js";
@@ -9,9 +9,6 @@ import { requireRole } from "../../shared/middlewares/auth.middleware.js";
 const router = express.Router();
 
 const TR_OP = requireRole("TRANSPORT_OPERATOR");
-
-// Auth (public)
-router.post("/auth/login", loginController);
 
 // Protected - transport operator only
 router.get("/dashboard", TR_OP, getDashboardController);

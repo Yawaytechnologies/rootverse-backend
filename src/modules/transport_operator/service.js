@@ -1,40 +1,4 @@
-import bcrypt from "bcryptjs";
-import { signToken } from "../auth/utils/token.js";
 import * as repo from "./repository.js";
-
-// ── Auth ──────────────────────────────────────────────────────────────────────
-
-export const login = async ({ login_id, password }) => {
-  if (!login_id || !password)
-    throw Object.assign(new Error("login_id and password are required"), { status: 400 });
-
-  const operator = await repo.findOperatorByLoginId(login_id);
-  if (!operator) throw Object.assign(new Error("Operator not found"), { status: 404 });
-  if (!operator.is_active) throw Object.assign(new Error("Account is inactive"), { status: 403 });
-
-  const valid = await bcrypt.compare(password, operator.password_hash);
-  if (!valid) throw Object.assign(new Error("Invalid credentials"), { status: 401 });
-
-  const access_token = signToken({
-    id: operator.id,
-    role: "TRANSPORT_OPERATOR",
-    transport_id: operator.transport_id,
-    operator_rv_id: operator.operator_rv_id,
-  });
-
-  return {
-    access_token,
-    token_type: "Bearer",
-    role: "TRANSPORT_OPERATOR",
-    user: {
-      operator_rv_id: operator.operator_rv_id,
-      full_name: operator.full_name,
-      transport_id: operator.transport_id,
-      vehicle_no: operator.vehicle_no,
-      route_name: operator.route_name,
-    },
-  };
-};
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 

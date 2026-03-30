@@ -51,6 +51,34 @@ export const loginService = async (req) => {
     });
   }
 
+  const ccOperator = await db("collection_centre_operators")
+    .select("id", "operator_rv_id", "centre_id", "is_active")
+    .where({ mobile: cleanPhone })
+    .first();
+  if (ccOperator) {
+    if (!ccOperator.is_active) throw new Error("Account is inactive");
+    return signToken({
+      id: ccOperator.id,
+      role: "COLLECTION_CENTRE_OPERATOR",
+      centre_id: ccOperator.centre_id,
+      operator_rv_id: ccOperator.operator_rv_id,
+    });
+  }
+
+  const transportOperator = await db("transport_operators")
+    .select("id", "operator_rv_id", "transport_id", "is_active")
+    .where({ mobile: cleanPhone })
+    .first();
+  if (transportOperator) {
+    if (!transportOperator.is_active) throw new Error("Account is inactive");
+    return signToken({
+      id: transportOperator.id,
+      role: "TRANSPORT_OPERATOR",
+      transport_id: transportOperator.transport_id,
+      operator_rv_id: transportOperator.operator_rv_id,
+    });
+  }
+
   throw new Error("User not found");
 };
 

@@ -1,44 +1,5 @@
-import bcrypt from "bcryptjs";
-import { signToken } from "../auth/utils/token.js";
 import * as repo from "./repository.js";
 import db from "../../shared/lib/db.js";
-
-// ── Auth ──────────────────────────────────────────────────────────────────────
-
-export const login = async ({ login_id, password }) => {
-  if (!login_id || !password) throw Object.assign(new Error("login_id and password are required"), { status: 400 });
-
-  const operator = await repo.findOperatorByLoginId(login_id);
-  if (!operator) throw Object.assign(new Error("Operator not found"), { status: 404 });
-  if (!operator.is_active) throw Object.assign(new Error("Account is inactive"), { status: 403 });
-
-  const valid = await bcrypt.compare(password, operator.password_hash);
-  if (!valid) throw Object.assign(new Error("Invalid credentials"), { status: 401 });
-
-  const centre = await db("collection_centres")
-    .where({ centre_id: operator.centre_id })
-    .select("centre_id", "centre_name")
-    .first();
-
-  const access_token = signToken({
-    id: operator.id,
-    role: "COLLECTION_CENTRE_OPERATOR",
-    centre_id: operator.centre_id,
-    operator_rv_id: operator.operator_rv_id,
-  });
-
-  return {
-    access_token,
-    token_type: "Bearer",
-    role: "COLLECTION_CENTRE_OPERATOR",
-    user: {
-      operator_rv_id: operator.operator_rv_id,
-      full_name: operator.full_name,
-      centre_id: operator.centre_id,
-      centre_name: centre?.centre_name || null,
-    },
-  };
-};
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 

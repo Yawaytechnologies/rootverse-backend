@@ -109,48 +109,42 @@ export async function updateCentreService(centreId, payload) {
 // ── Operator registration ─────────────────────────────────────────────────────
 
 export async function createCCOperator(payload) {
-  const required = ["operator_rv_id", "full_name", "email", "mobile", "password", "centre_id"];
+  const required = ["operator_rv_id", "full_name", "email", "mobile", "centre_id"];
   for (const f of required) {
     if (!payload[f]) throw new Error(`${f} is required`);
   }
   const centre = await findCentreById(payload.centre_id);
   if (!centre) throw new Error("Collection centre not found");
 
-  const password_hash = await bcrypt.hash(payload.password, 10);
   const [op] = await insertCCOperator({
     operator_rv_id: payload.operator_rv_id,
     full_name: payload.full_name,
     email: payload.email,
     mobile: payload.mobile,
-    password_hash,
     centre_id: payload.centre_id,
     designation: payload.designation || null,
     is_active: payload.is_active !== undefined ? payload.is_active : true,
   });
-  const { password_hash: _, ...safe } = op;
-  return safe;
+  return op;
 }
 
 export async function createTransportOperator(payload) {
-  const required = ["operator_rv_id", "full_name", "email", "mobile", "password", "transport_id", "vehicle_no"];
+  const required = ["operator_rv_id", "full_name", "email", "mobile", "transport_id", "vehicle_no"];
   for (const f of required) {
     if (!payload[f]) throw new Error(`${f} is required`);
   }
-  const password_hash = await bcrypt.hash(payload.password, 10);
   const [op] = await insertTransportOperator({
     operator_rv_id: payload.operator_rv_id,
     full_name: payload.full_name,
     email: payload.email,
     mobile: payload.mobile,
-    password_hash,
     transport_id: payload.transport_id,
     vehicle_no: payload.vehicle_no,
     route_name: payload.route_name || null,
     vehicle_type: payload.vehicle_type || null,
     is_active: payload.is_active !== undefined ? payload.is_active : true,
   });
-  const { password_hash: _, ...safe } = op;
-  return safe;
+  return op;
 }
 
 export async function updateOperatorStatusService(operatorId, { status }) {
