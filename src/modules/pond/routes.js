@@ -1,16 +1,26 @@
 import express from "express";
-import upload from "../../shared/middlewares/upload.js";
-import * as pondController from "./controller.js";
+
+import {
+  createPondController,
+  getAllPondsController,
+  getPondByIdController,
+  getPondsByFarmIdController,
+  updatePondController,
+  deletePondController,
+} from "./controller.js";
 
 const router = express.Router();
 
-router.post("/register", upload.single("image"), pondController.registerPond);
-router.get("/code/:code", pondController.getPondsByCode); // must be before /:id
-router.get("/", pondController.getAllPonds);
-router.get("/:id", pondController.getPondById);
-router.put("/:id", pondController.updatePond);
-router.delete("/:id", pondController.deletePond);
+router.post("/", createPondController);
 
+router.get("/", getAllPondsController);
 
-const pondRoutes = router;
-export default pondRoutes;
+router.get("/farm/:farm_id", getPondsByFarmIdController);
+
+router.get("/:id", getPondByIdController);
+
+router.put("/:id", updatePondController);
+
+router.delete("/:id", deletePondController);
+
+export default router;

@@ -23,7 +23,7 @@ import countryRoutes from './modules/country/country.router.js';
 import superAdminRouter from './modules/super_admin/super_admin_router.js';
 import adminRouter from './modules/admin/admin.router.js';
 import cratePackerRoutes from './modules/crate_packers/routes.js';
-import farmRoutes from './modules/farm/routes.js';
+import farmRoutes from "./modules/farms/routes.js";
 import pondRoutes from './modules/pond/routes.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
