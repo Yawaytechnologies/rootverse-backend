@@ -9,7 +9,7 @@ import {
   getQrByStatusAndCodeController,
   getAllCatchlogsController,
   updateQrController,
-} from "./qrs.controller.js";
+} from "./qrs_controller.js";
 import upload from "../../shared/middlewares/upload.js";
 
 const router = express.Router();

@@ -6,7 +6,7 @@ import {
   removeDistrict,
   listDistrictsByState,
   getDistrict,
-} from "./district.service.js";
+} from "./district_service.js";
 
 export async function createDistrictController(req, res) {
   try {

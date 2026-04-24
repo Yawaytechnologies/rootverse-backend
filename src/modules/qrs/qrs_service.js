@@ -9,7 +9,7 @@ import {
   updateQrRepo,
   getQrById
 
-} from "./qrs.model.js";
+} from "./qrs_repository.js";
 import { supabase, SUPABASE_BUCKET } from "../../shared/lib/supabase.js";
 import { buildProfileKey } from "../../shared/utils/storageKey.js";
 import db from "../../shared/lib/db.js";

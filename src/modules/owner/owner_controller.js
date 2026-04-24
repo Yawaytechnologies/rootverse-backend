@@ -1,4 +1,4 @@
-import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType, verifyOwnerDocs, formatOwner, deleteOwnerService, getOwnerByLocationService } from "./owner.service.js";
+import { registerOwner, verifyOwnerService, listAllOwners, getOwnerService, updateOwnerService, fetchUsersByRootverseType, verifyOwnerDocs, formatOwner, deleteOwnerService, getOwnerByLocationService } from "./owner_service.js";
 
 export async function createOwner(req, res) {
     try {

@@ -1,5 +1,5 @@
 import express from "express";
-import { createQualityCheckerController, getAllQualityCheckersController, getQualityCheckerByCodeController, updateQualityCheckerByIdController, deleteQualityCheckerByIdController} from "./quality.controller.js";
+import { createQualityCheckerController, getAllQualityCheckersController, getQualityCheckerByCodeController, updateQualityCheckerByIdController, deleteQualityCheckerByIdController} from "./quality_controller.js";
 
 const router = express.Router();
 

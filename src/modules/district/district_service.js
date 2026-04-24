@@ -5,7 +5,7 @@ import {
   updateDistrict,
   deleteDistrict,
   getDistrictsByStateId,
-} from "./district.model.js";
+} from "./district_repository.js";
 
 export async function registerDistrict(payload) {
   const district = await createDistrict(payload); // ✅ no []

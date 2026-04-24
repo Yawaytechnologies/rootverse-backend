@@ -1,5 +1,5 @@
 import express from "express";
-import { createOwner, verifyOwnerController, listOwners, getOwnerController, updateOwnerController, getUsersByRootverseTypeController, updateVerification,deleteOwnerController, getOwnerByLocationController } from "./owner.controller.js";
+import { createOwner, verifyOwnerController, listOwners, getOwnerController, updateOwnerController, getUsersByRootverseTypeController, updateVerification,deleteOwnerController, getOwnerByLocationController } from "./owner_controller.js";
 import upload from "../../shared/middlewares/upload.js";
 
 const router = express.Router();

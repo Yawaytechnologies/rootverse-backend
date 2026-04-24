@@ -1,4 +1,4 @@
-import { createQualityChecker, getAllQualityCheckers, getQualityCheckerByCode, updateQualityCheckerById, deleteQualityCheckerById } from "./quality.model.js";
+import { createQualityChecker, getAllQualityCheckers, getQualityCheckerByCode, updateQualityCheckerById, deleteQualityCheckerById } from "./quality_repository.js";
 
 export async function createQualityCheckerService(payload) {
     try {

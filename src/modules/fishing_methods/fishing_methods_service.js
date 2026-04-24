@@ -1,4 +1,4 @@
-import { createFishingMethod, getallFishingMethods, updateFishingMethod, deleteFishingMethod} from "./fishing_methods_model.js";
+import { createFishingMethod, getallFishingMethods, updateFishingMethod, deleteFishingMethod} from "./fishing_methods_repository.js";
 import { SUPABASE_BUCKET, supabase } from "../../shared/lib/supabase.js";
 import { buildProfileKey } from "../../shared/utils/storageKey.js";
 import db from "../../shared/lib/db.js";

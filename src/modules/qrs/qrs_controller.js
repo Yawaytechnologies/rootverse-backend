@@ -7,9 +7,9 @@ import {
   getQrByStatusAndCodeService,
   updateQrService,
   getAllCatchlogsService,
-} from "./qrs.service.js";
-import { getQrByCodePopulate } from "./qrs.model.js";
-import { updateOwner } from "../owner/owner.model.js";
+} from "./qrs_service.js";
+import { getQrByCodePopulate } from "./qrs_repository.js";
+import { updateOwner } from "../owner/owner_repository.js";
 import db from "../../shared/lib/db.js";
 
 export async function reserveBulkController(req, res) {

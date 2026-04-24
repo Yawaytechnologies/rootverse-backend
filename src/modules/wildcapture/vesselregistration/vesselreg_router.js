@@ -7,7 +7,7 @@ import {
   patchVessel,
   updateVesselById,
   deleteVessel,
-} from "./vesselreg.controller.js";
+} from "./vesselreg_controller.js";
 
 const router = express.Router();
 

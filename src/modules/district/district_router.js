@@ -1,5 +1,5 @@
 import express from 'express';
-import { createDistrictController, listDistrictsController, getDistrictController, updateDistrictController, deleteDistrictController, listDistrictsByStateController } from './district.controller.js';
+import { createDistrictController, listDistrictsController, getDistrictController, updateDistrictController, deleteDistrictController, listDistrictsByStateController } from './district_controller.js';
 
 export const router = express.Router();
 

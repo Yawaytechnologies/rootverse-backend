@@ -1,4 +1,4 @@
-import { createQualityCheckerService, getAllQualityCheckersService, getQualityCheckerByCodeService, updateQualityCheckerByIdService, deleteQualityCheckerByIdService } from "./quality.service.js";
+import { createQualityCheckerService, getAllQualityCheckersService, getQualityCheckerByCodeService, updateQualityCheckerByIdService, deleteQualityCheckerByIdService } from "./quality_service.js";
 
 
 export async function createQualityCheckerController(req, res){
