@@ -1,4 +1,4 @@
-import { createCountry, getCountryByAll, getCountryById, updateCountry, deleteCountry } from "./country.model.js";
+import { createCountry, getCountryByAll, getCountryById, updateCountry, deleteCountry } from "./country_repository.js";
 
 export async function createCountryService(payload) {
   return createCountry(payload);

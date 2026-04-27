@@ -1,4 +1,4 @@
-import { createCountryService, getAllCountriesService, getCountryByIdService, updateCountryService, deleteCountryService } from "./country.service.js";
+import { createCountryService, getAllCountriesService, getCountryByIdService, updateCountryService, deleteCountryService } from "./country_service.js";
 
 
 export async function createCountryController(req, res) {

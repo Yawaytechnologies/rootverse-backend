@@ -6,7 +6,7 @@ import {
   getDashboardSummaryService, listAllCratesService, getCrateDetailService,
   listAssignmentsService, listTemperatureLogsService, overrideCrateStatusService,
   listAllUsersService,
-} from "./admin.service.js";
+} from "./admin_service.js";
 
 // ── Admin CRUD ────────────────────────────────────────────────────────────────
 

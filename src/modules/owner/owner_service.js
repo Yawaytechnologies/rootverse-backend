@@ -1,8 +1,8 @@
-import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner, generateOwnerId, getOwnerByLocation  } from "./owner.model.js";
+import { createOwner, getAllOwners, getByRootverseType, getOwnerById, updateOwner, deleteOwner, verifyOwner, generateOwnerId, getOwnerByLocation  } from "./owner_repository.js";
 import { supabase, SUPABASE_BUCKET } from "../../shared/lib/supabase.js";
 import { buildProfileKey } from "../../shared/utils/storageKey.js";
 import db from "../../shared/lib/db.js";
-import { phone } from "../owner/owner.verification.js";
+import { phone } from "./owner_verification.js";
 
 const ALLOWED = new Set(["PENDING", "VERIFIED"])
 

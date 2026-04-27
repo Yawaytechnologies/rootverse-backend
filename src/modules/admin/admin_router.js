@@ -8,7 +8,7 @@ import {
   getDashboardSummaryController, listAllCratesController, getCrateDetailController,
   overrideCrateStatusController, listAssignmentsController, listTemperatureLogsController,
   listAllUsersController,
-} from "./admin.controller.js";
+} from "./admin_controller.js";
 
 const router = express.Router();
 

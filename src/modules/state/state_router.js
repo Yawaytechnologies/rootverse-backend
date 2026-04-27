@@ -1,5 +1,5 @@
 import express from 'express';
-import { createStateController, listStatesController, getStateController, updateStateController, deleteStateController, listStatesByCountryIdController } from './state.controller.js';
+import { createStateController, listStatesController, getStateController, updateStateController, deleteStateController, listStatesByCountryIdController } from './state_controller.js';
 
 const router = express.Router();
 

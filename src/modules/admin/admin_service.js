@@ -4,7 +4,7 @@ import {
   insertCCOperator, insertTransportOperator, setOperatorStatus,
   listAllCrates, getCrateDetail, listAssignments, listTemperatureLogs,
   overrideCrateStatus, getDashboardSummary, listAllUsers,
-} from "./admin.model.js";
+} from "./admin_repository.js";
 import db from "../../shared/lib/db.js";
 import { signToken } from "../auth/utils/token.js";
 import bcrypt from "bcryptjs";

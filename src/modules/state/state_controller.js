@@ -1,4 +1,4 @@
-import { registerState, listStates, getState, modifyState, removeState, listStatesByCountryId  } from "./state.service.js";
+import { registerState, listStates, getState, modifyState, removeState, listStatesByCountryId  } from "./state_service.js";
 
 export async function createStateController(req, res) {
     try {

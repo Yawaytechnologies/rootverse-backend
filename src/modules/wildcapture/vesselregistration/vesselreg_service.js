@@ -1,6 +1,6 @@
-import * as VesselModel from "./vesselreg.model.js";
+import * as VesselModel from "./vesselreg_repository.js";
 import {listVesselsByOwnerId,
-} from "./vesselreg.model.js";
+} from "./vesselreg_repository.js";
 
 import db from "../../../shared/lib/db.js";
 

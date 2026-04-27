@@ -5,7 +5,7 @@ import {
   getVesselsByOwnerId, 
   updateVessel,
   removeVessel,
-} from "./vesselreg.service.js";
+} from "./vesselreg_service.js";
 
 function sendError(res, err) {
   const status = err.status || 500;

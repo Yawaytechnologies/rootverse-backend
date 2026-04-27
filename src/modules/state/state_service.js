@@ -1,4 +1,4 @@
-import { createState, getAllStates, getStateById, deleteState, updateState, getStatesByCountryId } from "./state.model.js";
+import { createState, getAllStates, getStateById, deleteState, updateState, getStatesByCountryId } from "./state_repository.js";
 
 export async function registerState(payload) {
     const state = await createState(payload);

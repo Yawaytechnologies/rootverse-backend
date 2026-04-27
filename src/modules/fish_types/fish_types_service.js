@@ -1,4 +1,4 @@
-import { createFishTypes, getallfishTypes, getbyfishTypesId, updateFishTypesById, deleteFishTypesById } from "./fish_types_model.js";
+import { createFishTypes, getallfishTypes, getbyfishTypesId, updateFishTypesById, deleteFishTypesById } from "./fish_types_repository.js";
 import { supabase, SUPABASE_BUCKET } from "../../shared/lib/supabase.js";
 import { buildFishTypeKey } from "../../shared/utils/storageKey.js";
 
