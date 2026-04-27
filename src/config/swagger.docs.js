@@ -995,6 +995,54 @@
  *         status:
  *           type: string
  *           enum: [pending, approved, rejected]
+ *
+ *     # â”€â”€ Aquaculture QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ *     AquacultureQr:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         qrs_code:
+ *           type: string
+ *           example: IN-TN-NA-260001
+ *         type:
+ *           type: string
+ *           enum: [farm, pond]
+ *           example: farm
+ *         farm_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 10
+ *         pond_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 25
+ *         is_active:
+ *           type: boolean
+ *           example: true
+ *         farm_name:
+ *           type: string
+ *           nullable: true
+ *           example: Blue Water Farm
+ *         farm_code:
+ *           type: string
+ *           nullable: true
+ *           example: FARM-000101
+ *         pond_name:
+ *           type: string
+ *           nullable: true
+ *           example: Pond A
+ *         pond_code:
+ *           type: string
+ *           nullable: true
+ *           example: POND-000205
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1042,6 +1090,8 @@
  *     description: Farm management APIs
  *   - name: Ponds
  *     description: Pond management APIs
+ *   - name: Aquaculture QRs
+ *     description: Aquaculture farm and pond QR generation and activation APIs
  */
 
 /**
@@ -3551,6 +3601,222 @@ export {};
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTH — /me, /refresh, /logout
 // ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * @swagger
+ * /api/aquaculture/qrs:
+ *   get:
+ *     summary: List aquaculture QR codes
+ *     tags: [Aquaculture QRs]
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [farm, pond]
+ *         description: Filter by QR type
+ *       - in: query
+ *         name: is_active
+ *         schema:
+ *           type: boolean
+ *         description: Filter by activation status
+ *     responses:
+ *       200:
+ *         description: Aquaculture QR list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/AquacultureQr'
+ *       400:
+ *         description: Invalid filter values
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/qrs/code/{code}:
+ *   get:
+ *     summary: Get aquaculture QR by code
+ *     tags: [Aquaculture QRs]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: IN-TN-NA-260001
+ *     responses:
+ *       200:
+ *         description: Aquaculture QR details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AquacultureQr'
+ *       404:
+ *         description: QR not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/qrs/{id}:
+ *   get:
+ *     summary: Get aquaculture QR by ID
+ *     tags: [Aquaculture QRs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Aquaculture QR details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AquacultureQr'
+ *       404:
+ *         description: QR not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/qrs/generate:
+ *   post:
+ *     summary: Generate aquaculture QR codes in batch
+ *     tags: [Aquaculture QRs]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [location_id, type, year, qrs]
+ *             properties:
+ *               location_id:
+ *                 type: integer
+ *                 example: 5
+ *               type:
+ *                 type: string
+ *                 enum: [farm, pond]
+ *                 example: farm
+ *               year:
+ *                 type: integer
+ *                 example: 2026
+ *               qrs:
+ *                 type: integer
+ *                 example: 10
+ *     responses:
+ *       201:
+ *         description: Aquaculture QR codes generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/AquacultureQr'
+ *       400:
+ *         description: Validation error or missing location code setup
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Location not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/qrs/farm/{farm_id}/activate/{qr_id}:
+ *   patch:
+ *     summary: Activate a farm QR for a specific farm
+ *     tags: [Aquaculture QRs]
+ *     parameters:
+ *       - in: path
+ *         name: farm_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: qr_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Farm QR activated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AquacultureQr'
+ *       400:
+ *         description: QR type mismatch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Farm or QR not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/qrs/pond/{pond_id}/activate/{qr_id}:
+ *   patch:
+ *     summary: Activate a pond QR for a specific pond
+ *     tags: [Aquaculture QRs]
+ *     parameters:
+ *       - in: path
+ *         name: pond_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: qr_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pond QR activated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AquacultureQr'
+ *       400:
+ *         description: QR type mismatch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Pond or QR not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 /**
  * @swagger
