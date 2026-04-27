@@ -1,0 +1,14 @@
+import express from 'express';
+import { createStateController, listStatesController, getStateController, updateStateController, deleteStateController, listStatesByCountryIdController } from './state_controller.js';
+
+const router = express.Router();
+
+router.post('/states', createStateController);
+router.get('/states', listStatesController);
+router.get('/states/country/:country_id', listStatesByCountryIdController);
+router.get('/states/:id', getStateController);
+router.put('/states/:id', updateStateController);
+router.delete('/states/:id', deleteStateController);
+
+
+export default router;

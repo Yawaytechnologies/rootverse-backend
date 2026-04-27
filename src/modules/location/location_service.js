@@ -1,4 +1,4 @@
-import { creationLocation, getLocationByIdPopulated, getLocationByDistrictId, getallLocations, updateLocationById, deleteLocationById} from "./location_model.js";
+import { creationLocation, getLocationByIdPopulated, getLocationByDistrictId, getallLocations, updateLocationById, deleteLocationById} from "./location_repositoryl.js";
 
 
 

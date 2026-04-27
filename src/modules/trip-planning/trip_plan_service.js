@@ -10,7 +10,7 @@ import {
   getAllTripByStatus,
   getAllTripsByVesselId,
   completeTripPlan
-} from "./trip_plan_model.js";
+} from "./trip_plan_repository.js";
 import { nanoid } from "nanoid";
 
 export async function createTripPlanService(payload) {

@@ -6,25 +6,26 @@ import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { buildSwaggerSpec } from './config/swagger.js';
 import db from './shared/lib/db.js';
-import ownerRouter from './modules/owner/owner.router.js';
-import stateRouter from './modules/state/state.router.js';
-import districtRouter from './modules/district/district.router.js';
-import qrsRouter from './modules/qrs/qrs.router.js'
-import vesselRegRouter from './modules/wildcapture/vesselregistration/vesselreg.router.js';
+import ownerRouter from './modules/owner/owner_router.js';
+import stateRouter from './modules/state/state_router.js';
+import districtRouter from './modules/district/district_router.js';
+import qrsRouter from './modules/qrs/qrs_router.js'
+import vesselRegRouter from './modules/wildcapture/vesselregistration/vesselreg_router.js';
 import tripPlanRouter from './modules/trip-planning/trip_plan_router.js'
 import fishTypes from './modules/fish_types/fish_types_router.js'
 import loginRoutes from './modules/auth/auth.routes.js';
-import qualityCheckerRouter from './modules/quality_checker/quality.router.js';
+import qualityCheckerRouter from './modules/quality_checker/quality_router.js';
 import userRoutes from './modules/users/user.routes.js';
 import locationRoutes from './modules/location/location_router.js';
 import fishingMethods from './modules/fishing_methods/fishing_methods_router.js';
 import crateQrRoutes from './modules/crate_qrs/routes.js';
-import countryRoutes from './modules/country/country.router.js';
+import countryRoutes from './modules/country/country_router.js';
 import superAdminRouter from './modules/super_admin/super_admin_router.js';
-import adminRouter from './modules/admin/admin.router.js';
+import adminRouter from './modules/admin/admin_router.js';
 import cratePackerRoutes from './modules/crate_packers/routes.js';
-import farmRoutes from './modules/farm/routes.js';
+import farmRoutes from "./modules/farms/routes.js";
 import pondRoutes from './modules/pond/routes.js';
+import aquacultureQrRoutes from './modules/aquaculture/qrs_generation/qrs_generation_routes.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 import collectionCentreRoutes from './modules/collection_centre/routes.js';
@@ -79,6 +80,7 @@ app.use('/api/admin', adminRouter);
 app.use("/api/crate-packer", cratePackerRoutes);
 app.use("/api/farms", farmRoutes);
 app.use('/api/ponds', pondRoutes);
+app.use('/api/aquaculture/qrs', aquacultureQrRoutes);
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 app.use('/api/collection-centre', collectionCentreRoutes);
