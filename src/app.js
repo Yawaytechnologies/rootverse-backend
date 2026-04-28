@@ -26,6 +26,7 @@ import cratePackerRoutes from './modules/crate_packers/routes.js';
 import farmRoutes from "./modules/farms/routes.js";
 import pondRoutes from './modules/pond/routes.js';
 import aquacultureQrRoutes from './modules/aquaculture/qrs_generation/qrs_generation_routes.js';
+import cultureCycleRoutes from './modules/aquaculture/cultures_cycle/cultures_cycle_routes.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 import collectionCentreRoutes from './modules/collection_centre/routes.js';
@@ -81,6 +82,7 @@ app.use("/api/crate-packer", cratePackerRoutes);
 app.use("/api/farms", farmRoutes);
 app.use('/api/ponds', pondRoutes);
 app.use('/api/aquaculture/qrs', aquacultureQrRoutes);
+app.use('/api/aquaculture/culture-cycles', cultureCycleRoutes);
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 app.use('/api/collection-centre', collectionCentreRoutes);
