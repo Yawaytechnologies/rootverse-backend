@@ -1043,6 +1043,85 @@
  *         updated_at:
  *           type: string
  *           format: date-time
+ *
+ *     CultureCycle:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           example: 12
+ *         culture_code:
+ *           type: string
+ *           example: IN-TN-KK-CC-00001
+ *         farm_id:
+ *           type: integer
+ *           example: 10
+ *         pond_id:
+ *           type: integer
+ *           example: 25
+ *         verification_status:
+ *           type: string
+ *           enum: [PENDING, ACTIVE, STOCKED, IN_PROGRESS, HARVESTED, CLOSED]
+ *           example: PENDING
+ *         start_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-04-27
+ *         end_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-08-27
+ *         farm_code:
+ *           type: string
+ *           nullable: true
+ *           example: IN-TN-NA-260001
+ *         farm_name:
+ *           type: string
+ *           nullable: true
+ *           example: Blue Water Farm
+ *         pond_code:
+ *           type: string
+ *           nullable: true
+ *           example: IN-TN-NA-P-2600001
+ *         pond_name:
+ *           type: string
+ *           nullable: true
+ *           example: Pond A
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CreateCultureCycleRequest:
+ *       type: object
+ *       required: [user_id, farm_id, pond_id, start_date, end_date]
+ *       properties:
+ *         user_id:
+ *           type: integer
+ *           example: 12
+ *         farm_id:
+ *           type: integer
+ *           example: 10
+ *         pond_id:
+ *           type: integer
+ *           example: 25
+ *         verification_status:
+ *           type: string
+ *           enum: [PENDING, ACTIVE, STOCKED, IN_PROGRESS, HARVESTED, CLOSED]
+ *           example: PENDING
+ *         start_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-04-27
+ *         end_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-08-27
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -3812,6 +3891,164 @@ export {};
  *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Pond or QR not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/culture-cycles:
+ *   post:
+ *     summary: Create an aquaculture culture cycle
+ *     tags: [Culture Cycles]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCultureCycleRequest'
+ *     responses:
+ *       201:
+ *         description: Culture cycle created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycle created successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/CultureCycle'
+ *       400:
+ *         description: Validation error or location code configuration missing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User, farm, or pond not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/culture-cycles/user/{user_id}:
+ *   get:
+ *     summary: Get culture cycles by user ID
+ *     tags: [Culture Cycles]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Rootverse user ID
+ *     responses:
+ *       200:
+ *         description: Culture cycles fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycles fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CultureCycle'
+ *       404:
+ *         description: Culture cycle not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/culture-cycles/{id}:
+ *   get:
+ *     summary: Get a culture cycle by ID
+ *     tags: [Culture Cycles]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Culture cycle ID
+ *     responses:
+ *       200:
+ *         description: Culture cycle fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycle fetched successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/CultureCycle'
+ *       404:
+ *         description: Culture cycle not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/culture-cycles/verification-status/{verification_status}:
+ *   get:
+ *     summary: Get culture cycles by verification status
+ *     tags: [Culture Cycles]
+ *     parameters:
+ *       - in: path
+ *         name: verification_status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, ACTIVE, STOCKED, IN_PROGRESS, HARVESTED, CLOSED]
+ *         description: Culture cycle verification status
+ *     responses:
+ *       200:
+ *         description: Culture cycles fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycles fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CultureCycle'
+ *       404:
+ *         description: No culture cycles found with the given verification status
  *         content:
  *           application/json:
  *             schema:
