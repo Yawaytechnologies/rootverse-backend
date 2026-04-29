@@ -118,3 +118,13 @@ export const getCultureCyclesByVerificationStatus = async (verificationStatus, t
     .orderBy("created_at", "desc");
 };
 
+
+export const updateVerificationStatus = async (cultureCycleId, verificationStatus, remarks, trx) => {
+  const executor = getExecutor(trx);
+  await executor(TABLE_NAME)
+    .where("id", cultureCycleId)
+    .update({
+      verification_status: verificationStatus,
+      updated_at: new Date(),
+    });
+};
