@@ -1,4 +1,4 @@
-import { createCultureCycleService, getCultureCycleByidService, getCultureCycleByuserIdService, getCultureCyclesByVerificationStatusService} from "./cultures_cycle_service.js";
+import { createCultureCycleService, getCultureCycleByidService, getCultureCycleByuserIdService, getCultureCyclesByVerificationStatusService, updateVerificationStatusService} from "./cultures_cycle_service.js";
 
 const sendError = (res, error) => {
   return res.status(error.statusCode || 500).json({
@@ -58,6 +58,24 @@ export const getCultureCyclesByVerificationStatusController = async (req, res) =
       success: true,
       message: "Culture cycles fetched successfully",
       data: cultureCycles,
+    });
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+
+export const updateVerificationStatusController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newStatus, remarks } = req.body;
+
+    const updatedCycle = await updateVerificationStatusService(id, newStatus, remarks);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification status updated successfully",
+      data: updatedCycle,
     });
   } catch (error) {
     return sendError(res, error);

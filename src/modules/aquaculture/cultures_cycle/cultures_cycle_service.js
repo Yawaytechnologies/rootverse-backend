@@ -7,6 +7,7 @@ import {
   getPondById,
   getUserLocationHierarchy,
   getCultureCyclesByVerificationStatus,
+  updateVerificationStatus,
 } from "./cultures_cycle_repository.js";
 
 const CULTURE_ENTITY_CODE = "CC";
@@ -190,3 +191,22 @@ export const getCultureCyclesByVerificationStatusService = async (verificationSt
   return cultureCycles;
 };
 
+
+export const updateVerificationStatusService = async (cultureCycleId, newStatus, remarks) => {
+  if (!VALID_STATUSES.includes(newStatus)) {
+    throw createError(
+      `verification_status must be one of ${VALID_STATUSES.join(", ")}`,
+      400
+    );
+  }
+
+  const cultureCycle = await getCultureCycleById(cultureCycleId);
+
+  if (!cultureCycle) {
+    throw createError("Culture cycle not found", 404);
+  }
+
+  await updateVerificationStatus(cultureCycleId, newStatus, remarks);
+
+  return getCultureCycleById(cultureCycleId);
+};
