@@ -1122,6 +1122,42 @@
  *           type: string
  *           format: date
  *           example: 2026-08-27
+ *
+ *     AquacultureImage:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         culture_cycle_id:
+ *           type: integer
+ *           example: 1
+ *         image_url:
+ *           type: string
+ *           example: https://example.supabase.co/storage/v1/object/public/root_verse/aquaculture_images/1/image.jpg
+ *         storage_path:
+ *           type: string
+ *           example: aquaculture_images/1/1714375800000-acde1234.jpg
+ *         description:
+ *           type: string
+ *           nullable: true
+ *           example: Sampling image from pond edge
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     UploadAquacultureImageResponse:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         imageUrl:
+ *           type: string
+ *           example: https://example.supabase.co/storage/v1/object/public/root_verse/aquaculture_images/1/image.jpg
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -4054,6 +4090,139 @@ export {};
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+
+	/**
+	 * @swagger
+	 * /api/aquaculture/culture-cycles/{id}/verification-status:
+ *   put:
+ *     summary: Update culture cycle verification status
+ *     tags: [Culture Cycles]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Culture cycle ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newStatus
+ *             properties:
+ *               newStatus:
+ *                 type: string
+ *                 enum: [PENDING, ACTIVE, STOCKED, IN_PROGRESS, HARVESTED, CLOSED]
+ *                 example: ACTIVE
+ *               remarks:
+ *                 type: string
+ *                 example: Verified by reviewer
+ *     responses:
+ *       200:
+ *         description: Verification status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Verification status updated successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/CultureCycle'
+ *       400:
+ *         description: Invalid verification status supplied
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+	 *       404:
+	 *         description: Culture cycle not found
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Error'
+	 */
+
+	/**
+	 * @swagger
+	 * /api/aquaculture/imageUpload/{cultureCycleId}/images:
+	 *   post:
+	 *     summary: Upload an image for an aquaculture culture cycle
+	 *     tags: [Aquaculture Image Upload]
+	 *     parameters:
+	 *       - in: path
+	 *         name: cultureCycleId
+	 *         required: true
+	 *         schema:
+	 *           type: integer
+	 *         description: Culture cycle ID
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         multipart/form-data:
+	 *           schema:
+	 *             type: object
+	 *             required:
+	 *               - image
+	 *             properties:
+	 *               image:
+	 *                 type: string
+	 *                 format: binary
+	 *               description:
+	 *                 type: string
+	 *                 example: Water quality check image
+	 *     responses:
+	 *       201:
+	 *         description: Image uploaded successfully
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/UploadAquacultureImageResponse'
+	 *       400:
+	 *         description: No file uploaded
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Error'
+	 *       500:
+	 *         description: Failed to upload image
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Error'
+	 *   get:
+	 *     summary: Get images for an aquaculture culture cycle
+	 *     tags: [Aquaculture Image Upload]
+	 *     parameters:
+	 *       - in: path
+	 *         name: cultureCycleId
+	 *         required: true
+	 *         schema:
+	 *           type: integer
+	 *         description: Culture cycle ID
+	 *     responses:
+	 *       200:
+	 *         description: Images fetched successfully
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: array
+	 *               items:
+	 *                 $ref: '#/components/schemas/AquacultureImage'
+	 *       500:
+	 *         description: Failed to fetch images
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Error'
+	 */
 
 /**
  * @swagger

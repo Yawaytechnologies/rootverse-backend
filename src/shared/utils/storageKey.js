@@ -16,3 +16,9 @@ export const generateKey = (folder, originalname) => {
   const unique = `${Date.now()}-${crypto.randomUUID()}`;
   return `${folder}/${unique}${ext}`;
 };
+
+export const aquacultureImageKey = (cultureCycleId, originalName) => {
+  const ext = path.extname(originalName).toLowerCase();
+  const unique = `${Date.now()}-${crypto.randomUUID()}`;
+  return `aquaculture_images/${cultureCycleId}/${unique}${ext}`;
+};
