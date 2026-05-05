@@ -19,7 +19,7 @@ export function buildSwaggerSpec() {
       },
       servers: [
         { url: "http://localhost:5000", description: "Local Development" },
-        // { url: "https://rootverse-backend.onrender.com", description: "Production" },
+        { url: "https://rootverse-backend-5qoo.onrender.com", description: "Production" },
       ],
       tags: [
         { name: "Auth", description: "Phone-based login and shared auth endpoints" },
