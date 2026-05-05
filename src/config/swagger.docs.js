@@ -1123,6 +1123,143 @@
  *           format: date
  *           example: 2026-08-27
  *
+ *     PondStocking:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         culturecycle_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 12
+ *         species:
+ *           type: string
+ *           example: Vannamei shrimp
+ *         hatchery:
+ *           type: string
+ *           example: Blue Hatchery
+ *         hatchery_batch_number:
+ *           type: integer
+ *           example: 260501
+ *         PL_age_at_dispatch:
+ *           type: integer
+ *           example: 12
+ *         nursery_days:
+ *           type: integer
+ *           example: 7
+ *         stocking_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-05-05
+ *         PL_age_at_stocked:
+ *           type: integer
+ *           example: 19
+ *         total_PL_stocked:
+ *           type: integer
+ *           example: 150000
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CreatePondStockingRequest:
+ *       type: object
+ *       required:
+ *         - culture_cycle_id
+ *         - qr_code_id
+ *         - species
+ *         - hatchery
+ *         - hatchery_batch_number
+ *         - pl_age_at_dispatch
+ *         - nursery_days
+ *         - stocking_date
+ *         - pl_age_at_stocking
+ *         - total_pl_stocked
+ *       properties:
+ *         culture_cycle_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 12
+ *         species:
+ *           type: string
+ *           example: Vannamei shrimp
+ *         hatchery:
+ *           type: string
+ *           example: Blue Hatchery
+ *         hatchery_batch_number:
+ *           type: integer
+ *           example: 260501
+ *         pl_age_at_dispatch:
+ *           type: integer
+ *           example: 12
+ *         nursery_days:
+ *           type: integer
+ *           example: 7
+ *         stocking_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-05-05
+ *         pl_age_at_stocking:
+ *           type: integer
+ *           example: 19
+ *         total_pl_stocked:
+ *           type: integer
+ *           example: 150000
+ *
+ *     UpdatePondStockingRequest:
+ *       type: object
+ *       properties:
+ *         culturecycle_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 12
+ *         species:
+ *           type: string
+ *           example: Vannamei shrimp
+ *         hatchery:
+ *           type: string
+ *           example: Blue Hatchery
+ *         hatchery_batch_number:
+ *           type: integer
+ *           example: 260501
+ *         PL_age_at_dispatch:
+ *           type: integer
+ *           example: 12
+ *         nursery_days:
+ *           type: integer
+ *           example: 7
+ *         stocking_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-05-05
+ *         PL_age_at_stocked:
+ *           type: integer
+ *           example: 19
+ *         total_PL_stocked:
+ *           type: integer
+ *           example: 150000
+ *
+ *     PondStockingCreateResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Pond stocking created successfully
+ *         data:
+ *           $ref: '#/components/schemas/PondStocking'
+ *
  *     AquacultureImage:
  *       type: object
  *       properties:
@@ -1207,6 +1344,8 @@
  *     description: Pond management APIs
  *   - name: Aquaculture QRs
  *     description: Aquaculture farm and pond QR generation and activation APIs
+ *   - name: Pond Stocking
+ *     description: Aquaculture pond stocking APIs
  */
 
 /**
@@ -4149,6 +4288,218 @@ export {};
 	 *             schema:
 	 *               $ref: '#/components/schemas/Error'
 	 */
+
+/**
+ * @swagger
+ * /api/aquaculture/pond-stocking:
+ *   post:
+ *     summary: Create a pond stocking record
+ *     tags: [Pond Stocking]
+ *     description: Creates a stocking record for an active culture cycle and active aquaculture QR.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreatePondStockingRequest'
+ *     responses:
+ *       201:
+ *         description: Pond stocking created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PondStockingCreateResponse'
+ *       400:
+ *         description: Validation error, inactive culture cycle, duplicate stocking, or inactive QR
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Culture cycle or QR not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   get:
+ *     summary: List pond stocking records
+ *     tags: [Pond Stocking]
+ *     responses:
+ *       200:
+ *         description: Pond stocking records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/PondStocking'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/pond-stocking/culturecycle/{culturecycle_id}:
+ *   get:
+ *     summary: Get pond stocking by culture cycle ID
+ *     tags: [Pond Stocking]
+ *     parameters:
+ *       - in: path
+ *         name: culturecycle_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Culture cycle ID stored on pond stocking records
+ *     responses:
+ *       200:
+ *         description: Pond stocking record fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PondStocking'
+ *       404:
+ *         description: Pond stocking record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/pond-stocking/qrcode/{qr_code_id}:
+ *   get:
+ *     summary: Get pond stocking by QR code ID
+ *     tags: [Pond Stocking]
+ *     parameters:
+ *       - in: path
+ *         name: qr_code_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Aquaculture QR ID stored on pond stocking records
+ *     responses:
+ *       200:
+ *         description: Pond stocking record fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PondStocking'
+ *       404:
+ *         description: Pond stocking record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/pond-stocking/{id}:
+ *   get:
+ *     summary: Get pond stocking by ID
+ *     tags: [Pond Stocking]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pond stocking record ID
+ *     responses:
+ *       200:
+ *         description: Pond stocking record fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PondStocking'
+ *       404:
+ *         description: Pond stocking record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   put:
+ *     summary: Update pond stocking by ID
+ *     tags: [Pond Stocking]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pond stocking record ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePondStockingRequest'
+ *     responses:
+ *       200:
+ *         description: Pond stocking updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PondStocking'
+ *       404:
+ *         description: Pond stocking record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   delete:
+ *     summary: Delete pond stocking by ID
+ *     tags: [Pond Stocking]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pond stocking record ID
+ *     responses:
+ *       200:
+ *         description: Pond stocking deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 	/**
 	 * @swagger
