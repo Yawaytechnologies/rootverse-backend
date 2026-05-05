@@ -42,8 +42,8 @@ const getSerialLength = (type) => {
 };
 
 const validateGeneratePayload = (data) => {
-  if (!data.location_id || Number.isNaN(data.location_id)) {
-    throw createError("Valid location_id is required", 400);
+  if (!data.district_id || Number.isNaN(data.district_id)) {
+    throw createError("Valid district_id is required", 400);
   }
 
   if (data.type !== FARM_TYPE && data.type !== POND_TYPE) {
@@ -61,7 +61,7 @@ const validateGeneratePayload = (data) => {
 
 const normalizeGeneratePayload = (body) => {
   return {
-    location_id: Number(body.location_id),
+    district_id: Number(body.district_id),
     type: normalizeType(body.type),
     year: Number(body.year),
     qrs: Number(body.qrs),
@@ -87,27 +87,29 @@ export const generateAquacultureQrService = async (body) => {
 
   validateGeneratePayload(data);
 
-  const location = await getLocationHierarchyById(data.location_id);
+  const district = await getLocationHierarchyById(data.district_id);
 
-  if (!location) {
-    throw createError("Location not found", 404);
+  if (!district) {
+    throw createError("District not found", 404);
   }
 
-  if (!location.country_code || !location.state_code || !location.district_code) {
+  if (!district.country_code || !district.state_code || !district.district_code) {
     throw createError(
-      "Location is missing country, state, or district code configuration",
+      "District is missing country, state, or district code configuration",
       400
     );
   }
 
   const prefix = buildPrefix({
-    countryCode: location.country_code,
-    stateCode: location.state_code,
-    districtCode: location.district_code,
+    countryCode: district.country_code,
+    stateCode: district.state_code,
+    districtCode: district.district_code,
     type: data.type,
     year: data.year,
   });
+
   const serialLength = getSerialLength(data.type);
+
   const lastQr = await getLastQrByPrefix(prefix, data.type);
 
   let nextNumber = 1;
