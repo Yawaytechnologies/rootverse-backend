@@ -11,14 +11,11 @@ export const getPondById = async (id) => {
 };
 
 export const getLocationHierarchyById = async (id) => {
-  return db("locations as l")
-    .join("districts as d", "l.district_id", "d.id")
-    .join("states as s", "d.state_id", "s.id")
-    .join("country as c", "s.country_id", "c.id")
+  return db("districts as d")
+    .innerJoin("states as s", "d.state_id", "s.id")
+    .innerJoin("country as c", "s.country_id", "c.id")
     .select(
-      "l.id",
-      "l.name as location_name",
-      "l.location_code",
+      "d.id",
       "d.id as district_id",
       "d.name as district_name",
       "d.district_code",
@@ -29,7 +26,7 @@ export const getLocationHierarchyById = async (id) => {
       "c.name as country_name",
       "c.code as country_code"
     )
-    .where("l.id", id)
+    .where("d.id", id)
     .first();
 };
 
