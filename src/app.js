@@ -28,6 +28,7 @@ import pondRoutes from './modules/pond/routes.js';
 import aquacultureQrRoutes from './modules/aquaculture/qrs_generation/qrs_generation_routes.js';
 import cultureCycleRoutes from './modules/aquaculture/cultures_cycle/cultures_cycle_routes.js';
 import AquaImageUpload from './modules/aquaculture/imageUpload/imageUpload_router.js';
+import PondStocking from './modules/aquaculture/pondStocking/pondStocking_router.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 import collectionCentreRoutes from './modules/collection_centre/routes.js';
@@ -85,6 +86,7 @@ app.use('/api/ponds', pondRoutes);
 app.use('/api/aquaculture/qrs', aquacultureQrRoutes);
 app.use('/api/aquaculture/culture-cycles', cultureCycleRoutes);
 app.use('/api/aquaculture/imageUpload', AquaImageUpload);
+app.use('/api/aquaculture/pond-stocking', PondStocking);
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 app.use('/api/collection-centre', collectionCentreRoutes);
