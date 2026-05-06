@@ -14,9 +14,29 @@ const sendError = (res, error) => {
   });
 };
 
+/**
+ * Create Farm
+ */
 export const createFarmController = async (req, res) => {
   try {
-    const farm = await createFarmService(req.body);
+    const data = req.body;
+
+    // ✅ Validate required fields
+    if (!data.farm_prefix) {
+      return res.status(400).json({
+        success: false,
+        message: "Farm prefix is required",
+      });
+    }
+
+    if (!data.farm_name) {
+      return res.status(400).json({
+        success: false,
+        message: "Farm name is required",
+      });
+    }
+
+    const farm = await createFarmService(data);
 
     return res.status(201).json({
       success: true,
@@ -28,6 +48,9 @@ export const createFarmController = async (req, res) => {
   }
 };
 
+/**
+ * Get All Farms
+ */
 export const getAllFarmsController = async (req, res) => {
   try {
     const farms = await getAllFarmsService();
@@ -42,9 +65,14 @@ export const getAllFarmsController = async (req, res) => {
   }
 };
 
+/**
+ * Get Farm by DB ID
+ */
 export const getFarmByIdController = async (req, res) => {
   try {
-    const farm = await getFarmByIdService(req.params.id);
+    const { id } = req.params;
+
+    const farm = await getFarmByIdService(id);
 
     return res.status(200).json({
       success: true,
@@ -56,9 +84,21 @@ export const getFarmByIdController = async (req, res) => {
   }
 };
 
+/**
+ * Get Farm by Farm ID (custom ID like IN-TN-NA-260000)
+ */
 export const getFarmByFarmIdController = async (req, res) => {
   try {
-    const farm = await getFarmByFarmIdService(req.params.farm_id);
+    const { farm_id } = req.params;
+
+    if (!farm_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Farm ID is required",
+      });
+    }
+
+    const farm = await getFarmByFarmIdService(farm_id);
 
     return res.status(200).json({
       success: true,
@@ -70,9 +110,15 @@ export const getFarmByFarmIdController = async (req, res) => {
   }
 };
 
+/**
+ * Update Farm
+ */
 export const updateFarmController = async (req, res) => {
   try {
-    const farm = await updateFarmService(req.params.id, req.body);
+    const { id } = req.params;
+    const data = req.body;
+
+    const farm = await updateFarmService(id, data);
 
     return res.status(200).json({
       success: true,
@@ -84,9 +130,14 @@ export const updateFarmController = async (req, res) => {
   }
 };
 
+/**
+ * Delete Farm
+ */
 export const deleteFarmController = async (req, res) => {
   try {
-    const result = await deleteFarmService(req.params.id);
+    const { id } = req.params;
+
+    const result = await deleteFarmService(id);
 
     return res.status(200).json({
       success: true,
