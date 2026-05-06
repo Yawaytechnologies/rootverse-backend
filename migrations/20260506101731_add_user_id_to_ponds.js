@@ -2,6 +2,10 @@ import db from "../../shared/lib/db.js";
 
 const TABLE = "ponds";
 
+export const getRootverseUserById = async (user_id) => {
+  return await db("rootverse_users").where({ id: user_id }).first();
+};
+
 export const getFarmById = async (farm_id) => {
   return await db("farms").where({ id: farm_id }).first();
 };
@@ -68,6 +72,7 @@ export const updatePondById = async (id, data) => {
   const [pond] = await db(TABLE)
     .where({ id })
     .update({
+      user_id: data.user_id,
       farm_id: data.farm_id,
       pond_name: data.pond_name,
       pond_type: data.pond_type,
