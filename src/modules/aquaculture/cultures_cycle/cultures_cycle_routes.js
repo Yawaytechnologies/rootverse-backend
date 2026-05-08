@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.post("/", createCultureCycleController);
 router.get("/user/:user_id", getCultureCycleByUserIdController);
-router.get("/:id", getCultureCycleByIdController);
 router.get("/verification-status/:verification_status", getCultureCyclesByVerificationStatusController);
+router.get("/:id", getCultureCycleByIdController);
 router.put("/:id/verification-status", updateVerificationStatusController);
 
 export default router;
