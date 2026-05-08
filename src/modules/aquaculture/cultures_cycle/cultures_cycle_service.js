@@ -5,6 +5,7 @@ import {
   getFarmById,
   getLastCultureCycleByPrefix,
   getPondById,
+  getBlockingCultureCycleByPondId,
   getUserLocationHierarchy,
   getCultureCyclesByUserId,
   getCultureCyclesByVerificationStatus,
@@ -29,6 +30,8 @@ const createError = (message, statusCode = 400) => {
 };
 
 const normalizeCodePart = (value) => String(value || "").trim().toUpperCase();
+
+const getTodayDateString = () => new Date().toISOString().slice(0, 10);
 
 const normalizePayload = (body) => {
   const rawStatus = String(body.verification_status || "PENDING")
@@ -148,6 +151,19 @@ export const createCultureCycleService = async (body) => {
     }
 
     await trx.raw(`LOCK TABLE culture_cycles IN EXCLUSIVE MODE`);
+
+    const blockingCultureCycle = await getBlockingCultureCycleByPondId(
+      data.pond_id,
+      getTodayDateString(),
+      trx
+    );
+
+    if (blockingCultureCycle) {
+      throw createError(
+        "pond_id is already used in a culture cycle. It can be reused only after the existing culture cycle end_date is completed and verification_status is CLOSED",
+        400
+      );
+    }
 
     const culture_code = await getNextCultureCode(user, trx);
 
