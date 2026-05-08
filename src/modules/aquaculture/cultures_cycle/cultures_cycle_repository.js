@@ -112,6 +112,16 @@ export const getCultureCycleBypondId = async (pondId, trx) => {
     .first();
 };
 
+export const getBlockingCultureCycleByPondId = async (pondId, completedBeforeDate, trx) => {
+  return getExecutor(trx)(TABLE_NAME)
+    .where("pond_id", pondId)
+    .andWhere(function blockingCycle() {
+      this.whereNot("verification_status", "CLOSED").orWhere("end_date", ">=", completedBeforeDate);
+    })
+    .orderBy("created_at", "desc")
+    .first();
+};
+
 export const getCultureCyclesByVerificationStatus = async (verificationStatus, trx) => {
   return getExecutor(trx)(TABLE_NAME)
     .where("verification_status", verificationStatus)
