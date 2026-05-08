@@ -37,6 +37,7 @@ export function buildSwaggerSpec() {
         { name: "Quality Checker", description: "Quality checker management" },
         { name: "Farms", description: "Farm registration and management" },
         { name: "Ponds", description: "Pond management" },
+        { name: "Aquaculture QRs", description: "Aquaculture farm and pond QR generation and activation" },
         { name: "Culture Cycles", description: "Aquaculture culture cycle management" },
         { name: "Pond Stocking", description: "Aquaculture pond stocking management" },
         { name: "Fish Types", description: "Fish type reference data" },

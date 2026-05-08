@@ -6,6 +6,7 @@ import {
   getLastCultureCycleByPrefix,
   getPondById,
   getUserLocationHierarchy,
+  getCultureCyclesByUserId,
   getCultureCyclesByVerificationStatus,
   updateVerificationStatus,
 } from "./cultures_cycle_repository.js";
@@ -175,11 +176,11 @@ export const getCultureCycleByidService = async (id) => {
 
 
 export const getCultureCycleByuserIdService = async (user_id) => {
-    const cultureCycle = await getCultureCycleByUserId(user_id);
-    if (!cultureCycle) {
+    const cultureCycles = await getCultureCyclesByUserId(user_id);
+    if (!cultureCycles || cultureCycles.length === 0) {
         throw createError("Culture cycle not found", 404);
         }
-    return cultureCycle;
+    return cultureCycles;
 }
 
 

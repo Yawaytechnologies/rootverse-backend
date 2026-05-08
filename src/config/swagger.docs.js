@@ -1044,6 +1044,79 @@
  *           type: string
  *           format: date-time
  *
+ *     GenerateAquacultureQrRequest:
+ *       type: object
+ *       required:
+ *         - district_id
+ *         - type
+ *         - year
+ *         - qrs
+ *       properties:
+ *         district_id:
+ *           type: integer
+ *           example: 5
+ *         type:
+ *           type: string
+ *           enum: [farm, pond]
+ *           example: farm
+ *         year:
+ *           type: integer
+ *           example: 2026
+ *         qrs:
+ *           type: integer
+ *           minimum: 1
+ *           example: 10
+ *
+ *     AquacultureQrResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Aquaculture QR fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/AquacultureQr'
+ *
+ *     AquacultureQrListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Aquaculture QRs fetched successfully
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/AquacultureQr'
+ *
+ *     AquacultureQrBatchResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Aquaculture QR codes generated successfully
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/AquacultureQr'
+ *
+ *     AquacultureQrErrorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
+ *           example: Type must be farm or pond
+ *
  *     CultureCycle:
  *       type: object
  *       properties:
@@ -3880,15 +3953,13 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/AquacultureQr'
+ *               $ref: '#/components/schemas/AquacultureQrListResponse'
  *       400:
  *         description: Invalid filter values
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  */
 
 /**
@@ -3910,13 +3981,13 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AquacultureQr'
+ *               $ref: '#/components/schemas/AquacultureQrResponse'
  *       404:
  *         description: QR not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  */
 
 /**
@@ -3937,13 +4008,13 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AquacultureQr'
+ *               $ref: '#/components/schemas/AquacultureQrResponse'
  *       404:
  *         description: QR not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  */
 
 /**
@@ -3957,43 +4028,26 @@ export {};
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [location_id, type, year, qrs]
- *             properties:
- *               location_id:
- *                 type: integer
- *                 example: 5
- *               type:
- *                 type: string
- *                 enum: [farm, pond]
- *                 example: farm
- *               year:
- *                 type: integer
- *                 example: 2026
- *               qrs:
- *                 type: integer
- *                 example: 10
+ *             $ref: '#/components/schemas/GenerateAquacultureQrRequest'
  *     responses:
  *       201:
  *         description: Aquaculture QR codes generated successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/AquacultureQr'
+ *               $ref: '#/components/schemas/AquacultureQrBatchResponse'
  *       400:
- *         description: Validation error or missing location code setup
+ *         description: Validation error or missing district code setup
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  *       404:
- *         description: Location not found
+ *         description: District not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  */
 
 /**
@@ -4019,19 +4073,19 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AquacultureQr'
+ *               $ref: '#/components/schemas/AquacultureQrResponse'
  *       400:
  *         description: QR type mismatch
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  *       404:
  *         description: Farm or QR not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  */
 
 /**
@@ -4057,19 +4111,19 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AquacultureQr'
+ *               $ref: '#/components/schemas/AquacultureQrResponse'
  *       400:
  *         description: QR type mismatch
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  *       404:
  *         description: Pond or QR not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Error'
+ *               $ref: '#/components/schemas/AquacultureQrErrorResponse'
  */
 
 /**
