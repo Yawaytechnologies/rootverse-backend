@@ -1,6 +1,7 @@
 import db from "../../../shared/lib/db.js";
 import {
   createCultureCycle,
+  getAllCultureCycles,
   getCultureCycleById,
   getFarmById,
   getLastCultureCycleByPrefix,
@@ -8,6 +9,9 @@ import {
   getBlockingCultureCycleByPondId,
   getUserLocationHierarchy,
   getCultureCyclesByUserId,
+  getCultureCyclesByFarmId,
+  getCultureCyclesByFarmIdAndPondId,
+  getAquacultureImagesByCultureCycleIds,
   getCultureCyclesByVerificationStatus,
   updateVerificationStatus,
 } from "./cultures_cycle_repository.js";
@@ -104,6 +108,92 @@ const buildCulturePrefix = ({ country_code, state_code, district_code }) => {
   return `${countryCode}-${stateCode}-${districtCode}-${CULTURE_ENTITY_CODE}`;
 };
 
+const groupImagesByCultureCycleId = (images) => {
+  return images.reduce((acc, image) => {
+    const cultureCycleId = Number(image.culture_cycle_id);
+
+    if (!acc.has(cultureCycleId)) {
+      acc.set(cultureCycleId, []);
+    }
+
+    acc.get(cultureCycleId).push(image);
+    return acc;
+  }, new Map());
+};
+
+const formatCultureCycleWithDetails = (row, images = []) => ({
+  id: row.id,
+  user_id: row.user_id,
+  culture_code: row.culture_code,
+  farm_id: row.farm_id,
+  pond_id: row.pond_id,
+  verification_status: row.verification_status,
+  start_date: row.start_date,
+  end_date: row.end_date,
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+  farm_code: row.farm_code,
+  farm_name: row.farm_name,
+  pond_code: row.pond_code,
+  pond_name: row.pond_name,
+  user: {
+    id: row.nested_user_id,
+    owner_id: row.nested_user_owner_id,
+    username: row.nested_user_username,
+    phone_no: row.nested_user_phone_no,
+    address: row.nested_user_address,
+    rootverse_type: row.nested_user_rootverse_type,
+    verification_status: row.nested_user_verification_status,
+    profile_picture_url: row.nested_user_profile_picture_url,
+    profile_picture_key: row.nested_user_profile_picture_key,
+    location_id: row.nested_user_location_id,
+    district_id: row.nested_user_district_id,
+    state_id: row.nested_user_state_id,
+    created_at: row.nested_user_created_at,
+    updated_at: row.nested_user_updated_at,
+  },
+  farm: {
+    id: row.nested_farm_id,
+    farm_id: row.nested_farm_code,
+    farm_name: row.nested_farm_name,
+    address: row.nested_farm_address,
+    farm_gate_latitude: row.nested_farm_gate_latitude,
+    farm_gate_longitude: row.nested_farm_gate_longitude,
+    water_source: row.nested_farm_water_source,
+    farm_area_acres: row.nested_farm_area_acres,
+    created_at: row.nested_farm_created_at,
+    updated_at: row.nested_farm_updated_at,
+  },
+  pond: {
+    id: row.nested_pond_id,
+    farm_id: row.nested_pond_farm_id,
+    pond_id: row.nested_pond_code,
+    pond_name: row.nested_pond_name,
+    pond_type: row.nested_pond_type,
+    water_spread_area_acres: row.nested_pond_water_spread_area_acres,
+    volume: row.nested_pond_volume,
+    pond_gps: row.nested_pond_gps,
+    pond_status: row.nested_pond_status,
+    verification_status: row.nested_pond_verification_status,
+    created_at: row.nested_pond_created_at,
+    updated_at: row.nested_pond_updated_at,
+  },
+  images,
+});
+
+const attachCultureCycleDetails = async (cultureCycles) => {
+  const cultureCycleIds = cultureCycles.map((cultureCycle) => cultureCycle.id);
+  const images = await getAquacultureImagesByCultureCycleIds(cultureCycleIds);
+  const imagesByCultureCycleId = groupImagesByCultureCycleId(images);
+
+  return cultureCycles.map((cultureCycle) =>
+    formatCultureCycleWithDetails(
+      cultureCycle,
+      imagesByCultureCycleId.get(Number(cultureCycle.id)) || []
+    )
+  );
+};
+
 const getNextCultureCode = async (user, trx) => {
   const prefix = buildCulturePrefix(user);
   const lastCultureCycle = await getLastCultureCycleByPrefix(prefix, trx);
@@ -192,11 +282,60 @@ export const getCultureCycleByidService = async (id) => {
 
 
 export const getCultureCycleByuserIdService = async (user_id) => {
-    const cultureCycles = await getCultureCyclesByUserId(user_id);
-    if (!cultureCycles || cultureCycles.length === 0) {
-        throw createError("Culture cycle not found", 404);
-        }
-    return cultureCycles;
+  const cultureCycles = await getCultureCyclesByUserId(user_id);
+
+  if (!cultureCycles || cultureCycles.length === 0) {
+    throw createError("Culture cycle not found", 404);
+  }
+
+  return attachCultureCycleDetails(cultureCycles);
+}
+
+export const getAllCultureCyclesService = async () => {
+  const cultureCycles = await getAllCultureCycles();
+
+  if (!cultureCycles || cultureCycles.length === 0) {
+    throw createError("Culture cycle not found", 404);
+  }
+
+  return attachCultureCycleDetails(cultureCycles);
+}
+
+export const getCultureCyclesByFarmIdService = async (farm_id) => {
+  const farmId = Number(farm_id);
+
+  if (!Number.isInteger(farmId) || farmId <= 0) {
+    throw createError("Valid farm_id is required", 400);
+  }
+
+  const cultureCycles = await getCultureCyclesByFarmId(farmId);
+
+  if (!cultureCycles || cultureCycles.length === 0) {
+    throw createError("Culture cycle not found", 404);
+  }
+
+  return attachCultureCycleDetails(cultureCycles);
+}
+
+export const getCultureCyclesByFarmIdAndPondIdService = async (farm_id, pond_id) => {
+  const farmId = Number(farm_id);
+  const pondId = Number(pond_id);
+
+  if (!Number.isInteger(farmId) || farmId <= 0) {
+    throw createError("Valid farm_id is required", 400);
+  }
+
+  if (!Number.isInteger(pondId) || pondId <= 0) {
+    throw createError("Valid pond_id is required", 400);
+  }
+
+  const cultureCycles = await getCultureCyclesByFarmIdAndPondId(farmId, pondId);
+
+  if (!cultureCycles || cultureCycles.length === 0) {
+    throw createError("Culture cycle not found", 404);
+  }
+
+  return attachCultureCycleDetails(cultureCycles);
 }
 
 
