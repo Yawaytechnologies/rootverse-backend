@@ -748,9 +748,17 @@
  *         farm_id:
  *           type: string
  *           example: IN-TN-NA-260001
+ *         farm_qrs:
+ *           type: string
+ *           nullable: true
+ *           description: Active aquaculture QR code linked to this farm.
+ *           example: TN-C-C-26001
  *         farm_name:
  *           type: string
  *           example: Green Aqua Farm
+ *         user_id:
+ *           type: integer
+ *           example: 85
  *         address:
  *           type: string
  *           example: No.12, East Coast Road, Chennai

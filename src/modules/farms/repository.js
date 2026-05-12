@@ -1,6 +1,34 @@
 import db from "../../shared/lib/db.js";
 
 const TABLE = "farms";
+
+const attachFarmQrs = async (farms) => {
+  const farmList = Array.isArray(farms) ? farms : [farms].filter(Boolean);
+
+  if (!farmList.length) {
+    return farms;
+  }
+
+  const farmQrs = await db("aquaculture_qrs")
+    .where({ type: "farm", is_active: true })
+    .whereIn(
+      "farm_id",
+      farmList.map((farm) => farm.id)
+    )
+    .select("farm_id", "qrs_code");
+
+  const qrsByFarmId = farmQrs.reduce((qrsMap, qr) => {
+    qrsMap[qr.farm_id] = qr.qrs_code;
+    return qrsMap;
+  }, {});
+
+  const farmsWithQrs = farmList.map((farm) => ({
+    ...farm,
+    farm_qrs: qrsByFarmId[farm.id] || null,
+  }));
+
+  return Array.isArray(farms) ? farmsWithQrs : farmsWithQrs[0];
+};
  
 /**
  * Get Rootverse User by ID
@@ -72,25 +100,31 @@ export const createFarm = async (data) => {
  * Get All Farms
  */
 export const getAllFarms = async () => {
-  return await db(TABLE).select("*").orderBy("created_at", "desc");
+  const farms = await db(TABLE).select("*").orderBy("created_at", "desc");
+
+  return attachFarmQrs(farms);
 };
 
 /**
  * Get Farm by DB ID
  */
 export const getFarmById = async (id) => {
-  return await db(TABLE)
+  const farm = await db(TABLE)
     .where({ id })
     .first();
+
+  return attachFarmQrs(farm);
 };
 
 /**
  * Get Farm by Custom Farm ID
  */
 export const getFarmByFarmId = async (farm_id) => {
-  return await db(TABLE)
+  const farm = await db(TABLE)
     .where({ farm_id })
     .first();
+
+  return attachFarmQrs(farm);
 };
 
 /**
