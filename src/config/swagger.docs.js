@@ -745,74 +745,43 @@
  *         id:
  *           type: integer
  *           example: 1
- *         owner_id:
- *           type: integer
- *           example: 12
- *         owner_name:
+ *         farm_id:
  *           type: string
- *           example: Ravi Kumar
- *         name:
- *           type: string
- *           example: Green Aqua Farm
- *         location_id:
- *           type: integer
- *           example: 5
- *         district_id:
- *           type: integer
- *           example: 7
- *         state_id:
- *           type: integer
- *           example: 3
- *         country_id:
- *           type: integer
- *           example: 1
- *         location_code:
- *           type: string
- *           example: LOC-001
- *         district_code:
- *           type: string
- *           example: DIS-001
- *         state_code:
- *           type: string
- *           example: ST-001
- *         country_code:
- *           type: string
- *           example: IN
- *         farm_code:
+ *           example: IN-TN-NA-260001
+ *         farm_qrs:
  *           type: string
  *           nullable: true
- *           example: FARM-000001
- *         total_area:
- *           type: number
- *           format: float
- *           example: 12.5
- *         pond_count:
- *           type: integer
- *           example: 4
- *         water_source:
+ *           description: Active aquaculture QR code linked to this farm.
+ *           example: TN-C-C-26001
+ *         farm_name:
  *           type: string
- *           example: Borewell
- *         farm_address:
+ *           example: Green Aqua Farm
+ *         user_id:
+ *           type: integer
+ *           example: 85
+ *         address:
  *           type: string
  *           example: No.12, East Coast Road, Chennai
- *         latitude:
+ *         farm_gate_latitude:
  *           type: number
  *           format: float
  *           example: 13.0827
- *         longitude:
+ *         farm_gate_longitude:
  *           type: number
  *           format: float
  *           example: 80.2707
- *         image_url:
+ *         water_source:
  *           type: string
- *           example: https://example.com/farms/farm1.jpg
- *         image_key:
- *           type: string
- *           example: farms/1710000000-farm.jpg
- *         status:
- *           type: string
- *           enum: [pending, approved, rejected]
- *           example: pending
+ *           example: Borewell
+ *         farm_area_acres:
+ *           type: number
+ *           format: float
+ *           example: 12.5
+ *         ponds:
+ *           type: array
+ *           description: Ponds under this farm. Pond qrs_code is returned only when the pond verification_status is Verified.
+ *           items:
+ *             $ref: '#/components/schemas/Pond'
  *         created_at:
  *           type: string
  *           format: date-time
@@ -823,95 +792,70 @@
  *     CreateFarmRequest:
  *       type: object
  *       required:
- *         - name
- *         - location_id
- *         - owner_id
- *         - total_area
+ *         - farm_id
+ *         - farm_name
+ *         - address
+ *         - farm_gate_latitude
+ *         - farm_gate_longitude
  *         - water_source
- *         - farm_address
- *         - country_id
- *         - state_id
- *         - district_id
- *         - pond_count
- *         - latitude
- *         - longitude
- *         - image
+ *         - farm_area_acres
  *       properties:
- *         name:
+ *         farm_id:
+ *           type: string
+ *           example: IN-TN-NA-260001
+ *         farm_name:
  *           type: string
  *           example: Green Aqua Farm
- *         location_id:
- *           type: integer
- *           example: 5
- *         owner_id:
- *           type: integer
- *           example: 12
- *         total_area:
- *           type: number
- *           format: float
- *           example: 12.5
- *         water_source:
- *           type: string
- *           example: Borewell
- *         farm_address:
+ *         address:
  *           type: string
  *           example: No.12, East Coast Road, Chennai
- *         country_id:
- *           type: integer
- *           example: 1
- *         state_id:
- *           type: integer
- *           example: 3
- *         district_id:
- *           type: integer
- *           example: 7
- *         pond_count:
- *           type: integer
- *           example: 4
- *         latitude:
+ *         farm_gate_latitude:
  *           type: number
  *           format: float
  *           example: 13.0827
- *         longitude:
+ *         farm_gate_longitude:
  *           type: number
  *           format: float
  *           example: 80.2707
- *         image:
+ *         farm_gate_gps:
  *           type: string
- *           format: binary
+ *           description: Optional alternative to farm_gate_latitude and farm_gate_longitude.
+ *           example: 13.0827, 80.2707
+ *         water_source:
+ *           type: string
+ *           example: Borewell
+ *         farm_area_acres:
+ *           type: number
+ *           format: float
+ *           example: 12.5
  *
  *     UpdateFarmRequest:
  *       type: object
  *       properties:
- *         name:
+ *         farm_id:
  *           type: string
- *         location_id:
- *           type: integer
- *         owner_id:
- *           type: integer
- *         total_area:
+ *           example: IN-TN-NA-260001
+ *         farm_name:
+ *           type: string
+ *           example: Green Aqua Farm
+ *         address:
+ *           type: string
+ *           example: No.12, East Coast Road, Chennai
+ *         farm_gate_latitude:
  *           type: number
  *           format: float
+ *           example: 13.0827
+ *         farm_gate_longitude:
+ *           type: number
+ *           format: float
+ *           example: 80.2707
  *         water_source:
  *           type: string
- *         farm_address:
- *           type: string
- *         country_id:
- *           type: integer
- *         state_id:
- *           type: integer
- *         district_id:
- *           type: integer
- *         pond_count:
- *           type: integer
- *         latitude:
+ *           example: Borewell
+ *         farm_area_acres:
  *           type: number
  *           format: float
- *         longitude:
- *           type: number
- *         status:
- *           type: string
- *           enum: [pending, approved, rejected]
+ *           example: 12.5
  *
  *     # ── Pond ──────────────────────────────────────────────────────────────
  *     Pond:
@@ -923,30 +867,47 @@
  *         farm_id:
  *           type: integer
  *           example: 10
- *         species_id:
- *           type: integer
- *           example: 3
- *         name:
+ *         pond_id:
+ *           type: string
+ *           example: IN-TN-NA-P-2600001
+ *         pond_name:
  *           type: string
  *           example: Pond A
- *         area:
+ *         pond_type:
+ *           type: string
+ *           enum: [Earthen, HDPE, Concrete]
+ *           example: Earthen
+ *         water_spread_area_acres:
  *           type: number
  *           format: float
  *           example: 2.5
- *         image_url:
+ *         volume:
+ *           type: number
+ *           nullable: true
+ *           example: 10000
+ *         pond_gps:
  *           type: string
- *           example: https://example.com/ponds/pond-a.jpg
- *         image_key:
+ *           example: 13.0827, 80.2707
+ *         pond_status:
  *           type: string
- *           example: ponds/1710000000-pond-a.jpg
- *         pond_code:
+ *           enum: [Active, Inactive]
+ *           example: Active
+ *         verification_status:
+ *           type: string
+ *           enum: [Verified, Unverified]
+ *           example: Verified
+ *         farm_qr_id:
  *           type: string
  *           nullable: true
- *           example: POND-000001
- *         status:
+ *           example: IN-TN-NA-260001
+ *         farm_name:
  *           type: string
- *           enum: [pending, approved, rejected]
- *           example: pending
+ *           nullable: true
+ *           example: Green Aqua Farm
+ *         qrs_code:
+ *           type: string
+ *           description: Returned only when verification_status is Verified; omitted for Unverified ponds.
+ *           example: IN-TN-NA-P-2600001
  *         created_at:
  *           type: string
  *           format: date-time
@@ -957,44 +918,58 @@
  *     CreatePondRequest:
  *       type: object
  *       required:
- *         - name
- *         - area
  *         - farm_id
- *         - species_id
- *         - image
+ *         - pond_name
+ *         - pond_type
+ *         - water_spread_area_acres
+ *         - pond_gps
  *       properties:
- *         name:
- *           type: string
- *           example: Pond A
- *         area:
- *           type: number
- *           format: float
- *           example: 2.5
  *         farm_id:
  *           type: integer
  *           example: 10
- *         species_id:
- *           type: integer
- *           example: 3
- *         image:
+ *         pond_name:
  *           type: string
- *           format: binary
+ *           example: Pond A
+ *         pond_type:
+ *           type: string
+ *           enum: [Earthen, HDPE, Concrete]
+ *           example: Earthen
+ *         water_spread_area_acres:
+ *           type: number
+ *           format: float
+ *           example: 2.5
+ *         volume:
+ *           type: number
+ *           nullable: true
+ *           example: 10000
+ *         pond_gps:
+ *           type: string
+ *           example: 13.0827, 80.2707
  *
  *     UpdatePondRequest:
  *       type: object
  *       properties:
- *         name:
- *           type: string
- *         area:
- *           type: number
- *           format: float
  *         farm_id:
  *           type: integer
- *         species_id:
- *           type: integer
- *         status:
+ *           example: 10
+ *         pond_name:
  *           type: string
- *           enum: [pending, approved, rejected]
+ *           example: Pond A
+ *         pond_type:
+ *           type: string
+ *           enum: [Earthen, HDPE, Concrete]
+ *           example: Earthen
+ *         water_spread_area_acres:
+ *           type: number
+ *           format: float
+ *           example: 2.5
+ *         volume:
+ *           type: number
+ *           nullable: true
+ *           example: 10000
+ *         pond_gps:
+ *           type: string
+ *           example: 13.0827, 80.2707
  *
  *     # â”€â”€ Aquaculture QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *     AquacultureQr:
@@ -1163,6 +1138,93 @@
  *           type: string
  *           nullable: true
  *           example: Pond A
+ *         user:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 12
+ *             owner_id:
+ *               type: integer
+ *               nullable: true
+ *               example: 4
+ *             username:
+ *               type: string
+ *               nullable: true
+ *               example: Ravi Kumar
+ *             phone_no:
+ *               type: string
+ *               nullable: true
+ *               example: "9876543210"
+ *             address:
+ *               type: string
+ *               nullable: true
+ *             rootverse_type:
+ *               type: string
+ *               nullable: true
+ *             verification_status:
+ *               type: string
+ *               nullable: true
+ *             profile_picture_url:
+ *               type: string
+ *               nullable: true
+ *             profile_picture_key:
+ *               type: string
+ *               nullable: true
+ *             location_id:
+ *               type: integer
+ *               nullable: true
+ *             district_id:
+ *               type: integer
+ *               nullable: true
+ *             state_id:
+ *               type: integer
+ *               nullable: true
+ *             created_at:
+ *               type: string
+ *               format: date-time
+ *               nullable: true
+ *             updated_at:
+ *               type: string
+ *               format: date-time
+ *               nullable: true
+ *         farm:
+ *           allOf:
+ *             - $ref: '#/components/schemas/Farm'
+ *           nullable: true
+ *         pond:
+ *           allOf:
+ *             - $ref: '#/components/schemas/Pond'
+ *           nullable: true
+ *         images:
+ *           type: array
+ *           description: Aquaculture images attached to this culture cycle. Present on list/filter endpoints.
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 example: 1
+ *               culture_cycle_id:
+ *                 type: integer
+ *                 example: 1
+ *               image_url:
+ *                 type: string
+ *                 example: https://example.com/aquaculture/cycle-1.jpg
+ *               storage_path:
+ *                 type: string
+ *                 example: aquaculture/1/cycle-1.jpg
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *                 example: Sampling image from pond edge
+ *               created_at:
+ *                 type: string
+ *                 format: date-time
+ *               updated_at:
+ *                 type: string
+ *                 format: date-time
  *         created_at:
  *           type: string
  *           format: date-time
@@ -1195,6 +1257,19 @@
  *           type: string
  *           format: date
  *           example: 2026-08-27
+ *
+ *     UpdateCultureCycleVerificationStatusRequest:
+ *       type: object
+ *       required:
+ *         - newStatus
+ *       properties:
+ *         newStatus:
+ *           type: string
+ *           enum: [PENDING, ACTIVE, STOCKED, IN_PROGRESS, HARVESTED, CLOSED]
+ *           example: ACTIVE
+ *         remarks:
+ *           type: string
+ *           example: Verified by reviewer
  *
  *     PondStocking:
  *       type: object
@@ -3541,15 +3616,14 @@ export {};
 
 /**
  * @swagger
- * /api/farms/register:
+ * /api/farms:
  *   post:
  *     summary: Register a new farm
- *     description: Accepts multipart/form-data with the farm image under the `image` field.
  *     tags: [Farms]
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateFarmRequest'
  *     responses:
@@ -3558,62 +3632,44 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Farm'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Farm registered successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Farm'
  *       400:
  *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- */
-
-/**
- * @swagger
- * /api/farms:
  *   get:
- *     summary: Get all farms with optional filters
+ *     summary: Get all farms
+ *     description: Each farm includes its ponds. A pond qrs_code is included only when that pond is Verified.
  *     tags: [Farms]
- *     parameters:
- *       - in: query
- *         name: location_id
- *         schema:
- *           type: integer
- *         description: Filter by location id
- *       - in: query
- *         name: state_id
- *         schema:
- *           type: integer
- *         description: Filter by state id
- *       - in: query
- *         name: country_id
- *         schema:
- *           type: integer
- *         description: Filter by country id
- *       - in: query
- *         name: district_id
- *         schema:
- *           type: integer
- *         description: Filter by district id
- *       - in: query
- *         name: owner_id
- *         schema:
- *           type: integer
- *         description: Filter by owner id
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [pending, approved, rejected]
- *         description: Filter by farm status
  *     responses:
  *       200:
  *         description: List of farms
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Farm'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Farms fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Farm'
  *       500:
  *         description: Server error
  *         content:
@@ -3627,6 +3683,7 @@ export {};
  * /api/farms/{id}:
  *   get:
  *     summary: Get farm by id
+ *     description: The farm includes its ponds. A pond qrs_code is included only when that pond is Verified.
  *     tags: [Farms]
  *     parameters:
  *       - in: path
@@ -3640,7 +3697,16 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Farm'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Farm fetched successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Farm'
  *       404:
  *         description: Farm not found
  *         content:
@@ -3674,7 +3740,16 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Farm'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Farm updated successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Farm'
  *       400:
  *         description: Validation or update error
  *         content:
@@ -3719,24 +3794,34 @@ export {};
 
 /**
  * @swagger
- * /api/farms/code/{code}:
+ * /api/farms/farm-id/{farm_id}:
  *   get:
- *     summary: Get farm by farm code
+ *     summary: Get farm by farm_id
+ *     description: The farm includes its ponds. A pond qrs_code is included only when that pond is Verified.
  *     tags: [Farms]
  *     parameters:
  *       - in: path
- *         name: code
+ *         name: farm_id
  *         required: true
  *         schema:
  *           type: string
- *         example: FARM-000001
+ *         example: IN-TN-NA-260001
  *     responses:
  *       200:
  *         description: Farm details
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Farm'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Farm fetched successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Farm'
  *       404:
  *         description: Farm not found
  *         content:
@@ -3757,15 +3842,14 @@ export {};
 
 /**
  * @swagger
- * /api/ponds/register:
+ * /api/ponds:
  *   post:
  *     summary: Register a new pond
- *     description: Accepts multipart/form-data with the pond image under the `image` field.
  *     tags: [Ponds]
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreatePondRequest'
  *     responses:
@@ -3774,42 +3858,44 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Pond'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pond registered successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Pond'
  *       400:
  *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- */
-
-/**
- * @swagger
- * /api/ponds:
  *   get:
- *     summary: Get all ponds with optional filters
+ *     summary: Get all ponds
+ *     description: qrs_code is included only when verification_status is Verified.
  *     tags: [Ponds]
- *     parameters:
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [pending, approved, rejected]
- *         description: Filter by pond status
- *       - in: query
- *         name: farm_id
- *         schema:
- *           type: integer
- *         description: Filter by farm id
  *     responses:
  *       200:
  *         description: List of ponds
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Pond'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Ponds fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Pond'
  *       500:
  *         description: Server error
  *         content:
@@ -3823,6 +3909,7 @@ export {};
  * /api/ponds/{id}:
  *   get:
  *     summary: Get pond by id
+ *     description: qrs_code is included only when verification_status is Verified.
  *     tags: [Ponds]
  *     parameters:
  *       - in: path
@@ -3836,7 +3923,16 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Pond'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pond fetched successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Pond'
  *       404:
  *         description: Pond not found
  *         content:
@@ -3864,7 +3960,16 @@ export {};
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Pond'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pond updated successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Pond'
  *       400:
  *         description: Validation or update error
  *         content:
@@ -3887,8 +3992,12 @@ export {};
  *         schema:
  *           type: integer
  *     responses:
- *       204:
+ *       200:
  *         description: Pond deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
  *       400:
  *         description: Delete error
  *         content:
@@ -3899,26 +4008,38 @@ export {};
 
 /**
  * @swagger
- * /api/ponds/code/{code}:
+ * /api/ponds/farm/{farm_id}:
  *   get:
- *     summary: Get pond by pond code
+ *     summary: Get ponds by farm id
+ *     description: qrs_code is included only when verification_status is Verified.
  *     tags: [Ponds]
  *     parameters:
  *       - in: path
- *         name: code
+ *         name: farm_id
  *         required: true
  *         schema:
- *           type: string
- *         example: POND-000001
+ *           type: integer
+ *         example: 10
  *     responses:
  *       200:
- *         description: Pond details
+ *         description: Farm ponds fetched successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Pond'
- *       404:
- *         description: Pond not found
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Farm ponds fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Pond'
+ *       400:
+ *         description: Invalid farm id
  *         content:
  *           application/json:
  *             schema:
@@ -4166,6 +4287,33 @@ export {};
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *   get:
+ *     summary: Get all culture cycles
+ *     tags: [Culture Cycles]
+ *     responses:
+ *       200:
+ *         description: Culture cycles fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycles fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CultureCycle'
+ *       404:
+ *         description: Culture cycle not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 
 /**
@@ -4199,6 +4347,102 @@ export {};
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/CultureCycle'
+ *       404:
+ *         description: Culture cycle not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/culture-cycles/farm/{farm_id}:
+ *   get:
+ *     summary: Get culture cycles by farm ID
+ *     tags: [Culture Cycles]
+ *     parameters:
+ *       - in: path
+ *         name: farm_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Farm ID
+ *     responses:
+ *       200:
+ *         description: Culture cycles fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycles fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CultureCycle'
+ *       400:
+ *         description: Invalid farm_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Culture cycle not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/culture-cycles/farm/{farm_id}/pond/{pond_id}:
+ *   get:
+ *     summary: Get culture cycles by farm ID and pond ID
+ *     tags: [Culture Cycles]
+ *     parameters:
+ *       - in: path
+ *         name: farm_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Farm ID
+ *       - in: path
+ *         name: pond_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pond ID
+ *     responses:
+ *       200:
+ *         description: Culture cycles fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Culture cycles fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/CultureCycle'
+ *       400:
+ *         description: Invalid farm_id or pond_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Culture cycle not found
  *         content:
@@ -4302,17 +4546,7 @@ export {};
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - newStatus
- *             properties:
- *               newStatus:
- *                 type: string
- *                 enum: [PENDING, ACTIVE, STOCKED, IN_PROGRESS, HARVESTED, CLOSED]
- *                 example: ACTIVE
- *               remarks:
- *                 type: string
- *                 example: Verified by reviewer
+ *             $ref: '#/components/schemas/UpdateCultureCycleVerificationStatusRequest'
  *     responses:
  *       200:
  *         description: Verification status updated successfully
