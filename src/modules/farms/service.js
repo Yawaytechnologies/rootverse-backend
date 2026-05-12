@@ -5,6 +5,7 @@ import {
   getFarmByFarmId,
   updateFarmById,
   deleteFarmById,
+  getRootverseUserById,
 } from "./repository.js";
 
 const createError = (message, statusCode = 400) => {
@@ -13,112 +14,81 @@ const createError = (message, statusCode = 400) => {
   return error;
 };
 
-const parseGps = (gps) => {
-  if (!gps || typeof gps !== "string") {
-    return null;
+/**
+ * Create Farm Service
+ */
+export const createFarmService = async (data) => {
+  const {
+    user_id,
+    farm_prefix,
+    farm_name,
+    address,
+    farm_gate_latitude,
+    farm_gate_longitude,
+    water_source,
+    farm_area_acres,
+  } = data;
+
+  if (!user_id) {
+    throw createError("user_id is required", 400);
   }
 
-  const parts = gps.split(",").map((value) => value.trim());
+  const user = await getRootverseUserById(user_id);
 
-  if (parts.length !== 2) {
-    return null;
+  if (!user) {
+    throw createError("Invalid user_id. User not found", 404);
   }
 
-  const latitude = Number(parts[0]);
-  const longitude = Number(parts[1]);
-
-  if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
-    return null;
+  if (!farm_prefix) {
+    throw createError("farm_prefix is required", 400);
   }
 
-  return {
-    latitude,
-    longitude,
-  };
+  if (!farm_name) {
+    throw createError("farm_name is required", 400);
+  }
+
+  if (!address) {
+    throw createError("address is required", 400);
+  }
+
+  if (!farm_gate_latitude) {
+    throw createError("farm_gate_latitude is required", 400);
+  }
+
+  if (!farm_gate_longitude) {
+    throw createError("farm_gate_longitude is required", 400);
+  }
+
+  if (!water_source) {
+    throw createError("water_source is required", 400);
+  }
+
+  if (!farm_area_acres) {
+    throw createError("farm_area_acres is required", 400);
+  }
+
+  return await createFarm({
+    user_id,
+    farm_prefix,
+    farm_name,
+    address,
+    farm_gate_latitude,
+    farm_gate_longitude,
+    water_source,
+    farm_area_acres,
+  });
 };
 
-const normalizeFarmPayload = (body) => {
-  let latitude = body.farm_gate_latitude;
-  let longitude = body.farm_gate_longitude;
-
-  
-  // farm_gate_gps: "10.765532, 79.849121"
-  if ((!latitude || !longitude) && body.farm_gate_gps) {
-    const gps = parseGps(body.farm_gate_gps);
-
-    if (gps) {
-      latitude = gps.latitude;
-      longitude = gps.longitude;
-    }
-  }
-
-  return {
-    farm_id: body.farm_id?.trim(),
-    farm_name: body.farm_name?.trim(),
-    address: body.address?.trim(),
-    farm_gate_latitude: Number(latitude),
-    farm_gate_longitude: Number(longitude),
-    water_source: body.water_source?.trim(),
-    farm_area_acres: Number(body.farm_area_acres),
-  };
-};
-
-const validateFarmPayload = (data) => {
-  if (!data.farm_id) {
-    throw createError("Farm ID is required", 400);
-  }
-
-  if (!data.farm_name) {
-    throw createError("Farm name is required", 400);
-  }
-
-  if (!data.address) {
-    throw createError("Address is required", 400);
-  }
-
-  if (
-    Number.isNaN(data.farm_gate_latitude) ||
-    data.farm_gate_latitude < -90 ||
-    data.farm_gate_latitude > 90
-  ) {
-    throw createError("Valid farm gate latitude is required", 400);
-  }
-
-  if (
-    Number.isNaN(data.farm_gate_longitude) ||
-    data.farm_gate_longitude < -180 ||
-    data.farm_gate_longitude > 180
-  ) {
-    throw createError("Valid farm gate longitude is required", 400);
-  }
-
-  if (!data.water_source) {
-    throw createError("Water source is required", 400);
-  }
-
-  if (Number.isNaN(data.farm_area_acres) || data.farm_area_acres <= 0) {
-    throw createError("Valid farm area in acres is required", 400);
-  }
-};
-
-export const createFarmService = async (body) => {
-  const data = normalizeFarmPayload(body);
-
-  validateFarmPayload(data);
-
-  const existingFarm = await getFarmByFarmId(data.farm_id);
-
-  if (existingFarm) {
-    throw createError("This Farm ID is already registered", 409);
-  }
-
-  return await createFarm(data);
-};
-
+/**
+ * Get All Farms Service
+ */
 export const getAllFarmsService = async () => {
   return await getAllFarms();
 };
 
+/**
+ * Get Farm by DB ID Service
+ */
 export const getFarmByIdService = async (id) => {
   const farm = await getFarmById(id);
 
@@ -129,6 +99,9 @@ export const getFarmByIdService = async (id) => {
   return farm;
 };
 
+/**
+ * Get Farm by Custom Farm ID Service
+ */
 export const getFarmByFarmIdService = async (farm_id) => {
   const farm = await getFarmByFarmId(farm_id);
 
@@ -139,26 +112,32 @@ export const getFarmByFarmIdService = async (farm_id) => {
   return farm;
 };
 
-export const updateFarmService = async (id, body) => {
+/**
+ * Update Farm Service
+ */
+export const updateFarmService = async (id, data) => {
   const existingFarm = await getFarmById(id);
 
   if (!existingFarm) {
     throw createError("Farm not found", 404);
   }
 
-  const data = normalizeFarmPayload(body);
+  if (data.user_id) {
+    const user = await getRootverseUserById(data.user_id);
 
-  validateFarmPayload(data);
-
-  const farmWithSameFarmId = await getFarmByFarmId(data.farm_id);
-
-  if (farmWithSameFarmId && farmWithSameFarmId.id !== id) {
-    throw createError("This Farm ID is already used by another farm", 409);
+    if (!user) {
+      throw createError("Invalid user_id. User not found", 404);
+    }
   }
 
-  return await updateFarmById(id, data);
+  const updatedFarm = await updateFarmById(id, data);
+
+  return updatedFarm;
 };
 
+/**
+ * Delete Farm Service
+ */
 export const deleteFarmService = async (id) => {
   const existingFarm = await getFarmById(id);
 

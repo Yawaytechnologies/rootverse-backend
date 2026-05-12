@@ -1,27 +1,9 @@
 import db from "../../shared/lib/db.js";
 
 const TABLE = "ponds";
-const VERIFIED_STATUS = "Verified";
 
-const removeQrForUnverifiedPond = (pond) => {
-  if (!pond || pond.verification_status === VERIFIED_STATUS) {
-    return pond;
-  }
-
-  const { qrs_code, ...pondWithoutQrCode } = pond;
-  return pondWithoutQrCode;
-};
-
-const removeQrForUnverifiedPonds = (ponds) => {
-  return ponds.map(removeQrForUnverifiedPond);
-};
-
-const withActivePondQr = (query) => {
-  return query.leftJoin("aquaculture_qrs as aq", function () {
-    this.on("aq.pond_id", "ponds.id")
-      .andOn("aq.type", db.raw("?", ["pond"]))
-      .andOn("aq.is_active", db.raw("?", [true]));
-  });
+export const getRootverseUserById = async (user_id) => {
+  return await db("rootverse_users").where({ id: user_id }).first();
 };
 
 export const getFarmById = async (farm_id) => {
@@ -53,34 +35,26 @@ export const createPond = async (data) => {
 };
 
 export const getAllPonds = async () => {
-  const ponds = await withActivePondQr(
-    db(TABLE).leftJoin("farms", "ponds.farm_id", "farms.id")
-  )
+  return await db(TABLE)
+    .leftJoin("farms", "ponds.farm_id", "farms.id")
     .select(
       "ponds.*",
       "farms.farm_id as farm_qr_id",
-      "farms.farm_name as farm_name",
-      "aq.qrs_code"
+      "farms.farm_name as farm_name"
     )
     .orderBy("ponds.created_at", "desc");
-
-  return removeQrForUnverifiedPonds(ponds);
 };
 
 export const getPondById = async (id) => {
-  const pond = await withActivePondQr(
-    db(TABLE).leftJoin("farms", "ponds.farm_id", "farms.id")
-  )
+  return await db(TABLE)
+    .leftJoin("farms", "ponds.farm_id", "farms.id")
     .select(
       "ponds.*",
       "farms.farm_id as farm_qr_id",
-      "farms.farm_name as farm_name",
-      "aq.qrs_code"
+      "farms.farm_name as farm_name"
     )
     .where("ponds.id", id)
     .first();
-
-  return removeQrForUnverifiedPond(pond);
 };
 
 export const getPondByPondId = async (pond_id) => {
@@ -88,18 +62,17 @@ export const getPondByPondId = async (pond_id) => {
 };
 
 export const getPondsByFarmId = async (farm_id) => {
-  const ponds = await withActivePondQr(db(TABLE))
-    .where("ponds.farm_id", farm_id)
-    .select("ponds.*", "aq.qrs_code")
-    .orderBy("ponds.created_at", "desc");
-
-  return removeQrForUnverifiedPonds(ponds);
+  return await db(TABLE)
+    .where({ farm_id })
+    .select("*")
+    .orderBy("created_at", "desc");
 };
 
 export const updatePondById = async (id, data) => {
   const [pond] = await db(TABLE)
     .where({ id })
     .update({
+      user_id: data.user_id,
       farm_id: data.farm_id,
       pond_name: data.pond_name,
       pond_type: data.pond_type,

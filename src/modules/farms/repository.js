@@ -1,64 +1,62 @@
 import db from "../../shared/lib/db.js";
 
 const TABLE = "farms";
-
-const VERIFIED_STATUS = "Verified";
-
-const getPondsWithQrByFarmIds = async (farmIds) => {
-  if (!farmIds.length) {
-    return [];
-  }
-
-  const ponds = await db("ponds as p")
-    .leftJoin("aquaculture_qrs as aq", function () {
-      this.on("aq.pond_id", "p.id")
-        .andOn("aq.type", db.raw("?", ["pond"]))
-        .andOn("aq.is_active", db.raw("?", [true]));
-    })
-    .whereIn("p.farm_id", farmIds)
-    .select("p.*", "aq.qrs_code")
-    .orderBy("p.created_at", "desc");
-
-  return ponds.map((pond) => {
-    if (pond.verification_status === VERIFIED_STATUS) {
-      return pond;
-    }
-
-    const { qrs_code, ...pondWithoutQrCode } = pond;
-    return pondWithoutQrCode;
-  });
+ 
+/**
+ * Get Rootverse User by ID
+ */
+export const getRootverseUserById = async (user_id) => {
+  return await db("rootverse_users")
+    .where({ id: user_id })
+    .first();
 };
 
-const attachPondsToFarms = async (farms) => {
-  const farmList = Array.isArray(farms) ? farms : [farms].filter(Boolean);
-
-  if (!farmList.length) {
-    return farms;
+const generateFarmId = async (prefix) => {
+  if (!prefix) {
+    throw new Error("farm_prefix is required");
   }
 
-  const ponds = await getPondsWithQrByFarmIds(farmList.map((farm) => farm.id));
-  const pondsByFarmId = ponds.reduce((groupedPonds, pond) => {
-    if (!groupedPonds[pond.farm_id]) {
-      groupedPonds[pond.farm_id] = [];
+  const year = String(new Date().getFullYear()).slice(-2);
+
+  // Example final prefix: IN-TN-NA-26
+  const finalPrefix = `${prefix}-${year}`;
+
+  // Get last farm with same prefix and year
+  const lastFarm = await db(TABLE)
+    .where("farm_id", "like", `${finalPrefix}%`)
+    .orderBy("farm_id", "desc")
+    .first();
+
+  let nextNumber = 1;
+
+  if (lastFarm) {
+    // Example: IN-TN-NA-260001
+    const lastSerial = lastFarm.farm_id.replace(finalPrefix, "");
+    const lastNumber = parseInt(lastSerial, 10);
+
+    if (!Number.isNaN(lastNumber)) {
+      nextNumber = lastNumber + 1;
     }
+  }
 
-    groupedPonds[pond.farm_id].push(pond);
-    return groupedPonds;
-  }, {});
+  const paddedNumber = String(nextNumber).padStart(4, "0");
 
-  const farmsWithPonds = farmList.map((farm) => ({
-    ...farm,
-    ponds: pondsByFarmId[farm.id] || [],
-  }));
-
-  return Array.isArray(farms) ? farmsWithPonds : farmsWithPonds[0];
+  return `${finalPrefix}${paddedNumber}`;
 };
 
+/**
+ * Create Farm
+ */
 export const createFarm = async (data) => {
+  const prefix = data.farm_prefix;
+
+  const farm_id = await generateFarmId(prefix);
+
   const [farm] = await db(TABLE)
     .insert({
-      farm_id: data.farm_id,
+      farm_id,
       farm_name: data.farm_name,
+      user_id: data.user_id,
       address: data.address,
       farm_gate_latitude: data.farm_gate_latitude,
       farm_gate_longitude: data.farm_gate_longitude,
@@ -70,30 +68,41 @@ export const createFarm = async (data) => {
   return farm;
 };
 
+/**
+ * Get All Farms
+ */
 export const getAllFarms = async () => {
-  const farms = await db(TABLE).select("*").orderBy("created_at", "desc");
-
-  return attachPondsToFarms(farms);
+  return await db(TABLE).select("*").orderBy("created_at", "desc");
 };
 
+/**
+ * Get Farm by DB ID
+ */
 export const getFarmById = async (id) => {
-  const farm = await db(TABLE).where({ id }).first();
-
-  return attachPondsToFarms(farm);
+  return await db(TABLE)
+    .where({ id })
+    .first();
 };
 
+/**
+ * Get Farm by Custom Farm ID
+ */
 export const getFarmByFarmId = async (farm_id) => {
-  const farm = await db(TABLE).where({ farm_id }).first();
-
-  return attachPondsToFarms(farm);
+  return await db(TABLE)
+    .where({ farm_id })
+    .first();
 };
 
+/**
+ * Update Farm
+ */
 export const updateFarmById = async (id, data) => {
   const [farm] = await db(TABLE)
     .where({ id })
     .update({
       farm_id: data.farm_id,
       farm_name: data.farm_name,
+      user_id: data.user_id,
       address: data.address,
       farm_gate_latitude: data.farm_gate_latitude,
       farm_gate_longitude: data.farm_gate_longitude,
@@ -106,6 +115,11 @@ export const updateFarmById = async (id, data) => {
   return farm;
 };
 
+/**
+ * Delete Farm
+ */
 export const deleteFarmById = async (id) => {
-  return await db(TABLE).where({ id }).del();
+  return await db(TABLE)
+    .where({ id })
+    .del();
 };
