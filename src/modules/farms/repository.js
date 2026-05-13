@@ -2,6 +2,30 @@ import db from "../../shared/lib/db.js";
 
 const TABLE = "farms";
 
+const createError = (message, statusCode = 400) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
+const validateTechnicianPhone = (technician_phone) => {
+  if (
+    technician_phone === undefined ||
+    technician_phone === null ||
+    technician_phone === ""
+  ) {
+    return null;
+  }
+
+  const phone = String(technician_phone).trim();
+
+  if (!/^\d{10}$/.test(phone)) {
+    throw createError("technician_phone must be exactly 10 digits and numbers only", 400);
+  }
+
+  return phone;
+};
+
 const attachFarmQrs = async (farms) => {
   const farmList = Array.isArray(farms) ? farms : [farms].filter(Boolean);
 
@@ -29,14 +53,12 @@ const attachFarmQrs = async (farms) => {
 
   return Array.isArray(farms) ? farmsWithQrs : farmsWithQrs[0];
 };
- 
+
 /**
  * Get Rootverse User by ID
  */
 export const getRootverseUserById = async (user_id) => {
-  return await db("rootverse_users")
-    .where({ id: user_id })
-    .first();
+  return await db("rootverse_users").where({ id: user_id }).first();
 };
 
 const generateFarmId = async (prefix) => {
@@ -46,10 +68,8 @@ const generateFarmId = async (prefix) => {
 
   const year = String(new Date().getFullYear()).slice(-2);
 
-  // Example final prefix: IN-TN-NA-26
   const finalPrefix = `${prefix}-${year}`;
 
-  // Get last farm with same prefix and year
   const lastFarm = await db(TABLE)
     .where("farm_id", "like", `${finalPrefix}%`)
     .orderBy("farm_id", "desc")
@@ -58,7 +78,6 @@ const generateFarmId = async (prefix) => {
   let nextNumber = 1;
 
   if (lastFarm) {
-    // Example: IN-TN-NA-260001
     const lastSerial = lastFarm.farm_id.replace(finalPrefix, "");
     const lastNumber = parseInt(lastSerial, 10);
 
@@ -80,6 +99,8 @@ export const createFarm = async (data) => {
 
   const farm_id = await generateFarmId(prefix);
 
+  const technician_phone = validateTechnicianPhone(data.technician_phone);
+
   const [farm] = await db(TABLE)
     .insert({
       farm_id,
@@ -90,6 +111,8 @@ export const createFarm = async (data) => {
       farm_gate_longitude: data.farm_gate_longitude,
       water_source: data.water_source,
       farm_area_acres: data.farm_area_acres,
+      technician_name: data.technician_name,
+      technician_phone,
     })
     .returning("*");
 
@@ -100,7 +123,14 @@ export const createFarm = async (data) => {
  * Get All Farms
  */
 export const getAllFarms = async () => {
-  const farms = await db(TABLE).select("*").orderBy("created_at", "desc");
+  const farms = await db(TABLE)
+    .leftJoin("rootverse_users", "farms.user_id", "rootverse_users.id")
+    .select(
+      "farms.*",
+      "rootverse_users.username",
+      "rootverse_users.owner_id"
+    )
+    .orderBy("farms.created_at", "desc");
 
   return attachFarmQrs(farms);
 };
@@ -110,7 +140,13 @@ export const getAllFarms = async () => {
  */
 export const getFarmById = async (id) => {
   const farm = await db(TABLE)
-    .where({ id })
+    .leftJoin("rootverse_users", "farms.user_id", "rootverse_users.id")
+    .where({ "farms.id": id })
+    .select(
+      "farms.*",
+      "rootverse_users.username",
+      "rootverse_users.owner_id"
+    )
     .first();
 
   return attachFarmQrs(farm);
@@ -121,7 +157,13 @@ export const getFarmById = async (id) => {
  */
 export const getFarmByFarmId = async (farm_id) => {
   const farm = await db(TABLE)
-    .where({ farm_id })
+    .leftJoin("rootverse_users", "farms.user_id", "rootverse_users.id")
+    .where({ "farms.farm_id": farm_id })
+    .select(
+      "farms.*",
+      "rootverse_users.username",
+      "rootverse_users.owner_id"
+    )
     .first();
 
   return attachFarmQrs(farm);
@@ -131,6 +173,8 @@ export const getFarmByFarmId = async (farm_id) => {
  * Update Farm
  */
 export const updateFarmById = async (id, data) => {
+  const technician_phone = validateTechnicianPhone(data.technician_phone);
+
   const [farm] = await db(TABLE)
     .where({ id })
     .update({
@@ -142,6 +186,8 @@ export const updateFarmById = async (id, data) => {
       farm_gate_longitude: data.farm_gate_longitude,
       water_source: data.water_source,
       farm_area_acres: data.farm_area_acres,
+      technician_name: data.technician_name,
+      technician_phone,
       updated_at: db.fn.now(),
     })
     .returning("*");
@@ -153,7 +199,5 @@ export const updateFarmById = async (id, data) => {
  * Delete Farm
  */
 export const deleteFarmById = async (id) => {
-  return await db(TABLE)
-    .where({ id })
-    .del();
+  return await db(TABLE).where({ id }).del();
 };

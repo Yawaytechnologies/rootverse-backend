@@ -54,12 +54,14 @@ export const createPond = async (data) => {
 
 export const getAllPonds = async () => {
   const ponds = await withActivePondQr(
-    db(TABLE).leftJoin("farms", "ponds.farm_id", "farms.id")
+    db(TABLE).leftJoin("farms", "ponds.farm_id", "farms.id").leftJoin("rootverse_users", "farms.user_id", "rootverse_users.id")
   )
     .select(
       "ponds.*",
-      "farms.farm_id as farm_qr_id",
+      "farms.farm_id as farm_code",
       "farms.farm_name as farm_name",
+      "rootverse_users.owner_id",
+      "rootverse_users.username",
       "aq.qrs_code"
     )
     .orderBy("ponds.created_at", "desc");
@@ -69,12 +71,13 @@ export const getAllPonds = async () => {
 
 export const getPondById = async (id) => {
   const pond = await withActivePondQr(
-    db(TABLE).leftJoin("farms", "ponds.farm_id", "farms.id")
+    db(TABLE).leftJoin("farms", "ponds.farm_id", "farms.id").leftJoin("rootverse_users", "farms.user_id", "rootverse_users.id")
   )
     .select(
       "ponds.*",
-      "farms.farm_id as farm_qr_id",
+      "farms.farm_id as farm_code",
       "farms.farm_name as farm_name",
+      "rootverse_users.owner_id",
       "aq.qrs_code"
     )
     .where("ponds.id", id)

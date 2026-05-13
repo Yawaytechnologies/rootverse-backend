@@ -14,6 +14,23 @@ const createError = (message, statusCode = 400) => {
   return error;
 };
 
+const validateTechnicianPhone = (technician_phone) => {
+  if (
+    technician_phone === undefined ||
+    technician_phone === null ||
+    technician_phone === ""
+  ) {
+    return;
+  }
+
+  if (!/^\d{10}$/.test(String(technician_phone))) {
+    throw createError(
+      "technician_phone must be exactly 10 digits and numbers only",
+      400
+    );
+  }
+};
+
 /**
  * Create Farm Service
  */
@@ -27,6 +44,8 @@ export const createFarmService = async (data) => {
     farm_gate_longitude,
     water_source,
     farm_area_acres,
+    technician_name,
+    technician_phone,
   } = data;
 
   if (!user_id) {
@@ -67,6 +86,8 @@ export const createFarmService = async (data) => {
     throw createError("farm_area_acres is required", 400);
   }
 
+  validateTechnicianPhone(technician_phone);
+
   return await createFarm({
     user_id,
     farm_prefix,
@@ -76,6 +97,8 @@ export const createFarmService = async (data) => {
     farm_gate_longitude,
     water_source,
     farm_area_acres,
+    technician_name,
+    technician_phone,
   });
 };
 
@@ -129,6 +152,8 @@ export const updateFarmService = async (id, data) => {
       throw createError("Invalid user_id. User not found", 404);
     }
   }
+
+  validateTechnicianPhone(data.technician_phone);
 
   const updatedFarm = await updateFarmById(id, data);
 
