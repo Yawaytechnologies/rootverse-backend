@@ -754,6 +754,11 @@
  *           nullable: true
  *           description: Active aquaculture QR code linked to this farm.
  *           example: TN-C-C-26001
+ *         qr_code:
+ *           type: string
+ *           nullable: true
+ *           description: Active aquaculture QR code linked to this farm when returned in culture cycle responses.
+ *           example: TN-C-C-26001
  *         farm_name:
  *           type: string
  *           example: Green Aqua Farm
@@ -946,6 +951,11 @@
  *         qrs_code:
  *           type: string
  *           description: Returned only when verification_status is Verified; omitted for Unverified ponds.
+ *           example: IN-TN-NA-P-2600001
+ *         qr_code:
+ *           type: string
+ *           nullable: true
+ *           description: Active aquaculture QR code linked to this pond when returned in culture cycle responses.
  *           example: IN-TN-NA-P-2600001
  *         owner_id:
  *           type: string

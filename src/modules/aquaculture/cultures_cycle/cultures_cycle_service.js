@@ -161,6 +161,7 @@ const formatCultureCycleWithDetails = (row, images = []) => ({
     farm_gate_longitude: row.nested_farm_gate_longitude,
     water_source: row.nested_farm_water_source,
     farm_area_acres: row.nested_farm_area_acres,
+    qr_code: row.nested_farm_qr_code || null,
     created_at: row.nested_farm_created_at,
     updated_at: row.nested_farm_updated_at,
   },
@@ -175,6 +176,7 @@ const formatCultureCycleWithDetails = (row, images = []) => ({
     pond_gps: row.nested_pond_gps,
     pond_status: row.nested_pond_status,
     verification_status: row.nested_pond_verification_status,
+    qr_code: row.nested_pond_qr_code || null,
     created_at: row.nested_pond_created_at,
     updated_at: row.nested_pond_updated_at,
   },
@@ -344,7 +346,7 @@ export const getCultureCyclesByVerificationStatusService = async (verificationSt
   if (!cultureCycles || cultureCycles.length === 0) {
     throw createError("No culture cycles found with the given verification status", 404);
   }
-  return cultureCycles;
+  return attachCultureCycleDetails(cultureCycles);
 };
 
 
