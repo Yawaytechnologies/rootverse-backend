@@ -747,7 +747,8 @@
  *           example: 1
  *         farm_id:
  *           type: string
- *           example: IN-TN-NA-260001
+ *           description: Generated from farm_prefix, current year, and a sequence number.
+ *           example: TN-C-C-260001
  *         farm_qrs:
  *           type: string
  *           nullable: true
@@ -759,6 +760,14 @@
  *         user_id:
  *           type: integer
  *           example: 85
+ *         owner_id:
+ *           type: string
+ *           nullable: true
+ *           example: OWN-0001
+ *         username:
+ *           type: string
+ *           nullable: true
+ *           example: Ramesh Kumar
  *         address:
  *           type: string
  *           example: No.12, East Coast Road, Chennai
@@ -777,11 +786,15 @@
  *           type: number
  *           format: float
  *           example: 12.5
- *         ponds:
- *           type: array
- *           description: Ponds under this farm. Pond qrs_code is returned only when the pond verification_status is Verified.
- *           items:
- *             $ref: '#/components/schemas/Pond'
+ *         technician_name:
+ *           type: string
+ *           nullable: true
+ *           example: Suresh
+ *         technician_phone:
+ *           type: string
+ *           nullable: true
+ *           pattern: '^[0-9]{10}$'
+ *           example: "9876543210"
  *         created_at:
  *           type: string
  *           format: date-time
@@ -792,7 +805,8 @@
  *     CreateFarmRequest:
  *       type: object
  *       required:
- *         - farm_id
+ *         - user_id
+ *         - farm_prefix
  *         - farm_name
  *         - address
  *         - farm_gate_latitude
@@ -800,9 +814,14 @@
  *         - water_source
  *         - farm_area_acres
  *       properties:
- *         farm_id:
+ *         user_id:
+ *           type: integer
+ *           description: Existing rootverse_users.id to link as the farm owner.
+ *           example: 85
+ *         farm_prefix:
  *           type: string
- *           example: IN-TN-NA-260001
+ *           description: Prefix used by the backend to generate farm_id as {farm_prefix}-{YY}{sequence}.
+ *           example: TN-C-C
  *         farm_name:
  *           type: string
  *           example: Green Aqua Farm
@@ -817,10 +836,6 @@
  *           type: number
  *           format: float
  *           example: 80.2707
- *         farm_gate_gps:
- *           type: string
- *           description: Optional alternative to farm_gate_latitude and farm_gate_longitude.
- *           example: 13.0827, 80.2707
  *         water_source:
  *           type: string
  *           example: Borewell
@@ -828,6 +843,15 @@
  *           type: number
  *           format: float
  *           example: 12.5
+ *         technician_name:
+ *           type: string
+ *           nullable: true
+ *           example: Suresh
+ *         technician_phone:
+ *           type: string
+ *           nullable: true
+ *           pattern: '^[0-9]{10}$'
+ *           example: "9876543210"
  *
  *     UpdateFarmRequest:
  *       type: object
@@ -835,6 +859,9 @@
  *         farm_id:
  *           type: string
  *           example: IN-TN-NA-260001
+ *         user_id:
+ *           type: integer
+ *           example: 85
  *         farm_name:
  *           type: string
  *           example: Green Aqua Farm
@@ -856,6 +883,15 @@
  *           type: number
  *           format: float
  *           example: 12.5
+ *         technician_name:
+ *           type: string
+ *           nullable: true
+ *           example: Suresh
+ *         technician_phone:
+ *           type: string
+ *           nullable: true
+ *           pattern: '^[0-9]{10}$'
+ *           example: "9876543210"
  *
  *     # ── Pond ──────────────────────────────────────────────────────────────
  *     Pond:
@@ -867,6 +903,9 @@
  *         farm_id:
  *           type: integer
  *           example: 10
+ *         user_id:
+ *           type: integer
+ *           example: 85
  *         pond_id:
  *           type: string
  *           example: IN-TN-NA-P-2600001
@@ -896,7 +935,7 @@
  *           type: string
  *           enum: [Verified, Unverified]
  *           example: Verified
- *         farm_qr_id:
+ *         farm_code:
  *           type: string
  *           nullable: true
  *           example: IN-TN-NA-260001
@@ -908,6 +947,14 @@
  *           type: string
  *           description: Returned only when verification_status is Verified; omitted for Unverified ponds.
  *           example: IN-TN-NA-P-2600001
+ *         owner_id:
+ *           type: string
+ *           nullable: true
+ *           example: OWN-0001
+ *         username:
+ *           type: string
+ *           nullable: true
+ *           example: Ramesh Kumar
  *         created_at:
  *           type: string
  *           format: date-time
@@ -972,6 +1019,24 @@
  *           example: 13.0827, 80.2707
  *
  *     # â”€â”€ Aquaculture QR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ *     UpdatePondStatusRequest:
+ *       type: object
+ *       required: [pond_status]
+ *       properties:
+ *         pond_status:
+ *           type: string
+ *           enum: [Active, Inactive]
+ *           example: Active
+ *
+ *     UpdatePondVerificationStatusRequest:
+ *       type: object
+ *       required: [verification_status]
+ *       properties:
+ *         verification_status:
+ *           type: string
+ *           enum: [Verified, Unverified]
+ *           example: Verified
+ *
  *     AquacultureQr:
  *       type: object
  *       properties:
@@ -3650,7 +3715,7 @@ export {};
  *               $ref: '#/components/schemas/Error'
  *   get:
  *     summary: Get all farms
- *     description: Each farm includes its ponds. A pond qrs_code is included only when that pond is Verified.
+ *     description: Returns farms with owner summary fields and the active farm QR code when one is linked.
  *     tags: [Farms]
  *     responses:
  *       200:
@@ -3683,7 +3748,7 @@ export {};
  * /api/farms/{id}:
  *   get:
  *     summary: Get farm by id
- *     description: The farm includes its ponds. A pond qrs_code is included only when that pond is Verified.
+ *     description: Returns farm details with owner summary fields and the active farm QR code when one is linked.
  *     tags: [Farms]
  *     parameters:
  *       - in: path
@@ -3797,7 +3862,7 @@ export {};
  * /api/farms/farm-id/{farm_id}:
  *   get:
  *     summary: Get farm by farm_id
- *     description: The farm includes its ponds. A pond qrs_code is included only when that pond is Verified.
+ *     description: Returns farm details by generated farm_id with owner summary fields and the active farm QR code when one is linked.
  *     tags: [Farms]
  *     parameters:
  *       - in: path
@@ -3805,7 +3870,7 @@ export {};
  *         required: true
  *         schema:
  *           type: string
- *         example: IN-TN-NA-260001
+ *         example: TN-C-C-260001
  *     responses:
  *       200:
  *         description: Farm details
@@ -3892,6 +3957,72 @@ export {};
  *                 message:
  *                   type: string
  *                   example: Ponds fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Pond'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds/active:
+ *   get:
+ *     summary: Get active ponds
+ *     description: Returns ponds where pond_status is Active.
+ *     tags: [Ponds]
+ *     responses:
+ *       200:
+ *         description: Active ponds fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Active ponds fetched successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Pond'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds/verified:
+ *   get:
+ *     summary: Get verified ponds
+ *     description: Returns ponds where verification_status is Verified.
+ *     tags: [Ponds]
+ *     responses:
+ *       200:
+ *         description: Verified ponds fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Verified ponds fetched successfully
  *                 data:
  *                   type: array
  *                   items:
@@ -4000,6 +4131,102 @@ export {};
  *               $ref: '#/components/schemas/SuccessMessage'
  *       400:
  *         description: Delete error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds/{id}/status:
+ *   put:
+ *     summary: Update pond active status
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePondStatusRequest'
+ *     responses:
+ *       200:
+ *         description: Pond status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pond status updated successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Pond'
+ *       400:
+ *         description: Invalid pond_status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Pond not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/ponds/{id}/verification-status:
+ *   put:
+ *     summary: Update pond verification status
+ *     tags: [Ponds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdatePondVerificationStatusRequest'
+ *     responses:
+ *       200:
+ *         description: Pond verification status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pond verification status updated successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Pond'
+ *       400:
+ *         description: Invalid verification_status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Pond not found
  *         content:
  *           application/json:
  *             schema:
