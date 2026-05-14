@@ -72,12 +72,24 @@ export const getCultureCycleById = async (id, trx) => {
   return getExecutor(trx)(`${TABLE_NAME} as cc`)
     .leftJoin("farms as f", "cc.farm_id", "f.id")
     .leftJoin("ponds as p", "cc.pond_id", "p.id")
+    .leftJoin("aquaculture_qrs as farm_qr", function joinFarmQr() {
+      this.on("farm_qr.farm_id", "=", "f.id")
+        .andOn("farm_qr.type", "=", db.raw("?", ["farm"]))
+        .andOn("farm_qr.is_active", "=", db.raw("?", [true]));
+    })
+    .leftJoin("aquaculture_qrs as pond_qr", function joinPondQr() {
+      this.on("pond_qr.pond_id", "=", "p.id")
+        .andOn("pond_qr.type", "=", db.raw("?", ["pond"]))
+        .andOn("pond_qr.is_active", "=", db.raw("?", [true]));
+    })
     .select(
       "cc.*",
       "f.farm_id as farm_code",
       "f.farm_name",
       "p.pond_id as pond_code",
-      "p.pond_name"
+      "p.pond_name",
+      "farm_qr.qrs_code as farm_qr_code",
+      "pond_qr.qrs_code as pond_qr_code"
     )
     .where("cc.id", id)
     .first();
@@ -88,6 +100,16 @@ const getCultureCyclesWithDetailsQuery = (trx) => {
     .leftJoin("farms as f", "cc.farm_id", "f.id")
     .leftJoin("ponds as p", "cc.pond_id", "p.id")
     .leftJoin("rootverse_users as ru", "cc.user_id", "ru.id")
+    .leftJoin("aquaculture_qrs as farm_qr", function joinFarmQr() {
+      this.on("farm_qr.farm_id", "=", "f.id")
+        .andOn("farm_qr.type", "=", db.raw("?", ["farm"]))
+        .andOn("farm_qr.is_active", "=", db.raw("?", [true]));
+    })
+    .leftJoin("aquaculture_qrs as pond_qr", function joinPondQr() {
+      this.on("pond_qr.pond_id", "=", "p.id")
+        .andOn("pond_qr.type", "=", db.raw("?", ["pond"]))
+        .andOn("pond_qr.is_active", "=", db.raw("?", [true]));
+    })
     .select(
       "cc.*",
       "f.farm_id as farm_code",
@@ -102,6 +124,7 @@ const getCultureCyclesWithDetailsQuery = (trx) => {
       "f.farm_gate_longitude as nested_farm_gate_longitude",
       "f.water_source as nested_farm_water_source",
       "f.farm_area_acres as nested_farm_area_acres",
+      "farm_qr.qrs_code as nested_farm_qr_code",
       "f.created_at as nested_farm_created_at",
       "f.updated_at as nested_farm_updated_at",
       "p.id as nested_pond_id",
@@ -114,6 +137,7 @@ const getCultureCyclesWithDetailsQuery = (trx) => {
       "p.pond_gps as nested_pond_gps",
       "p.pond_status as nested_pond_status",
       "p.verification_status as nested_pond_verification_status",
+      "pond_qr.qrs_code as nested_pond_qr_code",
       "p.created_at as nested_pond_created_at",
       "p.updated_at as nested_pond_updated_at",
       "ru.id as nested_user_id",
@@ -193,9 +217,9 @@ export const getBlockingCultureCycleByPondId = async (pondId, completedBeforeDat
 };
 
 export const getCultureCyclesByVerificationStatus = async (verificationStatus, trx) => {
-  return getExecutor(trx)(TABLE_NAME)
-    .where("verification_status", verificationStatus)
-    .orderBy("created_at", "desc");
+  return getCultureCyclesWithDetailsQuery(trx)
+    .where("cc.verification_status", verificationStatus)
+    .orderBy("cc.created_at", "desc");
 };
 
 
