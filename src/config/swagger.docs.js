@@ -1518,6 +1518,161 @@
  *         imageUrl:
  *           type: string
  *           example: https://example.supabase.co/storage/v1/object/public/root_verse/aquaculture_images/1/image.jpg
+ *
+ *     Sampling:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           example: 1
+ *         culture_id:
+ *           type: integer
+ *           example: 1
+ *         pond_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         sampling_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-05-18
+ *         DOC:
+ *           type: integer
+ *           example: 30
+ *         sample_count:
+ *           type: integer
+ *           example: 50
+ *         sample_weight:
+ *           type: integer
+ *           example: 600
+ *         ABW:
+ *           type: integer
+ *           description: Auto-calculated as sample_weight / sample_count and rounded before saving.
+ *           example: 12
+ *         count_kg:
+ *           type: integer
+ *           description: Auto-calculated as 1000 / ABW and rounded before saving.
+ *           example: 83
+ *         total_pl_stock:
+ *           type: integer
+ *           example: 100000
+ *         expected_biomass:
+ *           type: integer
+ *           description: Auto-calculated as total_pl_stock * ABW / 1000 and rounded before saving.
+ *           example: 1200
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CreateSamplingRequest:
+ *       type: object
+ *       required: [user_id, farm_id, culture_id, pond_id, qr_code_id, sampling_date, DOC, sample_count, sample_weight, total_pl_stock]
+ *       properties:
+ *         user_id:
+ *           type: integer
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           example: 1
+ *         culture_id:
+ *           type: integer
+ *           description: Culture cycle ID. culture_cycle_id is also accepted by the API.
+ *           example: 1
+ *         pond_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         sampling_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-05-18
+ *         DOC:
+ *           type: integer
+ *           example: 30
+ *         sample_count:
+ *           type: integer
+ *           example: 50
+ *         sample_weight:
+ *           type: integer
+ *           example: 600
+ *         total_pl_stock:
+ *           type: integer
+ *           example: 100000
+ *
+ *     UpdateSamplingRequest:
+ *       type: object
+ *       description: Partial update body. Calculated fields are ignored and recalculated by the backend.
+ *       properties:
+ *         user_id:
+ *           type: integer
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           example: 1
+ *         culture_id:
+ *           type: integer
+ *           example: 1
+ *         pond_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         sampling_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-05-18
+ *         DOC:
+ *           type: integer
+ *           example: 30
+ *         sample_count:
+ *           type: integer
+ *           example: 50
+ *         sample_weight:
+ *           type: integer
+ *           example: 600
+ *         total_pl_stock:
+ *           type: integer
+ *           example: 100000
+ *
+ *     SamplingResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Sampling record created successfully
+ *         data:
+ *           $ref: '#/components/schemas/Sampling'
+ *
+ *     SamplingListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Sampling records fetched successfully
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Sampling'
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1569,6 +1724,8 @@
  *     description: Aquaculture farm and pond QR generation and activation APIs
  *   - name: Pond Stocking
  *     description: Aquaculture pond stocking APIs
+ *   - name: Sampling
+ *     description: Aquaculture sampling APIs
  */
 
 /**
@@ -5020,6 +5177,271 @@ export {};
  *               $ref: '#/components/schemas/SuccessMessage'
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/sampling:
+ *   post:
+ *     summary: Create a sampling record
+ *     tags: [Sampling]
+ *     description: >
+ *       Creates a sampling record only when the culture cycle verification_status is ACTIVE,
+ *       the pond is Active and Verified, and the aquaculture QR is active. ABW, count_kg,
+ *       and expected_biomass are calculated by the backend.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateSamplingRequest'
+ *           example:
+ *             user_id: 1
+ *             farm_id: 1
+ *             culture_id: 1
+ *             pond_id: 1
+ *             qr_code_id: 1
+ *             sampling_date: 2026-05-18
+ *             DOC: 30
+ *             sample_count: 50
+ *             sample_weight: 600
+ *             total_pl_stock: 100000
+ *     responses:
+ *       201:
+ *         description: Sampling record created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingResponse'
+ *       400:
+ *         description: Validation error or inactive/unverified related record
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Culture cycle, pond, or QR code not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   get:
+ *     summary: List all sampling records
+ *     tags: [Sampling]
+ *     responses:
+ *       200:
+ *         description: Sampling records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingListResponse'
+ *       404:
+ *         description: Sampling records not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/sampling/culture-cycle/{culture_cycle_id}:
+ *   get:
+ *     summary: Get sampling records by culture cycle ID
+ *     tags: [Sampling]
+ *     parameters:
+ *       - in: path
+ *         name: culture_cycle_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Culture cycle ID stored as culture_id on sampling records
+ *     responses:
+ *       200:
+ *         description: Sampling records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingListResponse'
+ *       404:
+ *         description: No sampling records found for this culture cycle
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/sampling/farm/{farm_id}:
+ *   get:
+ *     summary: Get sampling records by farm ID
+ *     tags: [Sampling]
+ *     parameters:
+ *       - in: path
+ *         name: farm_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Farm ID
+ *     responses:
+ *       200:
+ *         description: Sampling records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingListResponse'
+ *       404:
+ *         description: No sampling records found for this farm
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/sampling/pond/{pond_id}:
+ *   get:
+ *     summary: Get sampling records by pond ID
+ *     tags: [Sampling]
+ *     parameters:
+ *       - in: path
+ *         name: pond_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pond ID
+ *     responses:
+ *       200:
+ *         description: Sampling records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingListResponse'
+ *       404:
+ *         description: No sampling records found for this pond
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/sampling/qrcode/{qr_code_id}:
+ *   get:
+ *     summary: Get sampling records by QR code ID
+ *     tags: [Sampling]
+ *     parameters:
+ *       - in: path
+ *         name: qr_code_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Aquaculture QR ID
+ *     responses:
+ *       200:
+ *         description: Sampling records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingListResponse'
+ *       404:
+ *         description: No sampling records found for this QR code
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/sampling/{id}:
+ *   get:
+ *     summary: Get sampling record by ID
+ *     tags: [Sampling]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Sampling record ID
+ *     responses:
+ *       200:
+ *         description: Sampling record fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingResponse'
+ *       404:
+ *         description: Sampling record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   put:
+ *     summary: Update sampling record by ID
+ *     tags: [Sampling]
+ *     description: >
+ *       Updates a sampling record. The request can be partial. ABW, count_kg,
+ *       and expected_biomass are recalculated by the backend before saving.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Sampling record ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateSamplingRequest'
+ *     responses:
+ *       200:
+ *         description: Sampling record updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SamplingResponse'
+ *       400:
+ *         description: Validation error or inactive/unverified related record
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Sampling record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   delete:
+ *     summary: Delete sampling record by ID
+ *     tags: [Sampling]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Sampling record ID
+ *     responses:
+ *       200:
+ *         description: Sampling record deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       404:
+ *         description: Sampling record not found
  *         content:
  *           application/json:
  *             schema:
