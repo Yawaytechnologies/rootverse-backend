@@ -1528,18 +1528,50 @@
  *         user_id:
  *           type: integer
  *           example: 1
+ *         username:
+ *           type: string
+ *           nullable: true
+ *           example: John Doe
+ *         owner_id:
+ *           type: string
+ *           nullable: true
+ *           example: OWN-0001
  *         farm_id:
  *           type: integer
  *           example: 1
+ *         farm_code:
+ *           type: string
+ *           nullable: true
+ *           example: FRM-260001
+ *         farm_name:
+ *           type: string
+ *           nullable: true
+ *           example: Sunrise Aqua Farm
  *         culture_id:
  *           type: integer
  *           example: 1
+ *         culture_code:
+ *           type: string
+ *           nullable: true
+ *           example: CUL-260001
  *         pond_id:
  *           type: integer
  *           example: 1
+ *         pond_code:
+ *           type: string
+ *           nullable: true
+ *           example: PND-260001
+ *         pond_name:
+ *           type: string
+ *           nullable: true
+ *           example: Pond A
  *         qr_code_id:
  *           type: integer
  *           example: 1
+ *         qr_code:
+ *           type: string
+ *           nullable: true
+ *           example: AQR-000001
  *         sampling_date:
  *           type: string
  *           format: date
