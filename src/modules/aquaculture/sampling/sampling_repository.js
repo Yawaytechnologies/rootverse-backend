@@ -4,6 +4,26 @@ const SampleTable = 'sampling';
 
 const getExecutor = (trx) => trx || db;
 
+const withSamplingDetails = (query) => {
+    return query
+        .leftJoin('rootverse_users as ru', 'sampling.user_id', 'ru.id')
+        .leftJoin('farms as f', 'sampling.farm_id', 'f.id')
+        .leftJoin('ponds as p', 'sampling.pond_id', 'p.id')
+        .leftJoin('culture_cycles as cc', 'sampling.culture_id', 'cc.id')
+        .leftJoin('aquaculture_qrs as aq', 'sampling.qr_code_id', 'aq.id')
+        .select(
+            'sampling.*',
+            'ru.username',
+            'ru.owner_id',
+            'f.farm_id as farm_code',
+            'f.farm_name',
+            'p.pond_id as pond_code',
+            'p.pond_name',
+            'cc.culture_code',
+            'aq.qrs_code as qr_code'
+        );
+};
+
 export const createSamplingRecord = async (data, trx) => {
     try {
         const [row] = await getExecutor(trx)(SampleTable)
@@ -18,43 +38,38 @@ export const createSamplingRecord = async (data, trx) => {
 };
 
 export const getAllSamplingRecords = async (trx) => {
-    return getExecutor(trx)(SampleTable)
-        .select('*')
-        .orderBy('created_at', 'desc');
+    return withSamplingDetails(getExecutor(trx)(SampleTable))
+        .orderBy('sampling.created_at', 'desc');
 };
 
 export const getSamplingRecordById = async (id, trx) => {
-    return getExecutor(trx)(SampleTable)
-        .where({ id })
+    return withSamplingDetails(getExecutor(trx)(SampleTable))
+        .where('sampling.id', id)
         .first();
 };
 
 export const getSamplingRecordsByCultureCycleId = async (cultureId, trx) => {
-    return getExecutor(trx)(SampleTable)
-        .where({ culture_id: cultureId })
-        .select('*')
-        .orderBy('created_at', 'desc');
+    return withSamplingDetails(getExecutor(trx)(SampleTable))
+        .where('sampling.culture_id', cultureId)
+        .orderBy('sampling.created_at', 'desc');
 };
 
 export const getSamplingRecordsByFarmId = async (farmId, trx) => {
-    return getExecutor(trx)(SampleTable)
-        .where({ farm_id: farmId })
-        .select('*')
-        .orderBy('created_at', 'desc');
+    return withSamplingDetails(getExecutor(trx)(SampleTable))
+        .where('sampling.farm_id', farmId)
+        .orderBy('sampling.created_at', 'desc');
 };
 
 export const getSamplingRecordsByPondId = async (pondId, trx) => {
-    return getExecutor(trx)(SampleTable)
-        .where({ pond_id: pondId })
-        .select('*')
-        .orderBy('created_at', 'desc');
+    return withSamplingDetails(getExecutor(trx)(SampleTable))
+        .where('sampling.pond_id', pondId)
+        .orderBy('sampling.created_at', 'desc');
 };
 
 export const getSamplingRecordsByQrCodeId = async (qrCodeId, trx) => {
-    return getExecutor(trx)(SampleTable)
-        .where({ qr_code_id: qrCodeId })
-        .select('*')
-        .orderBy('created_at', 'desc');
+    return withSamplingDetails(getExecutor(trx)(SampleTable))
+        .where('sampling.qr_code_id', qrCodeId)
+        .orderBy('sampling.created_at', 'desc');
 };
 
 export const updateSamplingRecord = async (id, data, trx) => {
