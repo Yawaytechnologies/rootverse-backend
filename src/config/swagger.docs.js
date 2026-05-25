@@ -1519,6 +1519,191 @@
  *           type: string
  *           example: https://example.supabase.co/storage/v1/object/public/root_verse/aquaculture_images/1/image.jpg
  *
+ *     FarmerDetailsRootverseUser:
+ *       type: object
+ *       nullable: true
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         username:
+ *           type: string
+ *           example: John Doe
+ *         phone_no:
+ *           type: string
+ *           example: "9876543210"
+ *         address:
+ *           type: string
+ *           example: No. 10, Lake Road, Chennai
+ *         rootverse_type:
+ *           type: string
+ *           enum: [WILD_CAPTURE, AQUACULTURE, MARICULTURE]
+ *           example: AQUACULTURE
+ *         verification_status:
+ *           type: string
+ *           example: VERIFIED
+ *         owner_id:
+ *           type: string
+ *           nullable: true
+ *           example: OWN-0001
+ *         state_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         state_name:
+ *           type: string
+ *           nullable: true
+ *           example: Tamil Nadu
+ *         district_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         district_name:
+ *           type: string
+ *           nullable: true
+ *           example: Chennai
+ *         location_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         location_name:
+ *           type: string
+ *           nullable: true
+ *           example: Marina
+ *         profile_picture_url:
+ *           type: string
+ *           nullable: true
+ *         profile_picture_key:
+ *           type: string
+ *           nullable: true
+ *         owner_register_progress:
+ *           type: string
+ *           nullable: true
+ *           example: COMPLETED
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     FarmerDetails:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           example: 1
+ *         Father_name:
+ *           type: string
+ *           example: Robert Doe
+ *         DOB:
+ *           type: string
+ *           format: date
+ *           example: 1988-04-15
+ *         email:
+ *           type: string
+ *           nullable: true
+ *           example: farmer@example.com
+ *         farmer_liscence:
+ *           type: string
+ *           example: FL-2026-0001
+ *         farming_experience:
+ *           type: string
+ *           format: date
+ *           example: 2015-01-01
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *         rootverse_user:
+ *           $ref: '#/components/schemas/FarmerDetailsRootverseUser'
+ *
+ *     CreateFarmerDetailsRequest:
+ *       type: object
+ *       required: [user_id, Father_name, DOB, farmer_liscence, farming_experience]
+ *       properties:
+ *         user_id:
+ *           type: integer
+ *           example: 1
+ *         Father_name:
+ *           type: string
+ *           description: father_name is also accepted by the API.
+ *           example: Robert Doe
+ *         DOB:
+ *           type: string
+ *           format: date
+ *           description: dob is also accepted by the API.
+ *           example: 1988-04-15
+ *         email:
+ *           type: string
+ *           nullable: true
+ *           example: farmer@example.com
+ *         farmer_liscence:
+ *           type: string
+ *           description: farmer_license and farmer_licence are also accepted by the API.
+ *           example: FL-2026-0001
+ *         farming_experience:
+ *           type: string
+ *           format: date
+ *           example: 2015-01-01
+ *
+ *     UpdateFarmerDetailsRequest:
+ *       type: object
+ *       description: Partial update body. user_id cannot be changed by this endpoint.
+ *       properties:
+ *         Father_name:
+ *           type: string
+ *           description: father_name is also accepted by the API.
+ *           example: Robert Doe
+ *         DOB:
+ *           type: string
+ *           format: date
+ *           description: dob is also accepted by the API.
+ *           example: 1988-04-15
+ *         email:
+ *           type: string
+ *           nullable: true
+ *           example: farmer@example.com
+ *         farmer_liscence:
+ *           type: string
+ *           description: farmer_license and farmer_licence are also accepted by the API.
+ *           example: FL-2026-0001
+ *         farming_experience:
+ *           type: string
+ *           format: date
+ *           example: 2015-01-01
+ *
+ *     FarmerDetailsResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Farmer details fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/FarmerDetails'
+ *
+ *     FarmerDetailsListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Farmer details fetched successfully
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/FarmerDetails'
+ *
  *     Sampling:
  *       type: object
  *       properties:
@@ -1759,6 +1944,8 @@
  *     description: Aquaculture farm and pond QR generation and activation APIs
  *   - name: Pond Stocking
  *     description: Aquaculture pond stocking APIs
+ *   - name: Farmer Details
+ *     description: Aquaculture farmer profile details APIs
  *   - name: Sampling
  *     description: Aquaculture sampling APIs
  */
@@ -5212,6 +5399,206 @@ export {};
  *               $ref: '#/components/schemas/SuccessMessage'
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/farmer-details:
+ *   post:
+ *     summary: Create aquaculture farmer details
+ *     tags: [Farmer Details]
+ *     description: >
+ *       Creates one farmer detail record linked to an existing rootverse_users.id.
+ *       The response includes the farmer details and nested rootverse_user details.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateFarmerDetailsRequest'
+ *           example:
+ *             user_id: 1
+ *             Father_name: Robert Doe
+ *             DOB: 1988-04-15
+ *             email: farmer@example.com
+ *             farmer_liscence: FL-2026-0001
+ *             farming_experience: 2015-01-01
+ *     responses:
+ *       201:
+ *         description: Farmer details created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FarmerDetailsResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Farmer details already exist for this user_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   get:
+ *     summary: List all aquaculture farmer details
+ *     tags: [Farmer Details]
+ *     responses:
+ *       200:
+ *         description: Farmer details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FarmerDetailsListResponse'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/farmer-details/user/{user_id}:
+ *   get:
+ *     summary: Get farmer details by rootverse user ID
+ *     tags: [Farmer Details]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: rootverse_users.id linked to the farmer details
+ *     responses:
+ *       200:
+ *         description: Farmer details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FarmerDetailsResponse'
+ *       404:
+ *         description: Farmer details not found for this user_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   put:
+ *     summary: Update farmer details by rootverse user ID
+ *     tags: [Farmer Details]
+ *     description: Updates farmer details using user_id. The request body can be partial.
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: rootverse_users.id linked to the farmer details
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateFarmerDetailsRequest'
+ *           example:
+ *             email: updated-farmer@example.com
+ *             farming_experience: 2014-06-01
+ *     responses:
+ *       200:
+ *         description: Farmer details updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FarmerDetailsResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Farmer details not found for this user_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   delete:
+ *     summary: Delete farmer details by rootverse user ID
+ *     tags: [Farmer Details]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: rootverse_users.id linked to the farmer details
+ *     responses:
+ *       200:
+ *         description: Farmer details deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       404:
+ *         description: Farmer details not found for this user_id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/farmer-details/{id}:
+ *   get:
+ *     summary: Get farmer details by ID
+ *     tags: [Farmer Details]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: aquaculture_farmers.id
+ *     responses:
+ *       200:
+ *         description: Farmer details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FarmerDetailsResponse'
+ *       404:
+ *         description: Farmer details not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   delete:
+ *     summary: Delete farmer details by ID
+ *     tags: [Farmer Details]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: aquaculture_farmers.id
+ *     responses:
+ *       200:
+ *         description: Farmer details deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       404:
+ *         description: Farmer details not found
  *         content:
  *           application/json:
  *             schema:

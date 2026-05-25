@@ -40,6 +40,7 @@ export function buildSwaggerSpec() {
         { name: "Aquaculture QRs", description: "Aquaculture farm and pond QR generation and activation" },
         { name: "Culture Cycles", description: "Aquaculture culture cycle management" },
         { name: "Pond Stocking", description: "Aquaculture pond stocking management" },
+        { name: "Farmer Details", description: "Aquaculture farmer profile details" },
         { name: "Sampling", description: "Aquaculture sampling management" },
         { name: "Fish Types", description: "Fish type reference data" },
         { name: "Fishing Methods", description: "Fishing method reference data" },
