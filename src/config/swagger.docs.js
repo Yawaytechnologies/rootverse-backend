@@ -1586,19 +1586,22 @@
  *           type: integer
  *           example: 600
  *         ABW:
- *           type: integer
- *           description: Auto-calculated as sample_weight / sample_count and rounded before saving.
+ *           type: number
+ *           format: double
+ *           description: Auto-calculated as sample_weight / sample_count.
  *           example: 12
  *         count_kg:
- *           type: integer
- *           description: Auto-calculated as 1000 / ABW and rounded before saving.
- *           example: 83
+ *           type: number
+ *           format: double
+ *           description: Auto-calculated as 1000 / ABW.
+ *           example: 83.33
  *         total_pl_stock:
  *           type: integer
  *           example: 100000
  *         expected_biomass:
- *           type: integer
- *           description: Auto-calculated as total_pl_stock * ABW / 1000 and rounded before saving.
+ *           type: number
+ *           format: double
+ *           description: Auto-calculated as total_pl_stock * ABW / 1000.
  *           example: 1200
  *         created_at:
  *           type: string

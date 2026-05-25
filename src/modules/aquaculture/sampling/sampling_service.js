@@ -50,6 +50,8 @@ const normalizeDate = (value) => {
     return String(value).trim();
 };
 
+const roundToTwoDecimals = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
+
 const validateId = (value, fieldName = 'id') => {
     const id = normalizeNumber(value);
 
@@ -76,13 +78,13 @@ const normalizeSamplingPayload = (body) => {
         total_pl_stock: normalizeNumber(body.total_pl_stock),
     };
 
-    const ABW = data.sample_weight / data.sample_count;
+    const ABW = roundToTwoDecimals(data.sample_weight / data.sample_count);
 
     return {
         ...data,
-        ABW: Math.round(ABW),
-        count_kg: Math.round(1000 / ABW),
-        expected_biomass: Math.round((data.total_pl_stock * ABW) / 1000),
+        ABW,
+        count_kg: roundToTwoDecimals(1000 / ABW),
+        expected_biomass: roundToTwoDecimals((data.total_pl_stock * ABW) / 1000),
     };
 };
 
