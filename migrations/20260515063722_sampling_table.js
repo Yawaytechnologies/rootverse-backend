@@ -14,10 +14,10 @@ export async function up(knex) {
         table.integer('DOC').notNullable();
         table.integer('sample_count').notNullable();
         table.integer('sample_weight').notNullable();
-        table.integer('ABW').notNullable();
-        table.integer('count_kg').notNullable();
+        table.double('ABW').notNullable();
+        table.double('count_kg').notNullable();
         table.integer('total_pl_stock').notNullable();
-        table.integer('expected_biomass').notNullable();
+        table.double('expected_biomass').notNullable();
         table.timestamps(true, true);
     });
   
