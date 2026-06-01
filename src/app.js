@@ -31,6 +31,7 @@ import AquaImageUpload from './modules/aquaculture/imageUpload/imageUpload_route
 import PondStocking from './modules/aquaculture/pondStocking/pondStocking_router.js';
 import Sampling from './modules/aquaculture/sampling/sampling_router.js';
 import FarmerDetails from './modules/aquaculture/farmer_details/routes.js';
+import traderRoutes from './modules/traders/routes.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 import collectionCentreRoutes from './modules/collection_centre/routes.js';
@@ -91,6 +92,7 @@ app.use('/api/aquaculture/imageUpload', AquaImageUpload);
 app.use('/api/aquaculture/pond-stocking', PondStocking);
 app.use('/api/aquaculture/sampling', Sampling);
 app.use('/api/aquaculture/farmer-details', FarmerDetails);
+app.use('/api/traders', traderRoutes);
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 app.use('/api/collection-centre', collectionCentreRoutes);
