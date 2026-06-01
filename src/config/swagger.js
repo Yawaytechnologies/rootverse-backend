@@ -27,6 +27,7 @@ export function buildSwaggerSpec() {
         { name: "Super Admins", description: "Super admin management" },
         { name: "Collection Centre", description: "Collection centre operator workflow" },
         { name: "Transport", description: "Transport operator workflow" },
+        { name: "Traders", description: "Trader organization login, team management, and progress control" },
         { name: "Owners", description: "Owner registration and management" },
         { name: "Users", description: "User profile" },
         { name: "Vessels", description: "Vessel registration" },
