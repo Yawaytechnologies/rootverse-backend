@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import { signToken } from "../auth/utils/token.js";
+import { uploadFile } from "../../shared/services/storage.service.js";
+import { generateKey } from "../../shared/utils/storageKey.js";
 import * as repo from "./repository.js";
 
 const CRATE_STATUSES = [
@@ -21,39 +23,86 @@ const requireFields = (payload, fields) => {
 
 const buildCode = (prefix) => `${prefix}-${Date.now().toString(36).toUpperCase()}`;
 
-export async function registerTrader(payload) {
-  requireFields(payload, ["organization_name", "email", "mobile", "password"]);
+const TRADER_TYPES = ["Individual", "Company", "Partnership"];
+const MARKETS = ["Export", "Domestic", "Both"];
 
-  const password_hash = await bcrypt.hash(String(payload.password), 10);
+const normalizeChoice = (value, allowed, field) => {
+  const normalized = allowed.find((item) => item.toLowerCase() === String(value || "").trim().toLowerCase());
+  if (!normalized) throw new Error(`${field} must be one of: ${allowed.join(", ")}`);
+  return normalized;
+};
+
+const normalizeDistricts = (value) => {
+  if (value === undefined || value === null || value === "") return [];
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  const text = String(value).trim();
+  if (text.startsWith("[") && text.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) return parsed.map((item) => String(item).trim()).filter(Boolean);
+    } catch {
+      throw new Error("operational_districts must be an array or comma-separated string");
+    }
+  }
+  return text
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const normalizeYearsOfExperience = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const years = Number(value);
+  if (!Number.isInteger(years) || years < 0) throw new Error("years_of_experience must be a non-negative integer");
+  return years;
+};
+
+const uploadTraderImage = async (traderId, file, type) => {
+  if (!file) return null;
+  if (!file.mimetype?.startsWith("image/")) {
+    throw new Error(`${type} must be an image file`);
+  }
+
+  const key = generateKey(`traders/${traderId}/${type}`, file.originalname);
+  return uploadFile(file, key);
+};
+
+export async function registerTrader(payload, files = {}) {
+  requireFields(payload, ["trader_name", "trader_type", "mobile", "email", "address", "markets"]);
+
   const [trader] = await repo.createTrader({
     trader_code: payload.trader_code || buildCode("TR"),
-    organization_name: payload.organization_name,
-    contact_name: payload.contact_name || null,
-    email: payload.email,
+    profile_image_url: null,
+    company_logo_url: null,
+    trader_name: payload.trader_name,
+    trader_type: normalizeChoice(payload.trader_type, TRADER_TYPES, "trader_type"),
     mobile: payload.mobile,
-    password_hash,
-    address: payload.address || null,
-    state: payload.state || null,
-    district: payload.district || null,
-    organization_type: "TRADER",
-    is_active: payload.is_active !== undefined ? payload.is_active : true,
+    email: payload.email,
+    address: payload.address,
+    operational_districts: normalizeDistricts(payload.operational_districts),
+    years_of_experience: normalizeYearsOfExperience(payload.years_of_experience),
+    markets: normalizeChoice(payload.markets, MARKETS, "markets"),
+    is_active: false,
   });
 
-  return trader;
+  const imageUpdates = {};
+  const profileImageUrl = await uploadTraderImage(trader.id, files.profileImage, "profile");
+  const companyLogoUrl = await uploadTraderImage(trader.id, files.companyLogo, "company_logo");
+
+  if (profileImageUrl) imageUpdates.profile_image_url = profileImageUrl;
+  if (companyLogoUrl) imageUpdates.company_logo_url = companyLogoUrl;
+
+  if (!Object.keys(imageUpdates).length) return trader;
+  return repo.updateTraderImages(trader.id, imageUpdates);
 }
 
 export async function loginTrader(payload) {
-  const loginId = String(payload?.login_id || payload?.email || payload?.mobile || "").trim();
-  const password = String(payload?.password || "").trim();
-  if (!loginId) throw new Error("login_id is required");
-  if (!password) throw new Error("password is required");
+  const mobile = String(payload?.mobile || payload?.phone_no || "").trim();
+  if (!mobile) throw new Error("mobile is required");
 
-  const trader = await repo.findTraderByLoginId(loginId);
+  const trader = await repo.findTraderByMobile(mobile);
   if (!trader) throw new Error("Trader not found");
   if (!trader.is_active) throw new Error("Trader account is inactive");
-
-  const valid = await bcrypt.compare(password, trader.password_hash);
-  if (!valid) throw new Error("Invalid password");
 
   const tokenPayload = { id: trader.id, role: "TRADER_ADMIN", trader_id: trader.id, trader_code: trader.trader_code };
   return {
@@ -64,9 +113,9 @@ export async function loginTrader(payload) {
     user: {
       id: trader.id,
       trader_code: trader.trader_code,
-      organization_name: trader.organization_name,
-      email: trader.email,
+      trader_name: trader.trader_name,
       mobile: trader.mobile,
+      email: trader.email,
     },
   };
 }
@@ -74,6 +123,25 @@ export async function loginTrader(payload) {
 export const getTraderProfile = (user) => repo.findTraderById(user.trader_id || user.id);
 
 export const listTraders = (query) => repo.listTraders(query);
+
+export async function updateTraderStatus(traderId, payload) {
+  const rawStatus = payload?.status !== undefined ? String(payload.status).trim().toLowerCase() : undefined;
+  let isActive = payload?.is_active;
+
+  if (rawStatus !== undefined) {
+    if (!["approved", "active", "pending", "rejected", "inactive"].includes(rawStatus)) {
+      throw new Error("status must be approved, active, pending, rejected, or inactive");
+    }
+    isActive = rawStatus === "approved" || rawStatus === "active";
+  }
+
+  if (isActive === undefined) throw new Error("status or is_active is required");
+
+  const normalized = isActive === true || String(isActive).trim().toLowerCase() === "true";
+  const trader = await repo.updateTraderStatus(traderId, normalized);
+  if (!trader) throw new Error("Trader not found");
+  return trader;
+}
 
 export async function createQualityChecker(traderId, payload) {
   requireFields(payload, ["checker_name", "checker_email", "checker_phone", "state_id", "district_id"]);
