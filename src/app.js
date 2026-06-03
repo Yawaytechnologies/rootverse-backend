@@ -42,6 +42,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((error, req, res, next) => {
+  if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
+    return res.status(400).json({ success: false, error: "Invalid JSON request body" });
+  }
+  return next(error);
+});
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan("dev"));
 app.use(cookieParser());
