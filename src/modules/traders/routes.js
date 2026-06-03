@@ -1,10 +1,12 @@
 import express from "express";
 import { requireRole } from "../../shared/middlewares/auth.middleware.js";
+import upload from "../../shared/middlewares/upload.js";
 import {
   createTraderController,
   loginTraderController,
   getMeController,
   listTradersController,
+  updateTraderStatusController,
   createQualityCheckerController,
   listQualityCheckersController,
   createCratePackerController,
@@ -20,6 +22,13 @@ const router = express.Router();
 
 const ADMIN = requireRole("ADMIN", "SUPER_ADMIN");
 const TRADER = requireRole("TRADER_ADMIN");
+const traderSignupUpload = upload.fields([
+  { name: "profile_image", maxCount: 1 },
+  { name: "profileImage", maxCount: 1 },
+  { name: "trader_profile_image", maxCount: 1 },
+  { name: "company_logo", maxCount: 1 },
+  { name: "companyLogo", maxCount: 1 },
+]);
 
 /**
  * @swagger
@@ -33,62 +42,82 @@ const TRADER = requireRole("TRADER_ADMIN");
  *         trader_code:
  *           type: string
  *           example: TR-MB123ABC
- *         organization_name:
+ *         profile_image_url:
+ *           type: string
+ *         company_logo_url:
+ *           type: string
+ *         trader_name:
  *           type: string
  *           example: Blue Coast Traders
- *         contact_name:
+ *         trader_type:
  *           type: string
- *           example: Trader Admin
- *         email:
- *           type: string
- *           example: trader@example.com
+ *           enum: [Individual, Company, Partnership]
  *         mobile:
  *           type: string
  *           example: "9876543210"
+ *         email:
+ *           type: string
+ *           example: trader@example.com
  *         address:
  *           type: string
- *         state:
+ *         operational_districts:
+ *           type: array
+ *           items:
+ *             type: string
+ *         years_of_experience:
+ *           type: integer
+ *         markets:
  *           type: string
- *         district:
- *           type: string
- *         organization_type:
- *           type: string
- *           example: TRADER
+ *           enum: [Export, Domestic, Both]
  *         is_active:
  *           type: boolean
  *     CreateTraderRequest:
  *       type: object
- *       required: [organization_name, email, mobile, password]
+ *       required: [trader_name, trader_type, mobile, email, address, markets]
  *       properties:
- *         trader_code:
+ *         trader_name:
  *           type: string
- *         organization_name:
+ *         trader_type:
  *           type: string
- *         contact_name:
- *           type: string
- *         email:
- *           type: string
+ *           enum: [Individual, Company, Partnership]
  *         mobile:
  *           type: string
- *         password:
+ *           description: Used for trader login
+ *         email:
  *           type: string
+ *           description: Trader email
  *         address:
  *           type: string
- *         state:
+ *         operational_districts:
+ *           type: array
+ *           items:
+ *             type: string
+ *         years_of_experience:
+ *           type: integer
+ *         markets:
  *           type: string
- *         district:
- *           type: string
+ *           enum: [Export, Domestic, Both]
+ *     TraderSignupMultipartRequest:
+ *       allOf:
+ *         - $ref: '#/components/schemas/CreateTraderRequest'
+ *         - type: object
+ *           properties:
+ *             profile_image:
+ *               type: string
+ *               format: binary
+ *               description: Trader profile image file. Uploaded to storage; only the public URL is saved.
+ *             company_logo:
+ *               type: string
+ *               format: binary
+ *               description: Company logo image file. Uploaded to storage; only the public URL is saved.
  *     TraderLoginRequest:
  *       type: object
- *       required: [login_id, password]
+ *       required: [mobile]
  *       properties:
- *         login_id:
+ *         mobile:
  *           type: string
- *           description: Trader code, email, or mobile
- *           example: trader@example.com
- *         password:
- *           type: string
- *           example: secret123
+ *           description: Trader mobile number
+ *           example: "9876543210"
  *     TraderTeamQualityCheckerRequest:
  *       type: object
  *       required: [checker_name, checker_email, checker_phone, state_id, district_id]
@@ -173,20 +202,21 @@ const TRADER = requireRole("TRADER_ADMIN");
  * @swagger
  * /api/traders:
  *   post:
- *     summary: Create a trader organization
+ *     summary: Trader organization signup
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
- *     description: Admin or super admin creates a trader account for separate trader portal login.
+ *     description: Public trader signup. The account is inactive until an admin or super admin approves it.
  *     requestBody:
  *       required: true
  *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/TraderSignupMultipartRequest'
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateTraderRequest'
  *     responses:
  *       201:
- *         description: Trader created
+ *         description: Trader signup created and pending approval
  *       400:
  *         description: Invalid request
  *   get:
@@ -207,14 +237,48 @@ const TRADER = requireRole("TRADER_ADMIN");
  *       200:
  *         description: Trader list
  */
-router.post("/", ADMIN, createTraderController);
+router.post("/", traderSignupUpload, createTraderController);
 router.get("/", ADMIN, listTradersController);
+
+/**
+ * @swagger
+ * /api/traders/{traderId}/status:
+ *   patch:
+ *     summary: Approve or deactivate a trader organization
+ *     tags: [Traders]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: traderId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [approved, active, pending, rejected, inactive]
+ *               is_active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Trader status updated
+ *       404:
+ *         description: Trader not found
+ */
+router.patch("/:traderId/status", ADMIN, updateTraderStatusController);
 
 /**
  * @swagger
  * /api/traders/login:
  *   post:
- *     summary: Trader password login
+ *     summary: Trader mobile login
  *     tags: [Traders]
  *     requestBody:
  *       required: true

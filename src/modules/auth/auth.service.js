@@ -149,7 +149,23 @@ export const getMeService = async (user) => {
 
   if (role === "TRADER_ADMIN") {
     const trader = await db("traders")
-      .select("id", "trader_code", "organization_name", "contact_name", "email", "mobile", "address", "state", "district", "organization_type", "is_active", "created_at", "updated_at")
+      .select(
+        "id",
+        "trader_code",
+        "profile_image_url",
+        "company_logo_url",
+        "trader_name",
+        "trader_type",
+        "mobile",
+        "email",
+        "address",
+        "operational_districts",
+        "years_of_experience",
+        "markets",
+        "is_active",
+        "created_at",
+        "updated_at"
+      )
       .where({ id: user.trader_id || id })
       .first();
     if (trader) return { ...trader, role: "TRADER_ADMIN" };

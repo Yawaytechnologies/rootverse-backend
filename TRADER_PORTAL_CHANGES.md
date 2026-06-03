@@ -24,6 +24,7 @@ This update adds separate trader organization login and trader-controlled team/p
 Migration added:
 
 `migrations/20260601000100_create_traders_and_link_team.js`
+`migrations/20260602000100_simplify_trader_details.js`
 
 New table:
 
@@ -32,15 +33,16 @@ New table:
 Important fields:
 
 - `trader_code`
-- `organization_name`
-- `contact_name`
-- `email`
+- `profile_image_url`
+- `company_logo_url`
+- `trader_name`
+- `trader_type`
 - `mobile`
-- `password_hash`
+- `email`
 - `address`
-- `state`
-- `district`
-- `organization_type`
+- `operational_districts`
+- `years_of_experience`
+- `markets`
 - `is_active`
 
 Linked existing tables:
@@ -159,28 +161,35 @@ Base path:
 
 `/api/traders`
 
-### Admin creates trader
+### Trader signup
 
 `POST /api/traders`
 
 Auth:
 
-`ADMIN` or `SUPER_ADMIN`
+None. Signup creates an inactive trader account until admin approval.
 
 Body:
 
-```json
-{
-  "organization_name": "Blue Coast Traders",
-  "contact_name": "Trader Admin",
-  "email": "trader@example.com",
-  "mobile": "9876543210",
-  "password": "secret123",
-  "address": "Harbor Road",
-  "state": "Kerala",
-  "district": "Kochi"
-}
-```
+Use `multipart/form-data`.
+
+Text fields:
+
+- `trader_name`
+- `trader_type`: `Individual`, `Company`, or `Partnership`
+- `mobile`
+- `email`
+- `address`
+- `operational_districts`: JSON array string or comma-separated text
+- `years_of_experience`
+- `markets`: `Export`, `Domestic`, or `Both`
+
+File fields:
+
+- `profile_image`
+- `company_logo`
+
+Images are uploaded to the configured Supabase bucket. Only the returned public URLs are stored in `profile_image_url` and `company_logo_url`.
 
 ### Admin lists traders
 
@@ -190,6 +199,24 @@ Auth:
 
 `ADMIN` or `SUPER_ADMIN`
 
+### Admin approves or deactivates trader
+
+`PATCH /api/traders/:traderId/status`
+
+Auth:
+
+`ADMIN` or `SUPER_ADMIN`
+
+Body:
+
+```json
+{
+  "status": "approved"
+}
+```
+
+Allowed status values: `approved`, `active`, `pending`, `rejected`, `inactive`.
+
 ### Trader login
 
 `POST /api/traders/login`
@@ -198,12 +225,11 @@ Body:
 
 ```json
 {
-  "login_id": "trader@example.com",
-  "password": "secret123"
+  "mobile": "9876543210"
 }
 ```
 
-`login_id` accepts trader code, email, or mobile.
+Trader login uses mobile number only.
 
 Returns:
 
@@ -392,12 +418,13 @@ For password login, use:
 ## Progress Order for Next Development
 
 1. Run the new migration.
-2. Create a trader using admin auth.
-3. Login trader through `/api/traders/login`.
-4. Create quality checkers under the trader.
-5. Create crate packers under the trader.
-6. Create transport operators under the trader.
-7. Link newly created crate records to `crate_qrs.trader_id`.
-8. Use trader crate status API to control progress.
-9. Build trader dashboard screens from `/api/traders/dashboard`.
-10. Add harvest request and processor modules using the full status flow.
+2. Sign up a trader through `POST /api/traders`.
+3. Approve the trader through `PATCH /api/traders/:traderId/status`.
+4. Login trader through `/api/traders/login`.
+5. Create quality checkers under the trader.
+6. Create crate packers under the trader.
+7. Create transport operators under the trader.
+8. Link newly created crate records to `crate_qrs.trader_id`.
+9. Use trader crate status API to control progress.
+10. Build trader dashboard screens from `/api/traders/dashboard`.
+11. Add harvest request and processor modules using the full status flow.

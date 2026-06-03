@@ -1,61 +1,61 @@
 import db from "../../shared/lib/db.js";
 
-export const createTrader = (payload) =>
-  db("traders").insert(payload).returning([
-    "id",
-    "trader_code",
-    "organization_name",
-    "contact_name",
-    "email",
-    "mobile",
-    "address",
-    "state",
-    "district",
-    "organization_type",
-    "is_active",
-    "created_at",
-    "updated_at",
-  ]);
+const TRADER_FIELDS = [
+  "id",
+  "trader_code",
+  "profile_image_url",
+  "company_logo_url",
+  "trader_name",
+  "trader_type",
+  "mobile",
+  "email",
+  "address",
+  "operational_districts",
+  "years_of_experience",
+  "markets",
+  "is_active",
+  "created_at",
+  "updated_at",
+];
 
-export const findTraderByLoginId = (loginId) =>
-  db("traders")
-    .where((qb) => qb.where("trader_code", loginId).orWhere("email", loginId).orWhere("mobile", loginId))
-    .first();
+const serializeTraderPayload = (payload) => {
+  if (!Object.prototype.hasOwnProperty.call(payload, "operational_districts")) return payload;
+  return {
+    ...payload,
+    operational_districts: JSON.stringify(payload.operational_districts),
+  };
+};
+
+export const createTrader = (payload) =>
+  db("traders").insert(serializeTraderPayload(payload)).returning(TRADER_FIELDS);
+
+export const findTraderByMobile = (mobile) =>
+  db("traders").select(TRADER_FIELDS).where({ mobile }).first();
 
 export const findTraderById = (id) =>
-  db("traders")
-    .select(
-      "id",
-      "trader_code",
-      "organization_name",
-      "contact_name",
-      "email",
-      "mobile",
-      "address",
-      "state",
-      "district",
-      "organization_type",
-      "is_active",
-      "created_at",
-      "updated_at"
-    )
+  db("traders").select(TRADER_FIELDS).where({ id }).first();
+
+export const updateTraderImages = async (id, payload) => {
+  const rows = await db("traders")
     .where({ id })
-    .first();
+    .update({ ...payload, updated_at: db.fn.now() })
+    .returning(TRADER_FIELDS);
+
+  return rows[0] || null;
+};
+
+export const updateTraderStatus = async (id, isActive) => {
+  const rows = await db("traders")
+    .where({ id })
+    .update({ is_active: isActive, updated_at: db.fn.now() })
+    .returning(TRADER_FIELDS);
+
+  return rows[0] || null;
+};
 
 export const listTraders = ({ page = 1, page_size = 20 } = {}) =>
   db("traders")
-    .select(
-      "id",
-      "trader_code",
-      "organization_name",
-      "contact_name",
-      "email",
-      "mobile",
-      "state",
-      "district",
-      "is_active",
-      "created_at"
-    )
+    .select(TRADER_FIELDS)
     .orderBy("created_at", "desc")
     .limit(Number(page_size))
     .offset((Number(page) - 1) * Number(page_size));
