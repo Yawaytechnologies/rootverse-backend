@@ -120,7 +120,7 @@ const traderSignupUpload = upload.fields([
  *           example: "9876543210"
  *     TraderTeamQualityCheckerRequest:
  *       type: object
- *       required: [checker_name, checker_email, checker_phone, state_id, district_id]
+ *       required: [checker_name, checker_email, checker_phone]
  *       properties:
  *         checker_name:
  *           type: string
@@ -128,10 +128,6 @@ const traderSignupUpload = upload.fields([
  *           type: string
  *         checker_phone:
  *           type: string
- *         state_id:
- *           type: integer
- *         district_id:
- *           type: integer
  *         location_id:
  *           type: integer
  *         checker_code:
@@ -159,7 +155,7 @@ const traderSignupUpload = upload.fields([
  *           enum: [active, inactive]
  *     TraderTeamTransportOperatorRequest:
  *       type: object
- *       required: [full_name, email, mobile, password, transport_id, vehicle_no]
+ *       required: [full_name, email, mobile, transport_id, vehicle_no]
  *       properties:
  *         operator_rv_id:
  *           type: string
@@ -168,8 +164,6 @@ const traderSignupUpload = upload.fields([
  *         email:
  *           type: string
  *         mobile:
- *           type: string
- *         password:
  *           type: string
  *         transport_id:
  *           type: string
