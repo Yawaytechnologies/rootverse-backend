@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { signToken } from "../auth/utils/token.js";
 import { uploadFile } from "../../shared/services/storage.service.js";
 import { generateKey } from "../../shared/utils/storageKey.js";
@@ -144,14 +143,12 @@ export async function updateTraderStatus(traderId, payload) {
 }
 
 export async function createQualityChecker(traderId, payload) {
-  requireFields(payload, ["checker_name", "checker_email", "checker_phone", "state_id", "district_id"]);
+  requireFields(payload, ["checker_name", "checker_email", "checker_phone"]);
 
   const [checker] = await repo.insertQualityChecker({
     checker_name: payload.checker_name,
     checker_email: payload.checker_email,
     checker_phone: payload.checker_phone,
-    state_id: payload.state_id,
-    district_id: payload.district_id,
     location_id: payload.location_id || null,
     checker_code: payload.checker_code || buildCode("QC"),
     is_active: payload.is_active !== undefined ? payload.is_active : true,
@@ -183,15 +180,13 @@ export async function createCratePacker(traderId, payload) {
 export const listCratePackers = (traderId) => repo.listCratePackersByTrader(traderId);
 
 export async function createTransportOperator(traderId, payload) {
-  requireFields(payload, ["full_name", "email", "mobile", "password", "transport_id", "vehicle_no"]);
+  requireFields(payload, ["full_name", "email", "mobile", "transport_id", "vehicle_no"]);
 
-  const password_hash = await bcrypt.hash(String(payload.password), 10);
   const [operator] = await repo.insertTransportOperator({
     operator_rv_id: payload.operator_rv_id || buildCode("TO"),
     full_name: payload.full_name,
     email: payload.email,
     mobile: payload.mobile,
-    password_hash,
     transport_id: payload.transport_id,
     vehicle_no: payload.vehicle_no,
     route_name: payload.route_name || null,

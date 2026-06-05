@@ -277,8 +277,6 @@ Required body fields:
 - `checker_name`
 - `checker_email`
 - `checker_phone`
-- `state_id`
-- `district_id`
 
 Optional:
 
@@ -336,7 +334,6 @@ Required body fields:
 - `full_name`
 - `email`
 - `mobile`
-- `password`
 - `transport_id`
 - `vehicle_no`
 
@@ -411,7 +408,7 @@ The existing phone login endpoint:
 
 now also checks `traders.mobile` and returns a `TRADER_ADMIN` token when a trader is found.
 
-For password login, use:
+For mobile login, use:
 
 `POST /api/traders/login`
 
