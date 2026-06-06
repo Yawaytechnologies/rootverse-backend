@@ -43,6 +43,7 @@ export function buildSwaggerSpec() {
         { name: "Pond Stocking", description: "Aquaculture pond stocking management" },
         { name: "Farmer Details", description: "Aquaculture farmer profile details" },
         { name: "Sampling", description: "Aquaculture sampling management" },
+        { name: "Harvest", description: "Aquaculture harvest request and trader booking management" },
         { name: "Fish Types", description: "Fish type reference data" },
         { name: "Fishing Methods", description: "Fishing method reference data" },
         { name: "States", description: "State reference data" },
