@@ -1893,6 +1893,292 @@
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/Sampling'
+ *
+ *     Harvest:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         culture_id:
+ *           type: integer
+ *           description: Culture cycle ID. Farm, pond, and farmer are derived from this culture cycle.
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           nullable: true
+ *           description: Derived from culture_cycles.user_id.
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           nullable: true
+ *           description: Derived from culture_cycles.farm_id.
+ *           example: 1
+ *         pond_id:
+ *           type: integer
+ *           nullable: true
+ *           description: Derived from culture_cycles.pond_id.
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code:
+ *           type: string
+ *           nullable: true
+ *           example: AQR-000001
+ *         trader_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         trader_code:
+ *           type: string
+ *           nullable: true
+ *           example: TRD-000001
+ *         trader_name:
+ *           type: string
+ *           nullable: true
+ *           example: Blue Coast Traders
+ *         trader_mobile:
+ *           type: string
+ *           nullable: true
+ *           example: "9876543210"
+ *         DOC:
+ *           type: integer
+ *           example: 45
+ *         preferred_harvest_time:
+ *           type: string
+ *           format: date-time
+ *           example: 2026-05-24T08:00:00.000Z
+ *         expected_size:
+ *           type: string
+ *           example: 35 - 38 Count/kg
+ *         expected_biomass:
+ *           type: number
+ *           format: double
+ *           example: 1200
+ *         harvest_method:
+ *           type: string
+ *           enum: [Partial, Full]
+ *           example: Partial
+ *         species:
+ *           type: string
+ *           example: Vannamei
+ *         harvest_reason:
+ *           type: string
+ *           nullable: true
+ *           example: Market demand
+ *         stocking_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-04-10
+ *         booking_status:
+ *           type: string
+ *           enum: [active, booked]
+ *           example: active
+ *         farmer_name:
+ *           type: string
+ *           nullable: true
+ *           example: John Doe
+ *         farm_code:
+ *           type: string
+ *           nullable: true
+ *           example: FRM-260001
+ *         farm_name:
+ *           type: string
+ *           nullable: true
+ *           example: Sunrise Aqua Farm
+ *         pond_code:
+ *           type: string
+ *           nullable: true
+ *           example: PND-260001
+ *         pond_name:
+ *           type: string
+ *           nullable: true
+ *           example: Pond A
+ *         culture_code:
+ *           type: string
+ *           nullable: true
+ *           example: CUL-260001
+ *         culture_verification_status:
+ *           type: string
+ *           nullable: true
+ *           example: ACTIVE
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     HarvestDetail:
+ *       allOf:
+ *         - $ref: '#/components/schemas/Harvest'
+ *         - type: object
+ *           properties:
+ *             sampling_details:
+ *               type: array
+ *               description: Sampling records for the same culture cycle.
+ *               items:
+ *                 $ref: '#/components/schemas/Sampling'
+ *             pond_stocking:
+ *               nullable: true
+ *               $ref: '#/components/schemas/PondStocking'
+ *             image_uploads:
+ *               type: array
+ *               description: Aquaculture images for the same culture cycle from aquaculture_image.
+ *               items:
+ *                 $ref: '#/components/schemas/AquacultureImage'
+ *             farmer_detail:
+ *               nullable: true
+ *               $ref: '#/components/schemas/FarmerDetails'
+ *             culture_cycle:
+ *               type: object
+ *               nullable: true
+ *               additionalProperties: true
+ *
+ *     CreateHarvestRequest:
+ *       type: object
+ *       required: [culture_id, qr_code_id, preferred_harvest_time, harvest_method]
+ *       properties:
+ *         culture_id:
+ *           type: integer
+ *           description: Culture cycle ID. culture_cycle_id is also accepted by the API.
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           description: Active pond QR linked to the culture cycle pond.
+ *           example: 1
+ *         DOC:
+ *           type: integer
+ *           description: Optional; defaults from latest sampling when omitted.
+ *           example: 45
+ *         preferred_harvest_time:
+ *           type: string
+ *           format: date-time
+ *           example: 2026-05-24T08:00:00.000Z
+ *         expected_size:
+ *           type: string
+ *           description: Optional; defaults from latest sampling count_kg when omitted.
+ *           example: 35 - 38 Count/kg
+ *         expected_biomass:
+ *           type: number
+ *           format: double
+ *           description: Optional; defaults from latest sampling expected_biomass when omitted.
+ *           example: 1200
+ *         harvest_method:
+ *           type: string
+ *           enum: [Partial, Full]
+ *           example: Partial
+ *         species:
+ *           type: string
+ *           description: Optional; defaults from pond stocking species when omitted.
+ *           example: Vannamei
+ *         harvest_reason:
+ *           type: string
+ *           nullable: true
+ *           example: Market demand
+ *         stocking_date:
+ *           type: string
+ *           format: date
+ *           description: Optional; defaults from pond stocking date when omitted.
+ *           example: 2026-04-10
+ *
+ *     UpdateHarvestRequest:
+ *       type: object
+ *       description: Partial update body. Farm, pond, and farmer are still derived from culture_id.
+ *       properties:
+ *         culture_id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         DOC:
+ *           type: integer
+ *           example: 45
+ *         preferred_harvest_time:
+ *           type: string
+ *           format: date-time
+ *           example: 2026-05-24T08:00:00.000Z
+ *         expected_size:
+ *           type: string
+ *           example: 35 - 38 Count/kg
+ *         expected_biomass:
+ *           type: number
+ *           format: double
+ *           example: 1200
+ *         harvest_method:
+ *           type: string
+ *           enum: [Partial, Full]
+ *           example: Full
+ *         species:
+ *           type: string
+ *           example: Vannamei
+ *         harvest_reason:
+ *           type: string
+ *           nullable: true
+ *           example: Manual correction
+ *         stocking_date:
+ *           type: string
+ *           format: date
+ *           example: 2026-04-10
+ *         trader_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *
+ *     UpdateHarvestBookingRequest:
+ *       type: object
+ *       required: [trader_id]
+ *       properties:
+ *         booking_status:
+ *           type: string
+ *           enum: [active, booked]
+ *           default: booked
+ *           example: booked
+ *         trader_id:
+ *           type: integer
+ *           nullable: true
+ *           description: Required when booking_status is booked.
+ *           example: 1
+ *
+ *     HarvestResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Harvest record fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/Harvest'
+ *
+ *     HarvestDetailResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Harvest record fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/HarvestDetail'
+ *
+ *     HarvestListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Harvest records fetched successfully
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Harvest'
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1948,6 +2234,8 @@
  *     description: Aquaculture farmer profile details APIs
  *   - name: Sampling
  *     description: Aquaculture sampling APIs
+ *   - name: Harvest
+ *     description: Aquaculture harvest request and trader booking APIs
  */
 
 /**
@@ -5868,6 +6156,263 @@ export {};
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/harvest:
+ *   post:
+ *     summary: Create a harvest request
+ *     description: >
+ *       Creates a harvest request for a culture cycle. The request does not accept trader_id;
+ *       trader assignment is handled by the booking patch API. Farm, pond, and farmer details
+ *       are derived from culture_cycles. A sampling record must already exist for the culture cycle.
+ *     tags: [Harvest]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateHarvestRequest'
+ *     responses:
+ *       201:
+ *         description: Harvest record created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestResponse'
+ *       400:
+ *         description: Validation error, inactive culture cycle, invalid QR, or sampling not completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Culture cycle, pond, QR code, or related record not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   get:
+ *     summary: List harvest requests
+ *     tags: [Harvest]
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: Harvest records not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *
+ * /api/aquaculture/harvest/farm/{farm_id}:
+ *   get:
+ *     summary: Get harvest requests by farm ID
+ *     description: Filters harvest records through culture_cycles.farm_id.
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: farm_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: No harvest records found for this farm
+ *
+ * /api/aquaculture/harvest/pond/{pond_id}:
+ *   get:
+ *     summary: Get harvest requests by pond ID
+ *     description: Filters harvest records through culture_cycles.pond_id.
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: pond_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: No harvest records found for this pond
+ *
+ * /api/aquaculture/harvest/qrcode/{qr_code_id}:
+ *   get:
+ *     summary: Get harvest requests by aquaculture QR ID
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: qr_code_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: No harvest records found for this QR code
+ *
+ * /api/aquaculture/harvest/qr-code/{qr_code}:
+ *   get:
+ *     summary: Get harvest requests by aquaculture QR code string
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: qr_code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: AQR-000001
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: No harvest records found for this QR code
+ *
+ * /api/aquaculture/harvest/trader/{trader_id}:
+ *   get:
+ *     summary: Get harvest requests by trader ID
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: No harvest records found for this trader
+ *
+ * /api/aquaculture/harvest/{id}:
+ *   get:
+ *     summary: Get harvest request by ID
+ *     description: >
+ *       Returns the harvest record with sampling details for the culture cycle,
+ *       pond stocking, aquaculture image uploads, farmer detail, and culture cycle details.
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Harvest record ID
+ *     responses:
+ *       200:
+ *         description: Harvest record fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestDetailResponse'
+ *       404:
+ *         description: Harvest record not found
+ *   put:
+ *     summary: Update harvest request by ID
+ *     description: Updates harvest request fields. Sampling must still exist for the culture cycle.
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Harvest record ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateHarvestRequest'
+ *     responses:
+ *       200:
+ *         description: Harvest record updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestResponse'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Harvest record or trader not found
+ *   delete:
+ *     summary: Delete harvest request by ID
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Harvest record ID
+ *     responses:
+ *       200:
+ *         description: Harvest record deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMessage'
+ *       404:
+ *         description: Harvest record not found
+ *
+ * /api/aquaculture/harvest/{id}/booking:
+ *   patch:
+ *     summary: Update harvest booking status and trader assignment
+ *     description: Sets booking_status to booked by default and assigns trader_id. trader_id is required when status is booked.
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Harvest record ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateHarvestBookingRequest'
+ *     responses:
+ *       200:
+ *         description: Harvest booking status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestResponse'
+ *       400:
+ *         description: Invalid booking status or missing trader_id
+ *       404:
+ *         description: Harvest record or trader not found
  */
 
 	/**
