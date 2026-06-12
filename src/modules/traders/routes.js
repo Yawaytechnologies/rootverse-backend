@@ -1,10 +1,10 @@
 import express from "express";
-import { requireRole } from "../../shared/middlewares/auth.middleware.js";
 import upload from "../../shared/middlewares/upload.js";
 import {
   createTraderController,
   loginTraderController,
   getMeController,
+  getTraderDetailController,
   listTradersController,
   updateTraderStatusController,
   createQualityCheckerController,
@@ -20,8 +20,6 @@ import {
 
 const router = express.Router();
 
-const ADMIN = requireRole("ADMIN", "SUPER_ADMIN");
-const TRADER = requireRole("TRADER_ADMIN");
 const traderSignupUpload = upload.fields([
   { name: "profile_image", maxCount: 1 },
   { name: "profileImage", maxCount: 1 },
@@ -120,8 +118,11 @@ const traderSignupUpload = upload.fields([
  *           example: "9876543210"
  *     TraderTeamQualityCheckerRequest:
  *       type: object
- *       required: [checker_name, checker_email, checker_phone]
+ *       required: [trader_id, checker_name, checker_email, checker_phone]
  *       properties:
+ *         trader_id:
+ *           type: integer
+ *           example: 8
  *         checker_name:
  *           type: string
  *         checker_email:
@@ -136,8 +137,11 @@ const traderSignupUpload = upload.fields([
  *           type: boolean
  *     TraderTeamCratePackerRequest:
  *       type: object
- *       required: [name, phone, address, email, date_of_birth]
+ *       required: [trader_id, name, phone, address, email, date_of_birth]
  *       properties:
+ *         trader_id:
+ *           type: integer
+ *           example: 8
  *         name:
  *           type: string
  *         phone:
@@ -155,8 +159,11 @@ const traderSignupUpload = upload.fields([
  *           enum: [active, inactive]
  *     TraderTeamTransportOperatorRequest:
  *       type: object
- *       required: [full_name, email, mobile, transport_id, vehicle_no]
+ *       required: [trader_id, full_name, email, mobile, transport_id, vehicle_no]
  *       properties:
+ *         trader_id:
+ *           type: integer
+ *           example: 8
  *         operator_rv_id:
  *           type: string
  *         full_name:
@@ -177,8 +184,11 @@ const traderSignupUpload = upload.fields([
  *           type: boolean
  *     TraderCrateStatusRequest:
  *       type: object
- *       required: [status]
+ *       required: [trader_id, status]
  *       properties:
+ *         trader_id:
+ *           type: integer
+ *           example: 8
  *         status:
  *           type: string
  *           enum: [RECEIVED_AT_COLLECTION_CENTRE, SCHEDULED_FOR_DISPATCH, IN_TRANSIT, DELIVERED, HOLD, CANCELLED]
@@ -216,8 +226,6 @@ const traderSignupUpload = upload.fields([
  *   get:
  *     summary: List trader organizations
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -232,7 +240,7 @@ const traderSignupUpload = upload.fields([
  *         description: Trader list
  */
 router.post("/", traderSignupUpload, createTraderController);
-router.get("/", ADMIN, listTradersController);
+router.get("/", listTradersController);
 
 /**
  * @swagger
@@ -240,8 +248,6 @@ router.get("/", ADMIN, listTradersController);
  *   patch:
  *     summary: Approve or deactivate a trader organization
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: traderId
@@ -266,7 +272,7 @@ router.get("/", ADMIN, listTradersController);
  *       404:
  *         description: Trader not found
  */
-router.patch("/:traderId/status", ADMIN, updateTraderStatusController);
+router.patch("/:traderId/status", updateTraderStatusController);
 
 /**
  * @swagger
@@ -292,10 +298,15 @@ router.post("/login", loginTraderController);
  * @swagger
  * /api/traders/me:
  *   get:
- *     summary: Get logged-in trader profile
+ *     summary: Get trader profile by trader_id
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 8
  *     responses:
  *       200:
  *         description: Trader profile
@@ -303,23 +314,26 @@ router.post("/login", loginTraderController);
  *   get:
  *     summary: Trader dashboard counts
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 8
  *     responses:
  *       200:
  *         description: Team counts, progress counts, and crate status summary
  */
-router.get("/me", TRADER, getMeController);
-router.get("/dashboard", TRADER, getDashboardController);
+router.get("/me", getMeController);
+router.get("/dashboard", getDashboardController);
 
 /**
  * @swagger
  * /api/traders/quality-checkers:
  *   post:
- *     summary: Create quality checker under logged-in trader
+ *     summary: Create quality checker under a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -330,25 +344,28 @@ router.get("/dashboard", TRADER, getDashboardController);
  *       201:
  *         description: Quality checker created
  *   get:
- *     summary: List quality checkers for logged-in trader
+ *     summary: List quality checkers for a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 8
  *     responses:
  *       200:
  *         description: Quality checker list
  */
-router.post("/quality-checkers", TRADER, createQualityCheckerController);
-router.get("/quality-checkers", TRADER, listQualityCheckersController);
+router.post("/quality-checkers", createQualityCheckerController);
+router.get("/quality-checkers", listQualityCheckersController);
 
 /**
  * @swagger
  * /api/traders/crate-packers:
  *   post:
- *     summary: Create crate packer under logged-in trader
+ *     summary: Create crate packer under a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -359,25 +376,28 @@ router.get("/quality-checkers", TRADER, listQualityCheckersController);
  *       201:
  *         description: Crate packer created
  *   get:
- *     summary: List crate packers for logged-in trader
+ *     summary: List crate packers for a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 8
  *     responses:
  *       200:
  *         description: Crate packer list
  */
-router.post("/crate-packers", TRADER, createCratePackerController);
-router.get("/crate-packers", TRADER, listCratePackersController);
+router.post("/crate-packers", createCratePackerController);
+router.get("/crate-packers", listCratePackersController);
 
 /**
  * @swagger
  * /api/traders/transport-operators:
  *   post:
- *     summary: Create transport operator under logged-in trader
+ *     summary: Create transport operator under a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -388,26 +408,35 @@ router.get("/crate-packers", TRADER, listCratePackersController);
  *       201:
  *         description: Transport operator created
  *   get:
- *     summary: List transport operators for logged-in trader
+ *     summary: List transport operators for a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 8
  *     responses:
  *       200:
  *         description: Transport operator list
  */
-router.post("/transport-operators", TRADER, createTransportOperatorController);
-router.get("/transport-operators", TRADER, listTransportOperatorsController);
+router.post("/transport-operators", createTransportOperatorController);
+router.get("/transport-operators", listTransportOperatorsController);
 
 /**
  * @swagger
  * /api/traders/crates:
  *   get:
- *     summary: List crates linked to logged-in trader
+ *     summary: List crates linked to a trader
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: trader_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 8
  *       - in: query
  *         name: status
  *         schema:
@@ -428,8 +457,6 @@ router.get("/transport-operators", TRADER, listTransportOperatorsController);
  *   patch:
  *     summary: Update trader crate progress status
  *     tags: [Traders]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: crateId
@@ -448,7 +475,27 @@ router.get("/transport-operators", TRADER, listTransportOperatorsController);
  *       404:
  *         description: Crate not found for this trader
  */
-router.get("/crates", TRADER, listCratesController);
-router.patch("/crates/:crateId/status", TRADER, updateCrateProgressController);
+router.get("/crates", listCratesController);
+router.patch("/crates/:crateId/status", updateCrateProgressController);
+
+/**
+ * @swagger
+ * /api/traders/{traderId}:
+ *   get:
+ *     summary: Get trader detail with trader-created team members
+ *     tags: [Traders]
+ *     parameters:
+ *       - in: path
+ *         name: traderId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Trader profile with quality checkers, crate packers, and transport operators
+ *       404:
+ *         description: Trader not found
+ */
+router.get("/:traderId", getTraderDetailController);
 
 export default router;

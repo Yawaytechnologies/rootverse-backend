@@ -119,7 +119,30 @@ export async function loginTrader(payload) {
   };
 }
 
-export const getTraderProfile = (user) => repo.findTraderById(user.trader_id || user.id);
+const validateTraderId = (traderId) => {
+  const id = Number(traderId);
+  if (!Number.isInteger(id) || id <= 0) throw new Error("trader_id is required");
+  return id;
+};
+
+export const getTraderProfile = async (traderId) => {
+  return getTraderDetail(traderId);
+};
+
+export const getTraderDetail = async (traderId) => {
+  const detail = await repo.getTraderDetail(validateTraderId(traderId));
+  if (!detail) throw new Error("Trader not found");
+  return detail;
+};
+
+const getTraderTeamDetails = async (traderId) => {
+  const detail = await getTraderDetail(traderId);
+  return {
+    quality_checkers: detail.quality_checkers,
+    crate_packers: detail.crate_packers,
+    transport_operators: detail.transport_operators,
+  };
+};
 
 export const listTraders = (query) => repo.listTraders(query);
 
@@ -143,6 +166,7 @@ export async function updateTraderStatus(traderId, payload) {
 }
 
 export async function createQualityChecker(traderId, payload) {
+  traderId = validateTraderId(traderId);
   requireFields(payload, ["checker_name", "checker_email", "checker_phone"]);
 
   const [checker] = await repo.insertQualityChecker({
@@ -158,9 +182,8 @@ export async function createQualityChecker(traderId, payload) {
   return checker;
 }
 
-export const listQualityCheckers = (traderId) => repo.listQualityCheckersByTrader(traderId);
-
 export async function createCratePacker(traderId, payload) {
+  traderId = validateTraderId(traderId);
   requireFields(payload, ["name", "phone", "address", "email", "date_of_birth"]);
 
   const [packer] = await repo.insertCratePacker({
@@ -177,9 +200,8 @@ export async function createCratePacker(traderId, payload) {
   return packer;
 }
 
-export const listCratePackers = (traderId) => repo.listCratePackersByTrader(traderId);
-
 export async function createTransportOperator(traderId, payload) {
+  traderId = validateTraderId(traderId);
   requireFields(payload, ["full_name", "email", "mobile", "transport_id", "vehicle_no"]);
 
   const [operator] = await repo.insertTransportOperator({
@@ -198,13 +220,32 @@ export async function createTransportOperator(traderId, payload) {
   return operator;
 }
 
-export const listTransportOperators = (traderId) => repo.listTransportOperatorsByTrader(traderId);
+export const listQualityCheckers = (traderId) => getTraderTeamDetails(traderId);
 
-export const getDashboard = (traderId) => repo.getDashboardCounts(traderId);
+export const listCratePackers = (traderId) => getTraderTeamDetails(traderId);
 
-export const listCrates = (traderId, query) => repo.listCratesByTrader(traderId, query);
+export const listTransportOperators = (traderId) => getTraderTeamDetails(traderId);
+
+export const getDashboard = async (traderId) => {
+  const counts = await repo.getDashboardCounts(validateTraderId(traderId));
+  const teams = await getTraderTeamDetails(traderId);
+
+  return {
+    ...counts,
+    quality_checkers_count: counts.quality_checkers,
+    crate_packers_count: counts.crate_packers,
+    transport_operators_count: counts.transport_operators,
+    ...teams,
+  };
+};
+
+export const listCrates = async (traderId, query) => ({
+  crates: await repo.listCratesByTrader(validateTraderId(traderId), query),
+  ...(await getTraderTeamDetails(traderId)),
+});
 
 export async function updateCrateProgress(traderId, crateId, payload, user) {
+  traderId = validateTraderId(traderId);
   requireFields(payload, ["status"]);
   if (!CRATE_STATUSES.includes(payload.status)) {
     throw new Error(`status must be one of: ${CRATE_STATUSES.join(", ")}`);
@@ -226,8 +267,8 @@ export async function updateCrateProgress(traderId, crateId, payload, user) {
     entity_id: String(crateId),
     from_status: crate.custody_status || null,
     to_status: payload.status,
-    actor_role: user.role,
-    actor_id: String(user.id),
+    actor_role: user?.role || "TRADER_ADMIN",
+    actor_id: String(user?.id || traderId),
     remarks: payload.remarks || null,
   });
 
