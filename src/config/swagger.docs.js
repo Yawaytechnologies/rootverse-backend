@@ -1907,7 +1907,12 @@
  *         user_id:
  *           type: integer
  *           nullable: true
- *           description: Derived from culture_cycles.user_id.
+ *           description: Stored on aquaculture_harvests.user_id and references rootverse_users.id. Derived from culture_cycles.user_id.
+ *           example: 1
+ *         culture_user_id:
+ *           type: integer
+ *           nullable: true
+ *           description: User ID currently linked to the culture cycle.
  *           example: 1
  *         farm_id:
  *           type: integer
@@ -2044,6 +2049,10 @@
  *           type: integer
  *           description: Culture cycle ID. culture_cycle_id is also accepted by the API.
  *           example: 1
+ *         user_id:
+ *           type: integer
+ *           description: Optional rootverse_users.id. If supplied, it must match the selected culture cycle user_id.
+ *           example: 1
  *         qr_code_id:
  *           type: integer
  *           description: Active pond QR linked to the culture cycle pond.
@@ -2089,6 +2098,10 @@
  *       properties:
  *         culture_id:
  *           type: integer
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           description: Optional rootverse_users.id. If supplied, it must match the selected culture cycle user_id.
  *           example: 1
  *         qr_code_id:
  *           type: integer
@@ -6312,6 +6325,28 @@ export {};
  *               $ref: '#/components/schemas/HarvestListResponse'
  *       404:
  *         description: No harvest records found for this trader
+ *
+ * /api/aquaculture/harvest/user/{user_id}:
+ *   get:
+ *     summary: Get harvest requests by rootverse user ID
+ *     description: Filters harvest records by aquaculture_harvests.user_id, which references rootverse_users.id.
+ *     tags: [Harvest]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: rootverse_users.id
+ *     responses:
+ *       200:
+ *         description: Harvest records fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HarvestListResponse'
+ *       404:
+ *         description: No harvest records found for this user
  *
  * /api/aquaculture/harvest/{id}:
  *   get:

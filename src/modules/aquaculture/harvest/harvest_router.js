@@ -9,6 +9,7 @@ import {
   getHarvestByQrCodeController,
   getHarvestByQrCodeIdController,
   getHarvestByTraderIdController,
+  getHarvestByUserIdController,
   updateHarvestBookingStatusController,
   updateHarvestController,
 } from "./harvest_controller.js";
@@ -22,6 +23,7 @@ router.get("/pond/:pond_id", getHarvestByPondIdController);
 router.get("/qrcode/:qr_code_id", getHarvestByQrCodeIdController);
 router.get("/qr-code/:qr_code", getHarvestByQrCodeController);
 router.get("/trader/:trader_id", getHarvestByTraderIdController);
+router.get("/user/:user_id", getHarvestByUserIdController);
 router.get("/:id", getHarvestByIdController);
 router.patch("/:id/booking", updateHarvestBookingStatusController);
 router.put("/:id", updateHarvestController);
