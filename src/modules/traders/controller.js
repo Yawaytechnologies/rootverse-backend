@@ -1,12 +1,19 @@
 import * as service from "./service.js";
 
-const traderIdFromRequest = (req) =>
-  req.params.traderId ||
-  req.params.trader_id ||
-  req.query.trader_id ||
-  req.query.traderId ||
-  req.body?.trader_id ||
-  req.body?.traderId;
+const traderIdFromRequest = (req) => {
+  if (req.user?.role === "TRADER_ADMIN") {
+    return req.user.trader_id || req.user.id;
+  }
+
+  return (
+    req.params.traderId ||
+    req.params.trader_id ||
+    req.query.trader_id ||
+    req.query.traderId ||
+    req.body?.trader_id ||
+    req.body?.traderId
+  );
+};
 
 const parsePayload = (body = {}) => {
   let payload = { ...body };
