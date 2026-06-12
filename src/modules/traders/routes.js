@@ -1,4 +1,5 @@
 import express from "express";
+import { requireRole } from "../../shared/middlewares/auth.middleware.js";
 import upload from "../../shared/middlewares/upload.js";
 import {
   createTraderController,
@@ -20,6 +21,8 @@ import {
 
 const router = express.Router();
 
+const ADMIN = requireRole("ADMIN", "SUPER_ADMIN");
+const TRADER_ACCESS = requireRole("ADMIN", "SUPER_ADMIN", "TRADER_ADMIN");
 const traderSignupUpload = upload.fields([
   { name: "profile_image", maxCount: 1 },
   { name: "profileImage", maxCount: 1 },
@@ -118,10 +121,11 @@ const traderSignupUpload = upload.fields([
  *           example: "9876543210"
  *     TraderTeamQualityCheckerRequest:
  *       type: object
- *       required: [trader_id, checker_name, checker_email, checker_phone]
+ *       required: [checker_name, checker_email, checker_phone]
  *       properties:
  *         trader_id:
  *           type: integer
+ *           description: Required when called with ADMIN or SUPER_ADMIN token. Ignored for TRADER_ADMIN token.
  *           example: 8
  *         checker_name:
  *           type: string
@@ -137,10 +141,11 @@ const traderSignupUpload = upload.fields([
  *           type: boolean
  *     TraderTeamCratePackerRequest:
  *       type: object
- *       required: [trader_id, name, phone, address, email, date_of_birth]
+ *       required: [name, phone, address, email, date_of_birth]
  *       properties:
  *         trader_id:
  *           type: integer
+ *           description: Required when called with ADMIN or SUPER_ADMIN token. Ignored for TRADER_ADMIN token.
  *           example: 8
  *         name:
  *           type: string
@@ -159,10 +164,11 @@ const traderSignupUpload = upload.fields([
  *           enum: [active, inactive]
  *     TraderTeamTransportOperatorRequest:
  *       type: object
- *       required: [trader_id, full_name, email, mobile, transport_id, vehicle_no]
+ *       required: [full_name, email, mobile, transport_id, vehicle_no]
  *       properties:
  *         trader_id:
  *           type: integer
+ *           description: Required when called with ADMIN or SUPER_ADMIN token. Ignored for TRADER_ADMIN token.
  *           example: 8
  *         operator_rv_id:
  *           type: string
@@ -184,10 +190,11 @@ const traderSignupUpload = upload.fields([
  *           type: boolean
  *     TraderCrateStatusRequest:
  *       type: object
- *       required: [trader_id, status]
+ *       required: [status]
  *       properties:
  *         trader_id:
  *           type: integer
+ *           description: Required when called with ADMIN or SUPER_ADMIN token. Ignored for TRADER_ADMIN token.
  *           example: 8
  *         status:
  *           type: string
@@ -226,6 +233,8 @@ const traderSignupUpload = upload.fields([
  *   get:
  *     summary: List trader organizations
  *     tags: [Traders]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -240,7 +249,7 @@ const traderSignupUpload = upload.fields([
  *         description: Trader list
  */
 router.post("/", traderSignupUpload, createTraderController);
-router.get("/", listTradersController);
+router.get("/", ADMIN, listTradersController);
 
 /**
  * @swagger
@@ -248,6 +257,8 @@ router.get("/", listTradersController);
  *   patch:
  *     summary: Approve or deactivate a trader organization
  *     tags: [Traders]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: traderId
@@ -272,7 +283,7 @@ router.get("/", listTradersController);
  *       404:
  *         description: Trader not found
  */
-router.patch("/:traderId/status", updateTraderStatusController);
+router.patch("/:traderId/status", ADMIN, updateTraderStatusController);
 
 /**
  * @swagger
@@ -300,10 +311,14 @@ router.post("/login", loginTraderController);
  *   get:
  *     summary: Get trader profile by trader_id
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens use the logged-in trader automatically. ADMIN and SUPER_ADMIN tokens must pass trader_id.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: trader_id
- *         required: true
+ *         required: false
+ *         description: Required for ADMIN and SUPER_ADMIN tokens. Optional for TRADER_ADMIN tokens.
  *         schema:
  *           type: integer
  *           example: 8
@@ -314,10 +329,14 @@ router.post("/login", loginTraderController);
  *   get:
  *     summary: Trader dashboard counts
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens use the logged-in trader automatically. ADMIN and SUPER_ADMIN tokens must pass trader_id.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: trader_id
- *         required: true
+ *         required: false
+ *         description: Required for ADMIN and SUPER_ADMIN tokens. Optional for TRADER_ADMIN tokens.
  *         schema:
  *           type: integer
  *           example: 8
@@ -325,8 +344,8 @@ router.post("/login", loginTraderController);
  *       200:
  *         description: Team counts, progress counts, and crate status summary
  */
-router.get("/me", getMeController);
-router.get("/dashboard", getDashboardController);
+router.get("/me", TRADER_ACCESS, getMeController);
+router.get("/dashboard", TRADER_ACCESS, getDashboardController);
 
 /**
  * @swagger
@@ -334,6 +353,9 @@ router.get("/dashboard", getDashboardController);
  *   post:
  *     summary: Create quality checker under a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens create under the logged-in trader. ADMIN and SUPER_ADMIN tokens must include trader_id in the body.
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -346,10 +368,14 @@ router.get("/dashboard", getDashboardController);
  *   get:
  *     summary: List quality checkers for a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens use the logged-in trader automatically. ADMIN and SUPER_ADMIN tokens must pass trader_id.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: trader_id
- *         required: true
+ *         required: false
+ *         description: Required for ADMIN and SUPER_ADMIN tokens. Optional for TRADER_ADMIN tokens.
  *         schema:
  *           type: integer
  *           example: 8
@@ -357,8 +383,8 @@ router.get("/dashboard", getDashboardController);
  *       200:
  *         description: Quality checker list
  */
-router.post("/quality-checkers", createQualityCheckerController);
-router.get("/quality-checkers", listQualityCheckersController);
+router.post("/quality-checkers", TRADER_ACCESS, createQualityCheckerController);
+router.get("/quality-checkers", TRADER_ACCESS, listQualityCheckersController);
 
 /**
  * @swagger
@@ -366,6 +392,9 @@ router.get("/quality-checkers", listQualityCheckersController);
  *   post:
  *     summary: Create crate packer under a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens create under the logged-in trader. ADMIN and SUPER_ADMIN tokens must include trader_id in the body.
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -378,10 +407,14 @@ router.get("/quality-checkers", listQualityCheckersController);
  *   get:
  *     summary: List crate packers for a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens use the logged-in trader automatically. ADMIN and SUPER_ADMIN tokens must pass trader_id.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: trader_id
- *         required: true
+ *         required: false
+ *         description: Required for ADMIN and SUPER_ADMIN tokens. Optional for TRADER_ADMIN tokens.
  *         schema:
  *           type: integer
  *           example: 8
@@ -389,8 +422,8 @@ router.get("/quality-checkers", listQualityCheckersController);
  *       200:
  *         description: Crate packer list
  */
-router.post("/crate-packers", createCratePackerController);
-router.get("/crate-packers", listCratePackersController);
+router.post("/crate-packers", TRADER_ACCESS, createCratePackerController);
+router.get("/crate-packers", TRADER_ACCESS, listCratePackersController);
 
 /**
  * @swagger
@@ -398,6 +431,9 @@ router.get("/crate-packers", listCratePackersController);
  *   post:
  *     summary: Create transport operator under a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens create under the logged-in trader. ADMIN and SUPER_ADMIN tokens must include trader_id in the body.
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -410,10 +446,14 @@ router.get("/crate-packers", listCratePackersController);
  *   get:
  *     summary: List transport operators for a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens use the logged-in trader automatically. ADMIN and SUPER_ADMIN tokens must pass trader_id.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: trader_id
- *         required: true
+ *         required: false
+ *         description: Required for ADMIN and SUPER_ADMIN tokens. Optional for TRADER_ADMIN tokens.
  *         schema:
  *           type: integer
  *           example: 8
@@ -421,8 +461,8 @@ router.get("/crate-packers", listCratePackersController);
  *       200:
  *         description: Transport operator list
  */
-router.post("/transport-operators", createTransportOperatorController);
-router.get("/transport-operators", listTransportOperatorsController);
+router.post("/transport-operators", TRADER_ACCESS, createTransportOperatorController);
+router.get("/transport-operators", TRADER_ACCESS, listTransportOperatorsController);
 
 /**
  * @swagger
@@ -430,10 +470,14 @@ router.get("/transport-operators", listTransportOperatorsController);
  *   get:
  *     summary: List crates linked to a trader
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens use the logged-in trader automatically. ADMIN and SUPER_ADMIN tokens must pass trader_id.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: trader_id
- *         required: true
+ *         required: false
+ *         description: Required for ADMIN and SUPER_ADMIN tokens. Optional for TRADER_ADMIN tokens.
  *         schema:
  *           type: integer
  *           example: 8
@@ -457,6 +501,9 @@ router.get("/transport-operators", listTransportOperatorsController);
  *   patch:
  *     summary: Update trader crate progress status
  *     tags: [Traders]
+ *     description: TRADER_ADMIN tokens update crates for the logged-in trader. ADMIN and SUPER_ADMIN tokens must include trader_id in the body.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: crateId
@@ -475,8 +522,8 @@ router.get("/transport-operators", listTransportOperatorsController);
  *       404:
  *         description: Crate not found for this trader
  */
-router.get("/crates", listCratesController);
-router.patch("/crates/:crateId/status", updateCrateProgressController);
+router.get("/crates", TRADER_ACCESS, listCratesController);
+router.patch("/crates/:crateId/status", TRADER_ACCESS, updateCrateProgressController);
 
 /**
  * @swagger
@@ -484,6 +531,9 @@ router.patch("/crates/:crateId/status", updateCrateProgressController);
  *   get:
  *     summary: Get trader detail with trader-created team members
  *     tags: [Traders]
+ *     description: ADMIN and SUPER_ADMIN tokens can access the path traderId. TRADER_ADMIN tokens always resolve to the logged-in trader.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: traderId
@@ -496,6 +546,6 @@ router.patch("/crates/:crateId/status", updateCrateProgressController);
  *       404:
  *         description: Trader not found
  */
-router.get("/:traderId", getTraderDetailController);
+router.get("/:traderId", TRADER_ACCESS, getTraderDetailController);
 
 export default router;
