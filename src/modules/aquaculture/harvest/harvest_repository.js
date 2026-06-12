@@ -7,14 +7,15 @@ const getExecutor = (trx) => trx || db;
 const withHarvestDetails = (query) => {
   return query
     .leftJoin("culture_cycles as cc", `${TABLE}.culture_id`, "cc.id")
-    .leftJoin("rootverse_users as ru", "cc.user_id", "ru.id")
+    .leftJoin("rootverse_users as ru", `${TABLE}.user_id`, "ru.id")
     .leftJoin("farms as f", "cc.farm_id", "f.id")
     .leftJoin("ponds as p", "cc.pond_id", "p.id")
     .leftJoin("aquaculture_qrs as aq", `${TABLE}.qr_code_id`, "aq.id")
     .leftJoin("traders as t", `${TABLE}.trader_id`, "t.id")
     .select(
       `${TABLE}.*`,
-      "cc.user_id",
+      `${TABLE}.user_id`,
+      "cc.user_id as culture_user_id",
       "cc.farm_id",
       "cc.pond_id",
       "ru.username as farmer_name",
@@ -74,6 +75,12 @@ export const getHarvestRecordsByQrCode = async (qrCode, trx) => {
 export const getHarvestRecordsByTraderId = async (traderId, trx) => {
   return withHarvestDetails(getExecutor(trx)(TABLE))
     .where(`${TABLE}.trader_id`, traderId)
+    .orderBy(`${TABLE}.created_at`, "desc");
+};
+
+export const getHarvestRecordsByUserId = async (userId, trx) => {
+  return withHarvestDetails(getExecutor(trx)(TABLE))
+    .where(`${TABLE}.user_id`, userId)
     .orderBy(`${TABLE}.created_at`, "desc");
 };
 

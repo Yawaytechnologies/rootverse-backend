@@ -53,12 +53,30 @@ export const updateTraderStatus = async (id, isActive) => {
   return rows[0] || null;
 };
 
-export const listTraders = ({ page = 1, page_size = 20 } = {}) =>
-  db("traders")
+export const listTraders = async ({ page = 1, page_size = 20 } = {}) => {
+  const traders = await db("traders")
     .select(TRADER_FIELDS)
     .orderBy("created_at", "desc")
     .limit(Number(page_size))
     .offset((Number(page) - 1) * Number(page_size));
+
+  return Promise.all(
+    traders.map(async (trader) => {
+      const [qualityCheckers, cratePackers, transportOperators] = await Promise.all([
+        listQualityCheckersByTrader(trader.id),
+        listCratePackersByTrader(trader.id),
+        listTransportOperatorsByTrader(trader.id),
+      ]);
+
+      return {
+        ...trader,
+        quality_checkers: qualityCheckers,
+        crate_packers: cratePackers,
+        transport_operators: transportOperators,
+      };
+    })
+  );
+};
 
 export const insertQualityChecker = (payload) =>
   db("quality_checker").insert(payload).returning("*");
@@ -104,10 +122,30 @@ export const listTransportOperatorsByTrader = (traderId) =>
       "route_name",
       "vehicle_type",
       "is_active",
-      "created_at"
+      "trader_id",
+      "created_at",
+      "updated_at"
     )
     .where({ trader_id: traderId })
     .orderBy("created_at", "desc");
+
+export const getTraderDetail = async (traderId) => {
+  const trader = await findTraderById(traderId);
+  if (!trader) return null;
+
+  const [qualityCheckers, cratePackers, transportOperators] = await Promise.all([
+    listQualityCheckersByTrader(traderId),
+    listCratePackersByTrader(traderId),
+    listTransportOperatorsByTrader(traderId),
+  ]);
+
+  return {
+    ...trader,
+    quality_checkers: qualityCheckers,
+    crate_packers: cratePackers,
+    transport_operators: transportOperators,
+  };
+};
 
 export const listCratesByTrader = (traderId, { status, page = 1, page_size = 20 } = {}) => {
   const q = db("crate_qrs").where({ trader_id: traderId });

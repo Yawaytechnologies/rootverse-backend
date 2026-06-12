@@ -8,6 +8,7 @@ import {
   getHarvestByQrCodeIdService,
   getHarvestByQrCodeService,
   getHarvestByTraderIdService,
+  getHarvestByUserIdService,
   updateHarvestBookingStatusService,
   updateHarvestService,
 } from "./harvest_service.js";
@@ -135,6 +136,21 @@ export const getHarvestByTraderIdController = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in controller while fetching harvest records by trader:", error);
+    return sendError(res, error);
+  }
+};
+
+export const getHarvestByUserIdController = async (req, res) => {
+  try {
+    const harvestRecords = await getHarvestByUserIdService(req.params.user_id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Harvest records fetched successfully",
+      data: harvestRecords,
+    });
+  } catch (error) {
+    console.error("Error in controller while fetching harvest records by user:", error);
     return sendError(res, error);
   }
 };

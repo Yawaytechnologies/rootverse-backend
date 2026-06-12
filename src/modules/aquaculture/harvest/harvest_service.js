@@ -11,6 +11,7 @@ import {
   getHarvestRecordsByQrCode,
   getHarvestRecordsByQrCodeId,
   getHarvestRecordsByTraderId,
+  getHarvestRecordsByUserId,
   getHarvestRelatedDetails,
   getLatestSamplingForHarvest,
   updateHarvestRecord,
@@ -200,6 +201,17 @@ const validateHarvestPrerequisites = (data, prerequisites) => {
   }
 };
 
+const validateRequestedUserMatchesCulture = (body, prerequisites) => {
+  if (body.user_id === undefined || body.user_id === null || body.user_id === "") {
+    return;
+  }
+
+  const requestedUserId = validateId(body.user_id, "user_id");
+  if (Number(prerequisites.culture_user_id) !== requestedUserId) {
+    throw createError("user_id must match the culture cycle user_id");
+  }
+};
+
 const hydrateHarvest = async (harvest, trx) => {
   if (!harvest) {
     return harvest;
@@ -221,6 +233,7 @@ export const createHarvestService = async (body) => {
     const prerequisites = await getHarvestPrerequisites(initialData, trx);
 
     validateHarvestPrerequisites(initialData, prerequisites);
+    validateRequestedUserMatchesCulture(body, prerequisites);
 
     const latestSampling = await getLatestSamplingForHarvest(initialData, trx);
     if (!latestSampling) {
@@ -233,6 +246,7 @@ export const createHarvestService = async (body) => {
     const created = await createHarvestRecord(
       {
         ...harvestData,
+        user_id: prerequisites.culture_user_id,
         trader_id: null,
         booking_status: "active",
       },
@@ -293,6 +307,12 @@ export const getHarvestByTraderIdService = async (traderId) => {
   return hydrateHarvestRecords(records);
 };
 
+export const getHarvestByUserIdService = async (userId) => {
+  const id = validateId(userId, "user_id");
+  const records = requireRecords(await getHarvestRecordsByUserId(id), "No harvest records found for this user");
+  return hydrateHarvestRecords(records);
+};
+
 export const updateHarvestService = async (id, body) => {
   const harvestId = validateId(id);
 
@@ -309,6 +329,7 @@ export const updateHarvestService = async (id, body) => {
     const prerequisites = await getHarvestPrerequisites(initialData, trx);
 
     validateHarvestPrerequisites(initialData, prerequisites);
+    validateRequestedUserMatchesCulture(body, prerequisites);
 
     const latestSampling = await getLatestSamplingForHarvest(initialData, trx);
     if (!latestSampling) {
@@ -317,6 +338,7 @@ export const updateHarvestService = async (id, body) => {
 
     const harvestData = applyDerivedHarvestFields(initialData, prerequisites, latestSampling);
     validateHarvestPayload(harvestData);
+    harvestData.user_id = prerequisites.culture_user_id;
 
     if (body.trader_id !== undefined && body.trader_id !== null && body.trader_id !== "") {
       const traderId = validateId(body.trader_id, "trader_id");
