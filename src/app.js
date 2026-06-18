@@ -32,6 +32,7 @@ import PondStocking from './modules/aquaculture/pondStocking/pondStocking_router
 import Sampling from './modules/aquaculture/sampling/sampling_router.js';
 import FarmerDetails from './modules/aquaculture/farmer_details/routes.js';
 import Harvest from './modules/aquaculture/harvest/harvest_router.js';
+import QualityInspection from './modules/aquaculture/qualityInspection/qualityInspection_router.js';
 import traderRoutes from './modules/traders/routes.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
@@ -100,6 +101,7 @@ app.use('/api/aquaculture/pond-stocking', PondStocking);
 app.use('/api/aquaculture/sampling', Sampling);
 app.use('/api/aquaculture/farmer-details', FarmerDetails);
 app.use('/api/aquaculture/harvest', Harvest);
+app.use('/api/aquaculture/quality-inspection', QualityInspection);
 app.use('/api/traders', traderRoutes);
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────

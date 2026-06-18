@@ -2192,6 +2192,355 @@
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/Harvest'
+ *
+ *     QualityInspectionPrefill:
+ *       type: object
+ *       properties:
+ *         pond_id:
+ *           type: integer
+ *           example: 1
+ *         pond_code:
+ *           type: string
+ *           example: POND-000205
+ *         pond_name:
+ *           type: string
+ *           example: Pond A
+ *         pond_qr_scan:
+ *           type: string
+ *           example: IN-TN-NA-P-2600001
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           example: 1
+ *         farm_code:
+ *           type: string
+ *           example: FARM-000101
+ *         farm_name:
+ *           type: string
+ *           example: Blue Water Farm
+ *         farm_address:
+ *           type: string
+ *           example: 12 Lake Road, Nagapattinam
+ *         farm_gate_latitude:
+ *           type: number
+ *           format: double
+ *           example: 10.763100
+ *         farm_gate_longitude:
+ *           type: number
+ *           format: double
+ *           example: 79.842900
+ *         pond_gps:
+ *           type: string
+ *           example: 10.7635,79.8431
+ *         culture_id:
+ *           type: integer
+ *           example: 1
+ *         culture_code:
+ *           type: string
+ *           example: IN-TN-KK-CC-00001
+ *         harvest_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         farmer:
+ *           type: object
+ *           properties:
+ *             user_id:
+ *               type: integer
+ *               example: 1
+ *             name:
+ *               type: string
+ *               example: Raj Kumar
+ *             owner_id:
+ *               type: string
+ *               example: RV-OWN-0001
+ *             mobile:
+ *               type: string
+ *               example: "9876543210"
+ *         trader:
+ *           type: object
+ *           properties:
+ *             trader_id:
+ *               type: integer
+ *               nullable: true
+ *               example: 1
+ *             trader_code:
+ *               type: string
+ *               nullable: true
+ *               example: TRD-0001
+ *             name:
+ *               type: string
+ *               nullable: true
+ *               example: Ocean Fresh Traders
+ *             mobile_number:
+ *               type: string
+ *               nullable: true
+ *               example: "9000000001"
+ *         latest_sampling:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             sampling_id:
+ *               type: integer
+ *               example: 1
+ *             sampling_date:
+ *               type: string
+ *               format: date
+ *               example: 2026-05-18
+ *             sample_count:
+ *               type: number
+ *               example: 50
+ *             sample_weight:
+ *               type: number
+ *               example: 600
+ *             abw_g:
+ *               type: number
+ *               example: 12
+ *             size_count_kg:
+ *               type: number
+ *               example: 83.33
+ *             expected_biomass:
+ *               type: number
+ *               example: 1200
+ *         inspector:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             quality_checker_id:
+ *               type: integer
+ *               example: 1
+ *             checker_code:
+ *               type: string
+ *               example: QC-0001
+ *             checker_name:
+ *               type: string
+ *               example: Sriram D
+ *             checker_phone:
+ *               type: string
+ *               example: "9876500000"
+ *             trader_id:
+ *               type: integer
+ *               nullable: true
+ *               example: 1
+ *
+ *     QualityInspection:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         qr_code_id:
+ *           type: integer
+ *           example: 1
+ *         farm_id:
+ *           type: integer
+ *           example: 1
+ *         pond_id:
+ *           type: integer
+ *           example: 1
+ *         culture_id:
+ *           type: integer
+ *           example: 1
+ *         harvest_id:
+ *           type: integer
+ *           example: 1
+ *         sampling_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         user_id:
+ *           type: integer
+ *           example: 1
+ *         quality_checker_id:
+ *           type: integer
+ *           example: 1
+ *         trader_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         pond_qr_scan:
+ *           type: string
+ *           example: IN-TN-NA-P-2600001
+ *         sample_count:
+ *           type: number
+ *           example: 50
+ *         sample_weight:
+ *           type: number
+ *           example: 600
+ *         abw_g:
+ *           type: number
+ *           description: Auto calculated as sample_weight / sample_count.
+ *           example: 12
+ *         size_count_kg:
+ *           type: number
+ *           description: Auto calculated as 1000 / ABW.
+ *           example: 83.33
+ *         expected_biomass:
+ *           type: number
+ *           description: Snapshot from latest sampling.
+ *           example: 1200
+ *         farm_address:
+ *           type: string
+ *           example: 12 Lake Road, Nagapattinam
+ *         farm_gate_latitude:
+ *           type: number
+ *           nullable: true
+ *           example: 10.763100
+ *         farm_gate_longitude:
+ *           type: number
+ *           nullable: true
+ *           example: 79.842900
+ *         pond_gps:
+ *           type: string
+ *           nullable: true
+ *           example: 10.7635,79.8431
+ *         admin_mobile_number:
+ *           type: string
+ *           nullable: true
+ *           example: "9000000001"
+ *         grade:
+ *           type: string
+ *           enum: [A, B, C, D]
+ *           example: A
+ *         disease_observation:
+ *           type: boolean
+ *           example: false
+ *         disease_notes:
+ *           type: string
+ *           nullable: true
+ *           example: No visible disease signs
+ *         shrimp_images:
+ *           type: array
+ *           description: Public URLs for uploaded shrimp image files.
+ *           items:
+ *             type: string
+ *           example: ["https://example.supabase.co/storage/v1/object/public/root_verse/aquaculture_quality_inspections/1/shrimp_images/image.jpg"]
+ *         watermark_metadata:
+ *           type: object
+ *           additionalProperties: true
+ *           description: Farm ID, pond ID, harvest ID, GPS, and UTC timestamp to watermark images.
+ *         inspection_latitude:
+ *           type: number
+ *           nullable: true
+ *           example: 10.763700
+ *         inspection_longitude:
+ *           type: number
+ *           nullable: true
+ *           example: 79.843500
+ *         inspected_at:
+ *           type: string
+ *           format: date-time
+ *           example: 2026-06-15T09:30:00.000Z
+ *         remarks:
+ *           type: string
+ *           nullable: true
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *         updated_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CreateQualityInspectionRequest:
+ *       type: object
+ *       required: [pond_qr_scan, harvest_id, quality_checker_id, grade, disease_observation]
+ *       properties:
+ *         pond_qr_scan:
+ *           type: string
+ *           description: Scanned pond aquaculture QR code. `qr_code` is also accepted.
+ *           example: IN-TN-NA-P-2600001
+ *         harvest_id:
+ *           type: integer
+ *           example: 1
+ *         quality_checker_id:
+ *           type: integer
+ *           description: Active quality_checker.id. `checker_code` is also accepted instead.
+ *           example: 1
+ *         checker_code:
+ *           type: string
+ *           example: QC-0001
+ *         sample_count:
+ *           type: number
+ *           description: Optional; defaults from latest sampling when omitted.
+ *           example: 50
+ *         sample_weight:
+ *           type: number
+ *           description: Optional; defaults from latest sampling when omitted.
+ *           example: 600
+ *         grade:
+ *           type: string
+ *           enum: [A, B, C, D]
+ *           example: A
+ *         disease_observation:
+ *           oneOf:
+ *             - type: boolean
+ *             - type: string
+ *               enum: [Yes, No, true, false]
+ *           example: false
+ *         disease_notes:
+ *           type: string
+ *           nullable: true
+ *           example: No visible disease signs
+ *         shrimp_images:
+ *           type: array
+ *           description: Shrimp image file(s). Upload actual files; URL/string values are not accepted.
+ *           items:
+ *             type: string
+ *             format: binary
+ *         inspection_latitude:
+ *           type: number
+ *           example: 10.763700
+ *         inspection_longitude:
+ *           type: number
+ *           example: 79.843500
+ *         inspected_at:
+ *           type: string
+ *           format: date-time
+ *           description: Optional; defaults to server time.
+ *           example: 2026-06-15T09:30:00.000Z
+ *         remarks:
+ *           type: string
+ *           nullable: true
+ *
+ *     QualityInspectionPrefillResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Quality inspection prefill fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/QualityInspectionPrefill'
+ *
+ *     QualityInspectionResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Quality inspection fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/QualityInspection'
+ *
+ *     QualityInspectionListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Quality inspections fetched successfully
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/QualityInspection'
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2249,6 +2598,8 @@
  *     description: Aquaculture sampling APIs
  *   - name: Harvest
  *     description: Aquaculture harvest request and trader booking APIs
+ *   - name: Quality Inspection
+ *     description: Aquaculture quality inspection scan prefill and inspection APIs
  */
 
 /**
@@ -6448,6 +6799,180 @@ export {};
  *         description: Invalid booking status or missing trader_id
  *       404:
  *         description: Harvest record or trader not found
+ */
+
+/**
+ * @swagger
+ * /api/aquaculture/quality-inspection/scan/{qr_code}:
+ *   get:
+ *     summary: Scan pond QR for quality inspection prefill
+ *     description: >
+ *       Resolves an active pond aquaculture QR to farm, pond, active culture cycle,
+ *       rootverse user, optional harvest/trader details, and the latest sampling
+ *       values used to prefill ABW, size count/kg, expected biomass, sample count,
+ *       and sample weight.
+ *     tags: [Quality Inspection]
+ *     parameters:
+ *       - in: path
+ *         name: qr_code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: IN-TN-NA-P-2600001
+ *       - in: query
+ *         name: harvest_id
+ *         schema:
+ *           type: integer
+ *         description: Optional harvest ID to bind the scan to a specific harvest.
+ *       - in: query
+ *         name: quality_checker_id
+ *         schema:
+ *           type: integer
+ *         description: Optional active quality checker ID to include inspector details.
+ *       - in: query
+ *         name: checker_code
+ *         schema:
+ *           type: string
+ *         description: Optional active checker code; alternative to quality_checker_id.
+ *     responses:
+ *       200:
+ *         description: Quality inspection prefill fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QualityInspectionPrefillResponse'
+ *       400:
+ *         description: Invalid QR, inactive pond/culture, or checker-trader mismatch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Active pond QR, culture cycle, harvest, or quality checker not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *
+ * /api/aquaculture/quality-inspection:
+ *   post:
+ *     summary: Create aquaculture quality inspection
+ *     description: >
+ *       Saves a quality inspection for a scanned pond QR and harvest. The backend
+ *       validates the active pond QR, active culture cycle, latest sampling, rootverse
+ *       user, and active quality checker. ABW and size count/kg are auto-calculated
+ *       from sample_weight and sample_count. Expected biomass is snapshotted from
+ *       the latest sampling record. Send shrimp_images as uploaded image files
+ *       in multipart/form-data; URL/string values are rejected. Uploaded files
+ *       are stored in the configured Supabase bucket and their public URLs are
+ *       saved on the inspection.
+ *     tags: [Quality Inspection]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateQualityInspectionRequest'
+ *           encoding:
+ *             shrimp_images:
+ *               contentType: image/png, image/jpeg, image/webp
+ *           example:
+ *             pond_qr_scan: IN-TN-NA-P-2600001
+ *             harvest_id: 1
+ *             quality_checker_id: 1
+ *             sample_count: 50
+ *             sample_weight: 600
+ *             grade: A
+ *             disease_observation: false
+ *             disease_notes: No visible disease signs
+ *             shrimp_images:
+ *               - "@/path/to/shrimp-1.jpg"
+ *               - "@/path/to/shrimp-2.jpg"
+ *             inspection_latitude: 10.7637
+ *             inspection_longitude: 79.8435
+ *             inspected_at: 2026-06-15T09:30:00.000Z
+ *             remarks: Accepted for trader pickup
+ *     responses:
+ *       201:
+ *         description: Quality inspection created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QualityInspectionResponse'
+ *       400:
+ *         description: Validation error, inactive QR/culture, missing sampling, or checker-trader mismatch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: QR, harvest, culture cycle, sampling, or quality checker not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   get:
+ *     summary: List aquaculture quality inspections
+ *     tags: [Quality Inspection]
+ *     parameters:
+ *       - in: query
+ *         name: harvest_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: pond_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: qr_code_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: quality_checker_id
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: trader_id
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Quality inspections fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QualityInspectionListResponse'
+ *       400:
+ *         description: Invalid filter ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *
+ * /api/aquaculture/quality-inspection/{id}:
+ *   get:
+ *     summary: Get aquaculture quality inspection by ID
+ *     tags: [Quality Inspection]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: aquaculture_quality_inspections.id
+ *     responses:
+ *       200:
+ *         description: Quality inspection fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QualityInspectionResponse'
+ *       404:
+ *         description: Quality inspection not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 
 	/**
