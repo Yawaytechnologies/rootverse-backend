@@ -147,10 +147,32 @@ export const getTraderDetail = async (traderId) => {
   };
 };
 
-export const listCratesByTrader = (traderId, { status, page = 1, page_size = 20 } = {}) => {
-  const q = db("crate_qrs").where({ trader_id: traderId });
-  if (status) q.andWhere({ custody_status: status });
-  return q.orderBy("updated_at", "desc").limit(Number(page_size)).offset((Number(page) - 1) * Number(page_size));
+export const listCratesByTrader = async (traderId, { status, page = 1, page_size = 20 } = {}) => {
+  const wildQuery = db("crate_qrs")
+    .where({ trader_id: traderId })
+    .select("*", db.raw("'CRATE_QR_MASTER' as source"));
+  if (status) wildQuery.andWhere({ custody_status: status });
+
+  const aquacultureQuery = db("aquaculture_crate_packings as acp")
+    .innerJoin("crate_qrs as cq", "acp.crate_qr_id", "cq.id")
+    .leftJoin("ponds as p", "acp.pond_id", "p.id")
+    .leftJoin("aquaculture_harvests as ah", "acp.harvest_id", "ah.id")
+    .where("acp.trader_id", traderId)
+    .select(
+      "acp.*",
+      "cq.code as crate_qr_code",
+      "cq.type as crate_qr_type",
+      "p.pond_id as pond_code",
+      "p.pond_name",
+      "ah.species as harvest_species",
+      db.raw("'AQUACULTURE_CRATE_PACKING' as source")
+    );
+  if (status) aquacultureQuery.andWhere("acp.packing_status", status);
+
+  const [wildCrates, aquacultureCrates] = await Promise.all([wildQuery, aquacultureQuery]);
+  return [...wildCrates, ...aquacultureCrates]
+    .sort((a, b) => new Date(b.packed_at || b.updated_at || b.created_at) - new Date(a.packed_at || a.updated_at || a.created_at))
+    .slice((Number(page) - 1) * Number(page_size), Number(page) * Number(page_size));
 };
 
 export const findTraderCrateById = (traderId, crateId) =>
@@ -165,11 +187,12 @@ export const insertProgressEvent = (payload) =>
   db("trader_progress_events").insert(payload).returning("*");
 
 export const getDashboardCounts = async (traderId) => {
-  const [qualityCheckers, cratePackers, transportOperators, crates, progressEvents] = await Promise.all([
+  const [qualityCheckers, cratePackers, transportOperators, crates, aquacultureCrates, progressEvents] = await Promise.all([
     db("quality_checker").where({ trader_id: traderId }).count("id as count").first(),
     db("crate_packer").where({ trader_id: traderId }).count("id as count").first(),
     db("transport_operators").where({ trader_id: traderId }).count("id as count").first(),
     db("crate_qrs").where({ trader_id: traderId }).select("custody_status"),
+    db("aquaculture_crate_packings").where({ trader_id: traderId }).select("packing_status"),
     db("trader_progress_events").where({ trader_id: traderId }).count("id as count").first(),
   ]);
 
@@ -179,7 +202,11 @@ export const getDashboardCounts = async (traderId) => {
     transport_operators: Number(transportOperators?.count || 0),
     progress_events: Number(progressEvents?.count || 0),
     crates: {
-      total: crates.length,
+      total: crates.length + aquacultureCrates.length,
+      crate_packing_pending: crates.filter((c) => c.custody_status === "CRATE_PACKING_PENDING").length,
+      crate_packed:
+        crates.filter((c) => c.custody_status === "CRATE_PACKED").length +
+        aquacultureCrates.filter((c) => c.packing_status === "CRATE_PACKED").length,
       received_at_collection_centre: crates.filter((c) => c.custody_status === "RECEIVED_AT_COLLECTION_CENTRE").length,
       scheduled_for_dispatch: crates.filter((c) => c.custody_status === "SCHEDULED_FOR_DISPATCH").length,
       in_transit: crates.filter((c) => c.custody_status === "IN_TRANSIT").length,
