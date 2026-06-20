@@ -45,6 +45,7 @@ export function buildSwaggerSpec() {
         { name: "Sampling", description: "Aquaculture sampling management" },
         { name: "Harvest", description: "Aquaculture harvest request and trader booking management" },
         { name: "Quality Inspection", description: "Aquaculture quality inspection scan prefill and inspection records" },
+        { name: "Aquaculture Crate Packing", description: "Aquaculture crate packing using preprinted crate QR codes" },
         { name: "Fish Types", description: "Fish type reference data" },
         { name: "Fishing Methods", description: "Fishing method reference data" },
         { name: "States", description: "State reference data" },

@@ -4,6 +4,8 @@ import { generateKey } from "../../shared/utils/storageKey.js";
 import * as repo from "./repository.js";
 
 const CRATE_STATUSES = [
+  "CRATE_PACKING_PENDING",
+  "CRATE_PACKED",
   "RECEIVED_AT_COLLECTION_CENTRE",
   "SCHEDULED_FOR_DISPATCH",
   "IN_TRANSIT",
