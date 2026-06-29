@@ -11,6 +11,7 @@ import {
 } from "./qualityInspection_repository.js";
 
 const GRADES = ["A", "B", "C", "D"];
+const INSPECTION_STATUSES = ["PENDING", "CHECKED", "REJECTED"];
 
 const createError = (message, statusCode = 400) => {
   const error = new Error(message);
@@ -60,6 +61,16 @@ const normalizeDateTime = (value) => {
   }
 
   return date;
+};
+
+const normalizeInspectionStatus = (value) => {
+  const status = String(value || "PENDING").trim().toUpperCase();
+
+  if (!INSPECTION_STATUSES.includes(status)) {
+    throw createError(`inspection_status must be one of ${INSPECTION_STATUSES.join(", ")}`);
+  }
+
+  return status;
 };
 
 const buildWatermarkMetadata = ({ context, body, inspectedAt }) => {
@@ -252,6 +263,7 @@ export const createQualityInspectionService = async (body, shrimpImageFiles = []
     if (!GRADES.includes(grade)) {
       throw createError("grade must be A, B, C, or D");
     }
+    const inspectionStatus = normalizeInspectionStatus(body.inspection_status);
 
     const inspectedAt = normalizeDateTime(body.inspected_at);
     const abwG = roundToTwoDecimals(sampleWeight / sampleCount);
@@ -285,6 +297,7 @@ export const createQualityInspectionService = async (body, shrimpImageFiles = []
         pond_gps: context.pond_gps,
         admin_mobile_number: context.trader_mobile || body.admin_mobile_number || null,
         grade,
+        inspection_status: inspectionStatus,
         disease_observation: normalizeBoolean(body.disease_observation),
         disease_notes: body.disease_notes || null,
         shrimp_images: JSON.stringify(shrimpImages),
@@ -321,5 +334,15 @@ export const listQualityInspectionsService = async (query) => {
     }
   }
 
+  if (query.inspection_status !== undefined && query.inspection_status !== null && query.inspection_status !== "") {
+    filters.inspection_status = normalizeInspectionStatus(query.inspection_status);
+  }
+
   return listInspections(filters);
+};
+
+export const getQualityInspectionsByStatusService = async (inspectionStatus) => {
+  return listInspections({
+    inspection_status: normalizeInspectionStatus(inspectionStatus),
+  });
 };

@@ -131,6 +131,7 @@ export const listInspections = async (filters = {}, trx) => {
       if (filters.qr_code_id) query.where(`${TABLE}.qr_code_id`, filters.qr_code_id);
       if (filters.quality_checker_id) query.where(`${TABLE}.quality_checker_id`, filters.quality_checker_id);
       if (filters.trader_id) query.where(`${TABLE}.trader_id`, filters.trader_id);
+      if (filters.inspection_status) query.where(`${TABLE}.inspection_status`, filters.inspection_status);
     })
     .orderBy(`${TABLE}.created_at`, "desc");
 };

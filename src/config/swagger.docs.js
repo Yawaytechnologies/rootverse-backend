@@ -2404,6 +2404,10 @@
  *           type: string
  *           enum: [A, B, C, D]
  *           example: A
+ *         inspection_status:
+ *           type: string
+ *           enum: [PENDING, CHECKED, REJECTED]
+ *           example: PENDING
  *         disease_observation:
  *           type: boolean
  *           example: false
@@ -2473,6 +2477,11 @@
  *           type: string
  *           enum: [A, B, C, D]
  *           example: A
+ *         inspection_status:
+ *           type: string
+ *           enum: [PENDING, CHECKED, REJECTED]
+ *           description: Optional; defaults to PENDING.
+ *           example: PENDING
  *         disease_observation:
  *           oneOf:
  *             - type: boolean
@@ -6883,6 +6892,7 @@ export {};
  *             sample_count: 50
  *             sample_weight: 600
  *             grade: A
+ *             inspection_status: PENDING
  *             disease_observation: false
  *             disease_notes: No visible disease signs
  *             shrimp_images:
@@ -6935,6 +6945,11 @@ export {};
  *         name: trader_id
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: inspection_status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, CHECKED, REJECTED]
  *     responses:
  *       200:
  *         description: Quality inspections fetched successfully
@@ -6944,6 +6959,32 @@ export {};
  *               $ref: '#/components/schemas/QualityInspectionListResponse'
  *       400:
  *         description: Invalid filter ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *
+ * /api/aquaculture/quality-inspection/inspection-status/{inspection_status}:
+ *   get:
+ *     summary: List aquaculture quality inspections by inspection status
+ *     tags: [Quality Inspection]
+ *     parameters:
+ *       - in: path
+ *         name: inspection_status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, CHECKED, REJECTED]
+ *         description: Quality inspection status
+ *     responses:
+ *       200:
+ *         description: Quality inspections fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QualityInspectionListResponse'
+ *       400:
+ *         description: Invalid inspection_status
  *         content:
  *           application/json:
  *             schema:
