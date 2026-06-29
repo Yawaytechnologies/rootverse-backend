@@ -2,6 +2,7 @@ import {
   createQualityInspectionService,
   getQualityInspectionByIdService,
   getQualityInspectionPrefillService,
+  getQualityInspectionsByStatusService,
   listQualityInspectionsService,
 } from "./qualityInspection_service.js";
 
@@ -74,6 +75,21 @@ export const listQualityInspectionsController = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching quality inspections:", error);
+    return sendError(res, error);
+  }
+};
+
+export const getQualityInspectionsByStatusController = async (req, res) => {
+  try {
+    const data = await getQualityInspectionsByStatusService(req.params.inspection_status);
+
+    return res.status(200).json({
+      success: true,
+      message: "Quality inspections fetched successfully",
+      data,
+    });
+  } catch (error) {
+    console.error("Error fetching quality inspections by status:", error);
     return sendError(res, error);
   }
 };
