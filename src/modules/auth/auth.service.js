@@ -66,7 +66,7 @@ export const loginService = async (req) => {
   }
 
   const transportOperator = await db("transport_operators")
-    .select("id", "operator_rv_id", "transport_id", "is_active")
+    .select("id", "operator_rv_id", "transport_id", "trader_id", "is_active")
     .where({ mobile: cleanPhone })
     .first();
   if (transportOperator) {
@@ -76,6 +76,7 @@ export const loginService = async (req) => {
       role: "TRANSPORT_OPERATOR",
       transport_id: transportOperator.transport_id,
       operator_rv_id: transportOperator.operator_rv_id,
+      trader_id: transportOperator.trader_id,
     });
   }
 
@@ -117,7 +118,7 @@ export const getMeService = async (user) => {
 
   if (role === "TRANSPORT_OPERATOR") {
     const op = await db("transport_operators")
-      .select("id", "operator_rv_id", "full_name", "email", "mobile", "transport_id", "vehicle_no", "route_name", "is_active", "created_at")
+      .select("id", "operator_rv_id", "full_name", "email", "mobile", "transport_id", "vehicle_no", "route_name", "trader_id", "is_active", "created_at")
       .where({ id })
       .first();
     if (op) return { ...op, role: "TRANSPORT_OPERATOR" };
