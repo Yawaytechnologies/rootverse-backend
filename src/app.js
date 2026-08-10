@@ -40,6 +40,7 @@ import traderRoutes from './modules/traders/routes.js';
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 import collectionCentreRoutes from './modules/collection_centre/routes.js';
 import transportOperatorRoutes from './modules/transport_operator/routes.js';
+import processorRoutes from './modules/processor/routes.js';
 
 const app = express();
 
@@ -111,6 +112,7 @@ app.use('/api/traders', traderRoutes);
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 app.use('/api/collection-centre', collectionCentreRoutes);
 app.use('/api/transport', transportOperatorRoutes);
+app.use('/api/processors', processorRoutes);
 
 
 app.get("/db-test", async (req, res) => {

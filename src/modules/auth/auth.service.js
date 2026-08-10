@@ -94,6 +94,20 @@ export const loginService = async (req) => {
     });
   }
 
+  const processor = await db("processors")
+    .select("id", "processor_code", "is_active")
+    .where({ mobile: cleanPhone })
+    .first();
+  if (processor) {
+    if (!processor.is_active) throw new Error("Processor account is inactive");
+    return signToken({
+      id: processor.id,
+      role: "PROCESSOR",
+      processor_id: processor.id,
+      processor_code: processor.processor_code,
+    });
+  }
+
   throw new Error("User not found");
 };
 
@@ -170,6 +184,30 @@ export const getMeService = async (user) => {
       .where({ id: user.trader_id || id })
       .first();
     if (trader) return { ...trader, role: "TRADER_ADMIN" };
+  }
+
+  if (role === "PROCESSOR") {
+    const processor = await db("processors")
+      .select(
+        "id",
+        "processor_code",
+        "processor_name",
+        "contact_name",
+        "email",
+        "mobile",
+        "address",
+        "state",
+        "district",
+        "gps_latitude",
+        "gps_longitude",
+        "license_no",
+        "is_active",
+        "created_at",
+        "updated_at"
+      )
+      .where({ id: user.processor_id || id })
+      .first();
+    if (processor) return { ...processor, role: "PROCESSOR" };
   }
 
   throw new Error("Profile not found");
