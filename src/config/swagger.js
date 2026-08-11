@@ -44,6 +44,7 @@ export function buildSwaggerSpec() {
         { name: "Farmer Details", description: "Aquaculture farmer profile details" },
         { name: "Sampling", description: "Aquaculture sampling management" },
         { name: "Harvest", description: "Aquaculture harvest request and trader booking management" },
+        { name: "Offline Payment Receipts", description: "Manual/offline procurement payments, progress tracking, printable receipts, and verification" },
         { name: "Quality Inspection", description: "Aquaculture quality inspection scan prefill and inspection records" },
         { name: "Aquaculture Crate Packing", description: "Aquaculture crate packing using preprinted crate QR codes" },
         { name: "Aquaculture Transport Loading", description: "Aquaculture transport loading and chain of custody transfer" },

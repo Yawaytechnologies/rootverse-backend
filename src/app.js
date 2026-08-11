@@ -36,6 +36,7 @@ import QualityInspection from './modules/aquaculture/qualityInspection/qualityIn
 import CratePacking from './modules/aquaculture/cratePacking/routes.js';
 import TransportLoading from './modules/aquaculture/transportLoading/routes.js';
 import traderRoutes from './modules/traders/routes.js';
+import paymentReceiptRoutes from './modules/payments/payment.routes.js';
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 import collectionCentreRoutes from './modules/collection_centre/routes.js';
@@ -108,6 +109,7 @@ app.use('/api/aquaculture/quality-inspection', QualityInspection);
 app.use('/api/aquaculture/crate-packing', CratePacking);
 app.use('/api/aquaculture/transport-loading', TransportLoading);
 app.use('/api/traders', traderRoutes);
+app.use('/api/payment-receipts', paymentReceiptRoutes);
 
 // ── OneBlue routes ────────────────────────────────────────────────────────────
 app.use('/api/collection-centre', collectionCentreRoutes);
