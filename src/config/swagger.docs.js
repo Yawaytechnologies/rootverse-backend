@@ -1950,6 +1950,10 @@
  *         DOC:
  *           type: integer
  *           example: 45
+ *         doc:
+ *           type: integer
+ *           description: Days of culture for the harvest, derived from its culture cycle sampling/stocking data.
+ *           example: 45
  *         preferred_harvest_time:
  *           type: string
  *           format: date-time
@@ -1992,6 +1996,31 @@
  *           type: string
  *           nullable: true
  *           example: Sunrise Aqua Farm
+ *         farm_address:
+ *           type: string
+ *           nullable: true
+ *           example: 12 Coastal Road, Nagapattinam
+ *         village:
+ *           type: string
+ *           nullable: true
+ *           description: Farmer location associated with the harvest culture cycle.
+ *           example: Akkaraipettai
+ *         district:
+ *           type: string
+ *           nullable: true
+ *           example: Nagapattinam
+ *         latitude:
+ *           type: number
+ *           format: double
+ *           nullable: true
+ *           description: Actual farm gate latitude.
+ *           example: 10.7637
+ *         longitude:
+ *           type: number
+ *           format: double
+ *           nullable: true
+ *           description: Actual farm gate longitude.
+ *           example: 79.8435
  *         pond_code:
  *           type: string
  *           nullable: true
