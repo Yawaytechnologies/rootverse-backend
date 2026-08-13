@@ -9,6 +9,10 @@ const withHarvestDetails = (query) => {
     .leftJoin("culture_cycles as cc", `${TABLE}.culture_id`, "cc.id")
     .leftJoin("rootverse_users as ru", `${TABLE}.user_id`, "ru.id")
     .leftJoin("farms as f", "cc.farm_id", "f.id")
+    .leftJoin("locations as l", "ru.location_id", "l.id")
+    .leftJoin("districts as d", function joinDistrict() {
+      this.on("d.id", "=", db.raw("COALESCE(??, ??)", ["l.district_id", "ru.district_id"]));
+    })
     .leftJoin("ponds as p", "cc.pond_id", "p.id")
     .leftJoin("aquaculture_qrs as aq", `${TABLE}.qr_code_id`, "aq.id")
     .leftJoin("traders as t", `${TABLE}.trader_id`, "t.id")
@@ -23,6 +27,12 @@ const withHarvestDetails = (query) => {
       "ru.owner_id as farmer_owner_id",
       "f.farm_id as farm_code",
       "f.farm_name",
+      "f.address as farm_address",
+      "l.name as village",
+      "d.name as district",
+      "f.farm_gate_latitude as latitude",
+      "f.farm_gate_longitude as longitude",
+      `${TABLE}.DOC as doc`,
       "p.pond_id as pond_code",
       "p.pond_name",
       "cc.culture_code",
