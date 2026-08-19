@@ -1,8 +1,8 @@
 import express from "express";
 import { requireRole } from "../../shared/middlewares/auth.middleware.js";
 import {
-  completeHarvestController, createPaymentController, createProcurementController, getHarvestCompletionProgressController, getReceiptController,
-  getReceiptHtmlController, listProcurementsController, listReceiptsController, verifyReceiptController,
+  completeHarvestController, createPaymentController, createProcurementController, getHarvestCompletionProgressController, getProcurementController, getProcurementReceiptHtmlController, getReceiptController,
+  getReceiptHtmlController, listProcurementsController, listReceiptsController, verifyProcurementController, verifyReceiptController,
 } from "./payment.controller.js";
 
 const router = express.Router();
@@ -445,6 +445,57 @@ const RECEIPT_ACCESS = requireRole("TRADER_ADMIN", "OWNER", "ADMIN", "SUPER_ADMI
 
 /**
  * @swagger
+ * /api/payment-receipts/procurements/{procurementId}:
+ *   get:
+ *     summary: Get full procurement and source harvest details
+ *     tags: [Offline Payment Receipts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: procurementId
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200: { description: Procurement, payment progress, harvest, pond, farm, and quality-inspection details }
+ *       404: { description: Procurement not found or outside the authenticated user's scope }
+ *
+ * /api/payment-receipts/procurements/{procurementId}/receipt/print:
+ *   get:
+ *     summary: Render the OneBlue procurement receipt
+ *     description: Returns an A4 print-ready HTML procurement receipt matching the supplied OneBlue design. Use browser Print / Save as PDF.
+ *     tags: [Offline Payment Receipts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: procurementId
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Print-ready procurement receipt HTML
+ *         content:
+ *           text/html:
+ *             schema: { type: string }
+ *       404: { description: Procurement not found or outside the authenticated user's scope }
+ *
+ * /api/payment-receipts/verify-procurement/{procurementNo}:
+ *   get:
+ *     summary: Publicly verify a procurement receipt QR code
+ *     tags: [Offline Payment Receipts]
+ *     parameters:
+ *       - in: path
+ *         name: procurementNo
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Safe procurement verification details }
+ *       404: { description: Procurement not found }
+ */
+
+/**
+ * @swagger
  * /api/payment-receipts/receipts:
  *   get:
  *     summary: List accessible payment receipts
@@ -530,10 +581,13 @@ const RECEIPT_ACCESS = requireRole("TRADER_ADMIN", "OWNER", "ADMIN", "SUPER_ADMI
  */
 
 router.get("/verify/:token", verifyReceiptController);
+router.get("/verify-procurement/:procurementNo", verifyProcurementController);
 router.get("/harvests/:harvestId/complete", TRADER, getHarvestCompletionProgressController);
 router.post("/harvests/:harvestId/complete", TRADER, completeHarvestController);
 router.post("/procurements", TRADER, createProcurementController);
 router.get("/procurements", RECEIPT_ACCESS, listProcurementsController);
+router.get("/procurements/:procurementId", RECEIPT_ACCESS, getProcurementController);
+router.get("/procurements/:procurementId/receipt/print", RECEIPT_ACCESS, getProcurementReceiptHtmlController);
 router.post("/procurements/:procurementId/payments", TRADER, createPaymentController);
 router.get("/receipts", RECEIPT_ACCESS, listReceiptsController);
 router.get("/receipts/:receiptId", RECEIPT_ACCESS, getReceiptController);
