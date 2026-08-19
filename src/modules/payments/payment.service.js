@@ -4,7 +4,8 @@ import * as repo from "./payment.repository.js";
 
 const PAYMENT_MODES = ["NEFT", "RTGS", "IMPS", "UPI", "CHEQUE", "CASH", "OTHER"];
 const roundMoney = (value) => Math.round((Number(value) + Number.EPSILON) * 100) / 100;
-const error = (message, statusCode = 400) => Object.assign(new Error(message), { statusCode });
+const error = (message, statusCode = 400, details = null) =>
+  Object.assign(new Error(message), { statusCode, details });
 
 const positiveId = (value, name = "id") => {
   const id = Number(value);
@@ -39,6 +40,64 @@ const ensureTraderOwnership = (row, traderId) => {
   if (Number(row.trader_id) !== Number(traderId)) throw error("Record does not belong to this trader", 403);
 };
 
+const buildCompletionProgress = (harvest, workflow) => {
+  const inspections = workflow.qualityInspections;
+  const checkedInspections = inspections.filter((row) => row.inspection_status === "CHECKED");
+  const packedCrates = workflow.packedCrates;
+  const transportedCrates = packedCrates.filter((row) => row.transport_loading_id);
+  const packedWeight = packedCrates.reduce((sum, row) => sum + Number(row.weight_kg || 0), 0);
+  const transportedWeight = transportedCrates.reduce((sum, row) => sum + Number(row.weight_kg || 0), 0);
+
+  const qualityCompleted = checkedInspections.length > 0;
+  const packingCompleted = packedCrates.length > 0;
+  const transportationCompleted = packingCompleted && transportedCrates.length === packedCrates.length;
+  const canComplete = harvest.booking_status === "booked" && qualityCompleted && packingCompleted && transportationCompleted;
+
+  return {
+    harvest,
+    progress: {
+      can_complete_harvest: canComplete,
+      harvest_status: harvest.harvest_status,
+      booking_status: harvest.booking_status,
+      completion_percentage: [qualityCompleted, packingCompleted, transportationCompleted].filter(Boolean).length * 33 + (transportationCompleted ? 1 : 0),
+      pending_stages: [
+        !qualityCompleted ? "QUALITY_CHECKING" : null,
+        !packingCompleted ? "CRATE_PACKING" : null,
+        !transportationCompleted ? "TRANSPORTATION" : null,
+      ].filter(Boolean),
+      quality_checking: {
+        completed: qualityCompleted,
+        total_inspections: inspections.length,
+        checked_inspections: checkedInspections.length,
+        inspections,
+      },
+      crate_packing: {
+        completed: packingCompleted,
+        total_crates_packed: packedCrates.length,
+        total_packed_weight_kg: packedWeight,
+        crates: packedCrates,
+      },
+      transportation: {
+        completed: transportationCompleted,
+        total_crates_to_transport: packedCrates.length,
+        total_crates_transported: transportedCrates.length,
+        remaining_crates: Math.max(packedCrates.length - transportedCrates.length, 0),
+        total_transported_weight_kg: transportedWeight,
+        transport_details: transportedCrates,
+      },
+    },
+  };
+};
+
+export async function getHarvestCompletionProgress(harvestIdValue, suppliedTraderId, user) {
+  const harvestId = positiveId(harvestIdValue, "harvest_id");
+  const traderId = traderIdFor(user, suppliedTraderId);
+  const harvest = await repo.findHarvestForPayment(harvestId);
+  if (!harvest) throw error("Harvest not found", 404);
+  ensureTraderOwnership(harvest, traderId);
+  return buildCompletionProgress(harvest, await repo.getHarvestCompletionWorkflow(harvestId));
+}
+
 export async function completeHarvest(harvestIdValue, body, user) {
   const harvestId = positiveId(harvestIdValue, "harvest_id");
   const traderId = traderIdFor(user, body.trader_id);
@@ -48,7 +107,18 @@ export async function completeHarvest(harvestIdValue, body, user) {
     if (!harvest) throw error("Harvest not found", 404);
     ensureTraderOwnership(harvest, traderId);
     if (harvest.booking_status !== "booked") throw error("Harvest must be booked before completion", 422);
-    if (harvest.harvest_status === "COMPLETED") return harvest;
+    const completionDetails = buildCompletionProgress(
+      harvest,
+      await repo.getHarvestCompletionWorkflow(harvestId, trx)
+    );
+    if (harvest.harvest_status === "COMPLETED") return completionDetails;
+    if (!completionDetails.progress.can_complete_harvest) {
+      throw error(
+        `Harvest cannot be completed. Pending stages: ${completionDetails.progress.pending_stages.join(", ")}`,
+        422,
+        completionDetails
+      );
+    }
     const completedAt = body.completed_at ? new Date(body.completed_at) : new Date();
     if (Number.isNaN(completedAt.getTime())) throw error("completed_at must be a valid date");
     const [updated] = await repo.completeHarvest(harvestId, {
@@ -59,7 +129,11 @@ export async function completeHarvest(harvestIdValue, body, user) {
       completed_by_id: String(user.id),
       updated_at: new Date(),
     }, trx);
-    return updated;
+    const completedHarvest = { ...harvest, ...updated };
+    return buildCompletionProgress(
+      completedHarvest,
+      await repo.getHarvestCompletionWorkflow(harvestId, trx)
+    );
   });
 }
 

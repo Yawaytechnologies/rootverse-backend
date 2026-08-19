@@ -4,11 +4,31 @@ import {
   getCratePackingPrefillController,
   listHarvestCratesController,
   packCratesController,
+  getCratePackerActivityController,
 } from "./controller.js";
 
 const router = express.Router();
 
 const CRATE_PACKING_ACCESS = requireRole("CRATE_PACKER", "TRADER_ADMIN", "ADMIN", "SUPER_ADMIN");
+
+/**
+ * @swagger
+ * /api/aquaculture/crate-packing/packer/{crate_packer_id}/activity:
+ *   get:
+ *     summary: Get a crate packer's packing history and totals by ID
+ *     tags: [Aquaculture Crate Packing]
+ *     parameters:
+ *       - { in: path, name: crate_packer_id, required: true, schema: { type: integer } }
+ *       - { in: query, name: harvest_id, schema: { type: integer } }
+ *       - { in: query, name: date_from, schema: { type: string, format: date } }
+ *       - { in: query, name: date_to, schema: { type: string, format: date } }
+ *       - { in: query, name: page, schema: { type: integer, default: 1 } }
+ *       - { in: query, name: page_size, schema: { type: integer, default: 20, maximum: 100 } }
+ *     responses:
+ *       200: { description: Crate packer profile, totals, and full crate records }
+ *       404: { description: Crate packer not found }
+ */
+router.get("/packer/:crate_packer_id/activity", getCratePackerActivityController);
 
 /**
  * @swagger

@@ -7,6 +7,7 @@ import {
   getPackingContextByPondQr,
   insertProgressEvent,
   listPackedCratesByHarvest,
+  getCratePackerActivity,
 } from "./repository.js";
 
 const GRADES = ["A", "B", "C", "D"];
@@ -312,4 +313,45 @@ export const listHarvestCratesService = async ({ harvest_id, user, trader_id }) 
   }
 
   return crates;
+};
+
+const parseActivityQuery = (query) => {
+  const page = query.page ? validateId(query.page, "page") : 1;
+  const pageSize = query.page_size ? validateId(query.page_size, "page_size") : 20;
+  if (pageSize > 100) throw createError("page_size cannot exceed 100");
+  const parseDate = (value, field, endOfDay = false) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) throw createError(`Valid ${field} is required`);
+    if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(String(value))) date.setUTCHours(23, 59, 59, 999);
+    return date;
+  };
+  return {
+    filters: {
+      harvest_id: query.harvest_id ? validateId(query.harvest_id, "harvest_id") : null,
+      date_from: parseDate(query.date_from, "date_from"),
+      date_to: parseDate(query.date_to, "date_to", true),
+    },
+    pagination: { page, page_size: pageSize },
+  };
+};
+
+export const getCratePackerActivityService = async (cratePackerId, query = {}) => {
+  const packer = await getCratePackerByIdentity({
+    id: validateId(cratePackerId, "crate_packer_id"),
+  });
+  if (!packer) throw createError("Active crate packer not found", 404);
+  const { filters, pagination } = parseActivityQuery(query);
+  const { records, aggregate } = await getCratePackerActivity(packer.id, filters, pagination);
+  const total = Number(aggregate?.total_completed || 0);
+  return {
+    crate_packer: packer,
+    summary: {
+      total_crates_packed: total,
+      total_harvests: Number(aggregate?.total_harvests || 0),
+      total_weight_kg: Number(aggregate?.total_weight_kg || 0),
+    },
+    pagination: { ...pagination, total, total_pages: Math.ceil(total / pagination.page_size) },
+    crates: records,
+  };
 };
