@@ -107,3 +107,33 @@ export const listPackedCratesByHarvest = async (harvestId, trx) => {
     .where("acp.harvest_id", harvestId)
     .orderBy("acp.packed_at", "desc");
 };
+
+export const getCratePackerActivity = async (cratePackerId, filters, pagination, trx) => {
+  const executor = getExecutor(trx);
+  const applyFilters = (query) => query
+    .where("acp.crate_packer_id", cratePackerId)
+    .modify((builder) => {
+      if (filters.harvest_id) builder.where("acp.harvest_id", filters.harvest_id);
+      if (filters.date_from) builder.where("acp.packed_at", ">=", filters.date_from);
+      if (filters.date_to) builder.where("acp.packed_at", "<=", filters.date_to);
+    });
+
+  const detailQuery = applyFilters(executor("aquaculture_crate_packings as acp"))
+    .leftJoin("aquaculture_harvests as ah", "acp.harvest_id", "ah.id")
+    .leftJoin("aquaculture_quality_inspections as qi", "acp.quality_inspection_id", "qi.id")
+    .leftJoin("ponds as p", "acp.pond_id", "p.id")
+    .leftJoin("farms as f", "p.farm_id", "f.id")
+    .leftJoin("traders as t", "acp.trader_id", "t.id")
+    .leftJoin("aquaculture_transport_loadings as atl", "acp.id", "atl.crate_packing_id")
+    .select("acp.*", "ah.culture_id", "ah.expected_size as harvest_expected_size", "ah.expected_biomass as harvest_expected_biomass", "ah.booking_status", "qi.inspection_status", "qi.inspected_at", "p.pond_id as pond_code", "p.pond_name", "f.farm_id as farm_code", "f.farm_name", "t.trader_code", "t.trader_name", "t.mobile as trader_mobile", "atl.id as transport_loading_id", "atl.vehicle_number", "atl.loaded_at", "atl.chain_of_custody_status");
+
+  const [records, aggregate] = await Promise.all([
+    detailQuery.orderBy("acp.packed_at", "desc").limit(pagination.page_size).offset((pagination.page - 1) * pagination.page_size),
+    applyFilters(executor("aquaculture_crate_packings as acp"))
+      .count("acp.id as total_completed")
+      .countDistinct("acp.harvest_id as total_harvests")
+      .sum("acp.weight_kg as total_weight_kg")
+      .first(),
+  ]);
+  return { records, aggregate };
+};

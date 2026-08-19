@@ -35,6 +35,50 @@ export const findHarvestForPayment = async (harvestId, trx, forUpdate = false) =
 export const completeHarvest = (harvestId, payload, trx) =>
   getExecutor(trx)("aquaculture_harvests").where({ id: harvestId }).update(payload).returning("*");
 
+export const getHarvestCompletionWorkflow = async (harvestId, trx) => {
+  const executor = getExecutor(trx);
+  const [qualityInspections, packedCrates] = await Promise.all([
+    executor("aquaculture_quality_inspections as qi")
+      .leftJoin("quality_checker as qc", "qi.quality_checker_id", "qc.id")
+      .select(
+        "qi.*",
+        "qc.checker_code",
+        "qc.checker_name",
+        "qc.checker_phone"
+      )
+      .where("qi.harvest_id", harvestId)
+      .orderBy("qi.inspected_at", "desc"),
+    executor("aquaculture_crate_packings as cp")
+      .leftJoin("crate_packer as packer", "cp.crate_packer_id", "packer.id")
+      .leftJoin("aquaculture_transport_loadings as tl", "cp.id", "tl.crate_packing_id")
+      .leftJoin("transport_operators as operator", "tl.transport_operator_id", "operator.id")
+      .select(
+        "cp.*",
+        "packer.code as crate_packer_code",
+        "packer.name as crate_packer_name",
+        "packer.phone as crate_packer_phone",
+        "tl.id as transport_loading_id",
+        "tl.transport_operator_id",
+        "tl.transport_operator_rv_id",
+        "tl.vehicle_number",
+        "tl.chain_of_custody_status",
+        "tl.loaded_at",
+        "tl.gps_latitude as loading_latitude",
+        "tl.gps_longitude as loading_longitude",
+        "tl.remarks as loading_remarks",
+        "operator.full_name as transport_operator_name",
+        "operator.mobile as transport_operator_mobile",
+        "operator.transport_id",
+        "operator.vehicle_no as registered_vehicle_number",
+        "operator.route_name"
+      )
+      .where("cp.harvest_id", harvestId)
+      .orderBy("cp.packed_at", "asc"),
+  ]);
+
+  return { qualityInspections, packedCrates };
+};
+
 export const findProcurementByHarvest = (harvestId, trx) =>
   getExecutor(trx)("procurements").where({ harvest_id: harvestId }).first();
 

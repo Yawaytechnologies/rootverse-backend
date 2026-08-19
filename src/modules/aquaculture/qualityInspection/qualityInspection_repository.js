@@ -135,3 +135,32 @@ export const listInspections = async (filters = {}, trx) => {
     })
     .orderBy(`${TABLE}.created_at`, "desc");
 };
+
+export const getQualityCheckerActivity = async (qualityCheckerId, filters, pagination, trx) => {
+  const base = withInspectionDetails(getExecutor(trx)(TABLE))
+    .where(`${TABLE}.quality_checker_id`, qualityCheckerId)
+    .modify((query) => {
+      if (filters.harvest_id) query.where(`${TABLE}.harvest_id`, filters.harvest_id);
+      if (filters.date_from) query.where(`${TABLE}.inspected_at`, ">=", filters.date_from);
+      if (filters.date_to) query.where(`${TABLE}.inspected_at`, "<=", filters.date_to);
+    });
+
+  const [records, aggregate] = await Promise.all([
+    base.clone()
+      .orderBy(`${TABLE}.inspected_at`, "desc")
+      .limit(pagination.page_size)
+      .offset((pagination.page - 1) * pagination.page_size),
+    getExecutor(trx)(TABLE)
+      .where("quality_checker_id", qualityCheckerId)
+      .modify((query) => {
+        if (filters.harvest_id) query.where("harvest_id", filters.harvest_id);
+        if (filters.date_from) query.where("inspected_at", ">=", filters.date_from);
+        if (filters.date_to) query.where("inspected_at", "<=", filters.date_to);
+      })
+      .count("id as total_completed")
+      .countDistinct("harvest_id as total_harvests")
+      .first(),
+  ]);
+
+  return { records, aggregate };
+};

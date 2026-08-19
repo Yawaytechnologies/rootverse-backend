@@ -1,7 +1,7 @@
 import express from "express";
 import { requireRole } from "../../shared/middlewares/auth.middleware.js";
 import {
-  completeHarvestController, createPaymentController, createProcurementController, getReceiptController,
+  completeHarvestController, createPaymentController, createProcurementController, getHarvestCompletionProgressController, getReceiptController,
   getReceiptHtmlController, listProcurementsController, listReceiptsController, verifyReceiptController,
 } from "./payment.controller.js";
 
@@ -277,9 +277,33 @@ const RECEIPT_ACCESS = requireRole("TRADER_ADMIN", "OWNER", "ADMIN", "SUPER_ADMI
 /**
  * @swagger
  * /api/payment-receipts/harvests/{harvestId}/complete:
+ *   get:
+ *     summary: Get complete harvest details and operational completion progress
+ *     description: Returns harvest, quality inspection, crate packing, and transportation details. The harvest can be completed only after a CHECKED quality inspection exists, at least one crate is packed, and every packed crate is transported.
+ *     tags: [Offline Payment Receipts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: harvestId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: trader_id
+ *         schema:
+ *           type: integer
+ *         description: Required for ADMIN/SUPER_ADMIN; ignored for TRADER_ADMIN.
+ *     responses:
+ *       200:
+ *         description: Full harvest workflow progress and completion readiness.
+ *       403:
+ *         description: Harvest is assigned to another trader.
+ *       404:
+ *         description: Harvest not found.
  *   post:
  *     summary: Mark a booked harvest as completed
- *     description: Records the actual harvest weight and makes the harvest eligible for procurement. No online payment is performed.
+ *     description: Records the actual harvest weight only after quality checking, crate packing, and transportation are complete. Returns full harvest workflow progress. No online payment is performed.
  *     tags: [Offline Payment Receipts]
  *     security:
  *       - BearerAuth: []
@@ -305,7 +329,7 @@ const RECEIPT_ACCESS = requireRole("TRADER_ADMIN", "OWNER", "ADMIN", "SUPER_ADMI
  *       404:
  *         description: Harvest not found.
  *       422:
- *         description: Harvest has not been booked.
+ *         description: Harvest is not booked or quality checking, crate packing, or transportation is incomplete. The response includes full progress details.
  */
 
 /**
@@ -506,6 +530,7 @@ const RECEIPT_ACCESS = requireRole("TRADER_ADMIN", "OWNER", "ADMIN", "SUPER_ADMI
  */
 
 router.get("/verify/:token", verifyReceiptController);
+router.get("/harvests/:harvestId/complete", TRADER, getHarvestCompletionProgressController);
 router.post("/harvests/:harvestId/complete", TRADER, completeHarvestController);
 router.post("/procurements", TRADER, createProcurementController);
 router.get("/procurements", RECEIPT_ACCESS, listProcurementsController);

@@ -4,7 +4,18 @@ import {
   getQualityInspectionPrefillService,
   getQualityInspectionsByStatusService,
   listQualityInspectionsService,
+  getQualityCheckerActivityService,
 } from "./qualityInspection_service.js";
+
+export const getQualityCheckerActivityController = async (req, res) => {
+  try {
+    const data = await getQualityCheckerActivityService(req.params.quality_checker_id, req.query);
+    return res.status(200).json({ success: true, message: "Quality checker activity fetched successfully", data });
+  } catch (error) {
+    console.error("Error fetching quality checker activity:", error);
+    return sendError(res, error);
+  }
+};
 
 const sendError = (res, error) => {
   return res.status(error.statusCode || 500).json({

@@ -8,6 +8,7 @@ import {
   getTransportOperatorByRvId,
   insertProgressEvent,
   updatePackingStatus,
+  getTransportOperatorActivity,
 } from "./repository.js";
 
 const createError = (message, statusCode = 400) => {
@@ -236,5 +237,47 @@ export const getTransportLoadingProgressService = async ({ harvest_id, user }) =
       transport_operator_name: row.transport_operator_name,
       chain_of_custody_status: row.chain_of_custody_status,
     })),
+  };
+};
+
+const parseActivityQuery = (query) => {
+  const page = query.page ? normalizeId(query.page, "page") : 1;
+  const pageSize = query.page_size ? normalizeId(query.page_size, "page_size") : 20;
+  if (pageSize > 100) throw createError("page_size cannot exceed 100");
+  const parseDate = (value, field, endOfDay = false) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) throw createError(`Valid ${field} is required`);
+    if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(String(value))) date.setUTCHours(23, 59, 59, 999);
+    return date;
+  };
+  return {
+    filters: {
+      harvest_id: query.harvest_id ? normalizeId(query.harvest_id, "harvest_id") : null,
+      date_from: parseDate(query.date_from, "date_from"),
+      date_to: parseDate(query.date_to, "date_to", true),
+    },
+    pagination: { page, page_size: pageSize },
+  };
+};
+
+export const getTransportOperatorActivityService = async (transportOperatorId, query = {}) => {
+  const operator = await getTransportOperatorById(
+    normalizeId(transportOperatorId, "transport_operator_id")
+  );
+  if (!operator) throw createError("Transport operator not found", 404);
+  const { filters, pagination } = parseActivityQuery(query);
+  const { records, aggregate } = await getTransportOperatorActivity(operator.id, filters, pagination);
+  const total = Number(aggregate?.total_transported || 0);
+  return {
+    transport_operator: operator,
+    summary: {
+      total_crates_transported: total,
+      total_harvests: Number(aggregate?.total_harvests || 0),
+      total_vehicles: Number(aggregate?.total_vehicles || 0),
+      total_weight_kg: Number(aggregate?.total_weight_kg || 0),
+    },
+    pagination: { ...pagination, total, total_pages: Math.ceil(total / pagination.page_size) },
+    transport_details: records,
   };
 };

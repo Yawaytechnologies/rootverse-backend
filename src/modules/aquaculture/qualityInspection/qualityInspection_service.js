@@ -6,6 +6,7 @@ import {
   getInspectionById,
   getLatestSamplingByCultureId,
   getQualityCheckerByIdentity,
+  getQualityCheckerActivity,
   getScanContextByQrCode,
   listInspections,
 } from "./qualityInspection_repository.js";
@@ -345,4 +346,48 @@ export const getQualityInspectionsByStatusService = async (inspectionStatus) => 
   return listInspections({
     inspection_status: normalizeInspectionStatus(inspectionStatus),
   });
+};
+
+const parseActivityQuery = (query) => {
+  const page = query.page ? validateId(query.page, "page") : 1;
+  const pageSize = query.page_size ? validateId(query.page_size, "page_size") : 20;
+  if (pageSize > 100) throw createError("page_size cannot exceed 100");
+
+  const parseDate = (value, field, endOfDay = false) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) throw createError(`Valid ${field} is required`);
+    if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(String(value))) date.setUTCHours(23, 59, 59, 999);
+    return date;
+  };
+
+  return {
+    filters: {
+      harvest_id: query.harvest_id ? validateId(query.harvest_id, "harvest_id") : null,
+      date_from: parseDate(query.date_from, "date_from"),
+      date_to: parseDate(query.date_to, "date_to", true),
+    },
+    pagination: { page, page_size: pageSize },
+  };
+};
+
+export const getQualityCheckerActivityService = async (qualityCheckerId, query = {}) => {
+  const checker = await getQualityCheckerByIdentity({
+    quality_checker_id: validateId(qualityCheckerId, "quality_checker_id"),
+  });
+  if (!checker) throw createError("Active quality checker not found", 404);
+
+  const { filters, pagination } = parseActivityQuery(query);
+  const { records, aggregate } = await getQualityCheckerActivity(checker.id, filters, pagination);
+  const total = Number(aggregate?.total_completed || 0);
+
+  return {
+    quality_checker: checker,
+    summary: {
+      total_inspections: total,
+      total_harvests: Number(aggregate?.total_harvests || 0),
+    },
+    pagination: { ...pagination, total, total_pages: Math.ceil(total / pagination.page_size) },
+    inspections: records,
+  };
 };
