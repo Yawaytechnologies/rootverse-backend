@@ -2,7 +2,18 @@ import {
   getCratePackingPrefillService,
   listHarvestCratesService,
   packCratesService,
+  getCratePackerActivityService,
 } from "./service.js";
+
+export const getCratePackerActivityController = async (req, res) => {
+  try {
+    const data = await getCratePackerActivityService(req.params.crate_packer_id, req.query);
+    return res.status(200).json({ success: true, message: "Crate packer activity fetched successfully", data });
+  } catch (error) {
+    console.error("Error fetching crate packer activity:", error);
+    return sendError(res, error);
+  }
+};
 
 const sendError = (res, error) => {
   return res.status(error.statusCode || 500).json({

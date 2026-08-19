@@ -3,12 +3,32 @@ import { requireRole } from "../../../shared/middlewares/auth.middleware.js";
 import {
   getTransportLoadingProgressController,
   scanTransportLoadingController,
+  getTransportOperatorActivityController,
 } from "./controller.js";
 
 const router = express.Router();
 
 const TRANSPORT_LOADING_SCAN = requireRole("TRANSPORT_OPERATOR");
 const TRANSPORT_LOADING_VIEW = requireRole("TRANSPORT_OPERATOR", "TRADER_ADMIN", "ADMIN", "SUPER_ADMIN");
+
+/**
+ * @swagger
+ * /api/aquaculture/transport-loading/operator/{transport_operator_id}/activity:
+ *   get:
+ *     summary: Get a transporter's loading history and totals by ID
+ *     tags: [Aquaculture Transport Loading]
+ *     parameters:
+ *       - { in: path, name: transport_operator_id, required: true, schema: { type: integer } }
+ *       - { in: query, name: harvest_id, schema: { type: integer } }
+ *       - { in: query, name: date_from, schema: { type: string, format: date } }
+ *       - { in: query, name: date_to, schema: { type: string, format: date } }
+ *       - { in: query, name: page, schema: { type: integer, default: 1 } }
+ *       - { in: query, name: page_size, schema: { type: integer, default: 20, maximum: 100 } }
+ *     responses:
+ *       200: { description: Transporter profile, totals, and full scan/loading records }
+ *       404: { description: Transport operator not found }
+ */
+router.get("/operator/:transport_operator_id/activity", getTransportOperatorActivityController);
 
 /**
  * @swagger
