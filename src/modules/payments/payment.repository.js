@@ -19,12 +19,14 @@ export const findHarvestForPayment = async (harvestId, trx, forUpdate = false) =
   return executor("aquaculture_harvests as ah")
     .leftJoin("culture_cycles as cc", "ah.culture_id", "cc.id")
     .leftJoin("farms as f", "cc.farm_id", "f.id")
+    .leftJoin("ponds as pond", "cc.pond_id", "pond.id")
     .leftJoin("rootverse_users as ru", "ah.user_id", "ru.id")
     .leftJoin("aquaculture_farmers as af", "ru.id", "af.user_id")
     .leftJoin("traders as t", "ah.trader_id", "t.id")
     .where("ah.id", harvestId)
     .select(
-      "ah.*", "cc.farm_id", "f.farm_id as farm_code", "f.farm_name", "f.address as farm_address",
+      "ah.*", "cc.farm_id", "cc.pond_id", "cc.culture_code", "f.farm_id as farm_code", "f.farm_name", "f.address as farm_address",
+      "pond.pond_id as pond_code", "pond.pond_name", "pond.pond_gps",
       "ru.username as producer_name", "ru.owner_id as producer_code", "ru.phone_no as producer_phone", "ru.address as producer_address",
       "af.email as producer_email", "t.trader_code", "t.trader_name", "t.mobile as trader_phone", "t.email as trader_email",
       "t.address as trader_address", "t.company_logo_url"
@@ -82,6 +84,9 @@ export const getHarvestCompletionWorkflow = async (harvestId, trx) => {
 export const findProcurementByHarvest = (harvestId, trx) =>
   getExecutor(trx)("procurements").where({ harvest_id: harvestId }).first();
 
+export const findProcurementByNumber = (procurementNumber, trx) =>
+  getExecutor(trx)("procurements").where({ procurement_no: procurementNumber }).first();
+
 export const insertProcurement = (payload, trx) => getExecutor(trx)("procurements").insert(payload).returning("*");
 export const updateProcurement = (id, payload, trx) => getExecutor(trx)("procurements").where({ id }).update(payload).returning("*");
 
@@ -90,6 +95,15 @@ export const findProcurement = (id, trx, forUpdate = false) => {
   if (forUpdate) query = query.forUpdate();
   return query;
 };
+
+export const findLatestCheckedInspection = (harvestId, trx) =>
+  getExecutor(trx)("aquaculture_quality_inspections as qi")
+    .leftJoin("quality_checker as qc", "qi.quality_checker_id", "qc.id")
+    .select("qi.*", "qc.checker_code", "qc.checker_name", "qc.checker_phone")
+    .where("qi.harvest_id", harvestId)
+    .where("qi.inspection_status", "CHECKED")
+    .orderBy("qi.inspected_at", "desc")
+    .first();
 
 export const listProcurements = (filters, trx) => {
   const query = getExecutor(trx)("procurements").orderBy("created_at", "desc");
