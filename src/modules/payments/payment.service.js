@@ -179,12 +179,48 @@ export async function createProcurement(body, user) {
 }
 
 async function hydrateProcurement(procurement, trx) {
-  const payments = await repo.listConfirmedPayments(procurement.id, trx);
+  const [payments, harvest, inspection] = await Promise.all([
+    repo.listConfirmedPayments(procurement.id, trx),
+    repo.findHarvestForPayment(procurement.harvest_id, trx),
+    repo.findLatestCheckedInspection(procurement.harvest_id, trx),
+  ]);
   const totalPaid = roundMoney(payments.reduce((sum, row) => sum + Number(row.amount), 0));
   return {
     ...procurement,
     trader_snapshot: parseSnapshot(procurement.trader_snapshot), producer_snapshot: parseSnapshot(procurement.producer_snapshot),
     total_paid: totalPaid, outstanding_balance: roundMoney(Number(procurement.total_value) - totalPaid), payments,
+    harvest: harvest || null,
+    quality_inspection: inspection || null,
+  };
+}
+
+export async function getProcurement(procurementIdValue, user) {
+  const procurement = await repo.findProcurement(positiveId(procurementIdValue, "procurement_id"));
+  if (!procurement) throw error("Procurement not found", 404);
+  const filters = await accessFilters(user);
+  if (filters.trader_id && Number(procurement.trader_id) !== Number(filters.trader_id)) throw error("Procurement not found", 404);
+  if (filters.producer_user_id && Number(procurement.producer_user_id) !== Number(filters.producer_user_id)) throw error("Procurement not found", 404);
+  return hydrateProcurement(procurement);
+}
+
+export async function verifyProcurement(procurementNumber) {
+  const value = String(procurementNumber || "").trim();
+  if (!value) throw error("Procurement number is required");
+  const procurement = await repo.findProcurementByNumber(value);
+  if (!procurement) throw error("Procurement not found", 404);
+  const hydrated = await hydrateProcurement(procurement);
+  return {
+    valid: true,
+    procurement_no: hydrated.procurement_no,
+    procurement_date: hydrated.procurement_date,
+    status: hydrated.status,
+    harvest_id: hydrated.harvest_id,
+    species: hydrated.harvest?.species || null,
+    quantity_kg: hydrated.actual_weight_kg,
+    total_value: hydrated.total_value,
+    trader_name: hydrated.trader_snapshot?.name || null,
+    producer_name: hydrated.producer_snapshot?.name || null,
+    farm_name: hydrated.producer_snapshot?.farm_name || null,
   };
 }
 
