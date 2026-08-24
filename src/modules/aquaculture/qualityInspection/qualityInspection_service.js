@@ -264,8 +264,6 @@ export const createQualityInspectionService = async (body, shrimpImageFiles = []
     if (!GRADES.includes(grade)) {
       throw createError("grade must be A, B, C, or D");
     }
-    const inspectionStatus = normalizeInspectionStatus(body.inspection_status);
-
     const inspectedAt = normalizeDateTime(body.inspected_at);
     const abwG = roundToTwoDecimals(sampleWeight / sampleCount);
     const sizeCountKg = roundToTwoDecimals(1000 / abwG);
@@ -298,7 +296,10 @@ export const createQualityInspectionService = async (body, shrimpImageFiles = []
         pond_gps: context.pond_gps,
         admin_mobile_number: context.trader_mobile || body.admin_mobile_number || null,
         grade,
-        inspection_status: inspectionStatus,
+        // Creating an inspection is the final submission step. Status is owned by
+        // the backend so a completed inspection cannot remain PENDING because the
+        // client omitted (or supplied) inspection_status.
+        inspection_status: "CHECKED",
         disease_observation: normalizeBoolean(body.disease_observation),
         disease_notes: body.disease_notes || null,
         shrimp_images: JSON.stringify(shrimpImages),
